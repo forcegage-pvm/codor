@@ -2,8 +2,8 @@
 # Usage: .\install-codor.ps1 [target-directory]
 param([string]$TargetDir = ".")
 
-Write-Host "🏛️ CODOR Constitutional Framework - Complete Installation" -ForegroundColor Cyan
-Write-Host "=========================================================" -ForegroundColor Cyan
+Write-Host "CODOR Constitutional Framework - Complete Installation" -ForegroundColor Cyan
+Write-Host "=====================================================" -ForegroundColor Cyan
 
 $TargetPath = Resolve-Path $TargetDir
 Write-Host "Installing CODOR to: $TargetPath" -ForegroundColor Green
@@ -64,10 +64,10 @@ Write-Host "Detected project type: $ProjectType" -ForegroundColor Green
 # Create project config
 $ConfigPath = Join-Path $CodorDir "project-config.json"
 $config = @{
-    projectType = $ProjectType
-    installedDate = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+    projectType         = $ProjectType
+    installedDate       = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
     constitutionVersion = "3.4"
-    level = 2
+    level               = 2
 } | ConvertTo-Json
 
 $config | Out-File -FilePath $ConfigPath -Encoding UTF8
@@ -111,31 +111,31 @@ $copilotContent | Out-File -FilePath $CopilotPath -Encoding UTF8
 # Create activation script
 $ActivationPath = Join-Path $CodorDir "activate.ps1"
 
-$activationScript = "Write-Host '🏛️ CODOR Constitutional Framework Active' -ForegroundColor Cyan
+$activationScript = "Write-Host 'CODOR Constitutional Framework Active' -ForegroundColor Cyan
 Write-Host 'Project: $ProjectType | Constitution: v3.4' -ForegroundColor Green
 `$env:CODOR_ACTIVE = 'true'
 `$env:CODOR_LEVEL = '2'
 `$env:CODOR_PATH = '$CodorDir'
-Write-Host '✅ Constitutional compliance ACTIVE' -ForegroundColor Green
-Write-Host '✅ GitHub Copilot instructions LOADED' -ForegroundColor Green
-Write-Host '✅ Evidence generation ENABLED' -ForegroundColor Green
-Write-Host '🏛️ All AI agents now operate under constitutional mandates.' -ForegroundColor White"
+Write-Host 'Constitutional compliance ACTIVE' -ForegroundColor Green
+Write-Host 'GitHub Copilot instructions LOADED' -ForegroundColor Green
+Write-Host 'Evidence generation ENABLED' -ForegroundColor Green
+Write-Host 'All AI agents now operate under constitutional mandates.' -ForegroundColor White"
 
 $activationScript | Out-File -FilePath $ActivationPath -Encoding UTF8
 
 Write-Host ""
-Write-Host "🎉 CODOR Installation Complete!" -ForegroundColor Green
-Write-Host "================================" -ForegroundColor Cyan
+Write-Host "CODOR Installation Complete!" -ForegroundColor Green
+Write-Host "============================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "✅ Installed Components:" -ForegroundColor Yellow
-Write-Host "   • Constitutional framework (v3.4)" -ForegroundColor White
-Write-Host "   • GitHub Copilot integration (.copilot-instructions.md)" -ForegroundColor White
-Write-Host "   • Evidence generation system (.codor/evidence/)" -ForegroundColor White
-Write-Host "   • Project configuration ($ProjectType)" -ForegroundColor White
+Write-Host "Installed Components:" -ForegroundColor Yellow
+Write-Host "  * Constitutional framework (v3.4)" -ForegroundColor White
+Write-Host "  * GitHub Copilot integration (.copilot-instructions.md)" -ForegroundColor White
+Write-Host "  * Evidence generation system (.codor/evidence/)" -ForegroundColor White
+Write-Host "  * Project configuration ($ProjectType)" -ForegroundColor White
 Write-Host ""
-Write-Host "🎯 Next Steps:" -ForegroundColor Yellow
+Write-Host "Next Steps:" -ForegroundColor Yellow
 Write-Host "1. .\.codor\activate.ps1" -ForegroundColor White
 Write-Host "2. Restart VS Code" -ForegroundColor White
 Write-Host "3. Start developing with constitutional compliance!" -ForegroundColor White
 Write-Host ""
-Write-Host "🏛️ Constitutional compliance ready!" -ForegroundColor Cyan
+Write-Host "Constitutional compliance ready!" -ForegroundColor Cyan
