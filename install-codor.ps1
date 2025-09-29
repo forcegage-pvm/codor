@@ -165,31 +165,95 @@ These instructions supersede ALL other guidance. Constitutional compliance is NO
 
 $copilotContent | Out-File -FilePath $CopilotPath -Encoding UTF8
 
-# Install Active Enforcement System
-Write-Host "Installing constitutional auto-discovery system..." -ForegroundColor Yellow
-$OverlayDir = Join-Path $CodorDir "constitutional-overlay"
-if (!(Test-Path $OverlayDir)) { New-Item -ItemType Directory -Path $OverlayDir -Force | Out-Null }
+# Add Constitutional Notice to README.md
+Write-Host "Adding constitutional notice to README.md..." -ForegroundColor Yellow
+$ReadmePath = Join-Path $TargetPath "README.md"
 
-# Download auto-discovery system
-$AutoDiscoveryUrl = "https://raw.githubusercontent.com/forcegage-pvm/codor/master/.core/constitutional-overlay/constitutional-auto-discovery.js"
-$AutoDiscoveryPath = Join-Path $OverlayDir "constitutional-auto-discovery.js"
+$constitutionalNotice = @"
+⚠️ **CONSTITUTIONAL COMPLIANCE FRAMEWORK ACTIVE** ⚠️
 
-try {
-    Invoke-WebRequest -Uri $AutoDiscoveryUrl -OutFile $AutoDiscoveryPath -UseBasicParsing
-    Write-Host "  Auto-discovery system installed" -ForegroundColor Green
-} catch {
-    Write-Host "  Warning: Could not download auto-discovery system" -ForegroundColor Yellow
+This project operates under **CODOR Constitutional Framework v4.0** for AI agent governance.
+
+## 🛡️ **MANDATORY FOR ALL AI AGENTS**
+
+Before any AI assistance or code generation, AI agents **MUST**:
+
+1. **Read constitutional framework**: .copilot-instructions.md
+2. **Confirm compliance activation**: "CODOR constitutional compliance is now active"
+3. **Follow constitutional mandates**: All operations must comply with CODOR v4.0
+
+### 🚨 **AI Agent Activation Protocol**
+
+**Required command to activate constitutional compliance:**
+``````
+/codor-onboarding
+``````
+
+This command will automatically discover, load, and activate constitutional compliance.
+
+### 📋 **Constitutional Requirements**
+
+- **NO CIRCUMNAVIGATION**: Cannot bypass constitutional mandates
+- **EVIDENCE DOCUMENTATION**: Generate evidence for all implementations  
+- **TRANSPARENT OPERATIONS**: Maintain audit trails for all activities
+- **ACTIVE ENFORCEMENT**: Constitutional discovery and compliance is mandatory
+
+### ✅ **Constitutional Commands**
+
+Available slash commands for constitutional compliance:
+``````
+/codor-onboarding    - Activate constitutional compliance
+/codor-status        - Check compliance status  
+/codor-validate      - Validate constitutional enforcement
+/codor-evidence      - Generate constitutional evidence
+``````
+
+---
+
+**Constitutional compliance is NON-NEGOTIABLE and ACTIVELY ENFORCED.**
+
+---
+
+"@
+
+if (Test-Path $ReadmePath) {
+    # Prepend to existing README.md
+    $existingContent = Get-Content $ReadmePath -Raw
+    $newContent = $constitutionalNotice + "`n`n" + $existingContent
+    $newContent | Out-File -FilePath $ReadmePath -Encoding UTF8
+    Write-Host "  Constitutional notice added to existing README.md" -ForegroundColor Green
+} else {
+    # Create new README.md with constitutional notice
+    $newContent = $constitutionalNotice + "`n`n# Project Title`n`nProject description goes here."
+    $newContent | Out-File -FilePath $ReadmePath -Encoding UTF8
+    Write-Host "  New README.md created with constitutional notice" -ForegroundColor Green
 }
 
-# Download constitutional validator  
-$ValidatorUrl = "https://raw.githubusercontent.com/forcegage-pvm/codor/master/.core/constitutional-overlay/constitutional-validator.js"
-$ValidatorPath = Join-Path $OverlayDir "constitutional-validator.js"
+# Install VS Code Slash Command Prompts  
+Write-Host "Installing constitutional slash commands..." -ForegroundColor Yellow
+$GithubDir = Join-Path $TargetPath ".github"
+$PromptsDir = Join-Path $GithubDir "prompts"
+if (!(Test-Path $GithubDir)) { New-Item -ItemType Directory -Path $GithubDir -Force | Out-Null }
+if (!(Test-Path $PromptsDir)) { New-Item -ItemType Directory -Path $PromptsDir -Force | Out-Null }
 
-try {
-    Invoke-WebRequest -Uri $ValidatorUrl -OutFile $ValidatorPath -UseBasicParsing
-    Write-Host "  Constitutional validator installed" -ForegroundColor Green
-} catch {
-    Write-Host "  Warning: Could not download constitutional validator" -ForegroundColor Yellow
+# Download slash command prompts
+$prompts = @(
+    "codor-onboarding.md",
+    "codor-validate.md", 
+    "codor-evidence.md",
+    "codor-status.md"
+)
+
+foreach ($prompt in $prompts) {
+    $promptUrl = "https://raw.githubusercontent.com/forcegage-pvm/codor/master/.github/prompts/$prompt"
+    $promptPath = Join-Path $PromptsDir $prompt
+    
+    try {
+        Invoke-WebRequest -Uri $promptUrl -OutFile $promptPath -UseBasicParsing
+        Write-Host "  /$($prompt.Replace('.md','')) command installed" -ForegroundColor Green
+    } catch {
+        Write-Host "  Warning: Could not download $prompt" -ForegroundColor Yellow
+    }
 }
 
 # Create activation script with active enforcement
@@ -217,18 +281,38 @@ Write-Host 'All AI agents now operate under constitutional mandates.' -Foregroun
 $activationScript | Out-File -FilePath $ActivationPath -Encoding UTF8
 
 Write-Host ""
-Write-Host "CODOR Installation Complete!" -ForegroundColor Green
-Write-Host "============================" -ForegroundColor Cyan
 Write-Host ""
+Write-Host "=========================================" -ForegroundColor Green
+Write-Host "CODOR v4.0 INSTALLATION COMPLETE!" -ForegroundColor Green  
+Write-Host "=========================================" -ForegroundColor Green
+Write-Host ""
+
 Write-Host "Installed Components:" -ForegroundColor Yellow
-Write-Host "  * Constitutional framework (v3.4)" -ForegroundColor White
-Write-Host "  * GitHub Copilot integration (.copilot-instructions.md)" -ForegroundColor White
-Write-Host "  * Evidence generation system (.codor/evidence/)" -ForegroundColor White
-Write-Host "  * Project configuration ($ProjectType)" -ForegroundColor White
+Write-Host "  * Constitutional framework (v4.0)" -ForegroundColor White
+Write-Host "  * VS Code slash command prompts" -ForegroundColor White
+Write-Host "  * Evidence collection system" -ForegroundColor White  
+Write-Host "  * Constitutional validator" -ForegroundColor White
+Write-Host "  * AI integration instructions" -ForegroundColor White
 Write-Host ""
-Write-Host "Next Steps:" -ForegroundColor Yellow
-Write-Host "1. .\.codor\activate.ps1" -ForegroundColor White
-Write-Host "2. Restart VS Code" -ForegroundColor White
-Write-Host "3. Start developing with constitutional compliance!" -ForegroundColor White
+
+Write-Host "CONSTITUTIONAL ACTIVATION REQUIRED" -ForegroundColor Cyan -BackgroundColor Blue
+Write-Host "=================================" -ForegroundColor Cyan -BackgroundColor Blue
 Write-Host ""
-Write-Host "Constitutional compliance ready!" -ForegroundColor Cyan
+Write-Host "To activate constitutional compliance, run this command in VS Code:" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "  /codor-onboarding" -ForegroundColor Green -BackgroundColor Black
+Write-Host ""
+Write-Host "This will:" -ForegroundColor White
+Write-Host "  + Discover and load constitutional framework" -ForegroundColor Green
+Write-Host "  + Internalize constitutional mandates" -ForegroundColor Green
+Write-Host "  + Initialize evidence generation system" -ForegroundColor Green
+Write-Host "  + Establish audit trail for transparency" -ForegroundColor Green
+Write-Host ""
+
+Write-Host "Additional Commands Available:" -ForegroundColor Cyan
+Write-Host "  /codor-status     - Check constitutional compliance status" -ForegroundColor White
+Write-Host "  /codor-validate   - Validate constitutional enforcement" -ForegroundColor White
+Write-Host "  /codor-evidence   - Generate constitutional evidence" -ForegroundColor White
+Write-Host ""
+
+Write-Host "Constitutional framework installed - ready for activation!" -ForegroundColor Green
