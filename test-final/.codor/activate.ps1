@@ -6,7 +6,7 @@ Write-Host 'Active enforcement prevents passive non-compliance' -ForegroundColor
 $env:CODOR_ACTIVE = 'true'
 $env:CODOR_VERSION = '4.0'
 $env:CODOR_LEVEL = '2'
-$env:CODOR_PATH = 'D:\Dropbox\Repositories\Python\codor\test-complete-system\.codor'
+$env:CODOR_PATH = 'D:\Dropbox\Repositories\Python\codor\test-final\.codor'
 $env:CONSTITUTIONAL_COMPLIANCE = 'ACTIVE'
 
 Write-Host 'Constitutional compliance ACTIVELY ENFORCED' -ForegroundColor Green

@@ -239,10 +239,10 @@ if (!(Test-Path $PromptsDir)) { New-Item -ItemType Directory -Path $PromptsDir -
 
 # Download slash command prompts
 $prompts = @(
-    "codor-onboarding.md",
-    "codor-validate.md", 
-    "codor-evidence.md",
-    "codor-status.md"
+    "codor-onboarding.prompt.md",
+    "codor-validate.prompt.md", 
+    "codor-evidence.prompt.md",
+    "codor-status.prompt.md"
 )
 
 foreach ($prompt in $prompts) {
@@ -251,11 +251,39 @@ foreach ($prompt in $prompts) {
     
     try {
         Invoke-WebRequest -Uri $promptUrl -OutFile $promptPath -UseBasicParsing
-        Write-Host "  /$($prompt.Replace('.md','')) command installed" -ForegroundColor Green
+        Write-Host "  /$($prompt.Replace('.prompt.md','')) command installed" -ForegroundColor Green
     }
     catch {
         Write-Host "  Warning: Could not download $prompt" -ForegroundColor Yellow
     }
+}
+
+# Create VS Code workspace settings to enable prompt files
+$VsCodeDir = Join-Path $TargetPath ".vscode"
+if (!(Test-Path $VsCodeDir)) { New-Item -ItemType Directory -Path $VsCodeDir -Force | Out-Null }
+
+$VsCodeSettingsPath = Join-Path $VsCodeDir "settings.json"
+$VsCodeSettings = @{
+    "chat.promptFiles" = $true
+}
+
+if (Test-Path $VsCodeSettingsPath) {
+    # Merge with existing settings
+    try {
+        $existingSettings = Get-Content $VsCodeSettingsPath -Raw | ConvertFrom-Json
+        $existingSettings | Add-Member -MemberType NoteProperty -Name "chat.promptFiles" -Value $true -Force
+        $existingSettings | ConvertTo-Json -Depth 10 | Set-Content $VsCodeSettingsPath
+        Write-Host "  VS Code settings updated to enable prompt files" -ForegroundColor Green
+    } catch {
+        # If parsing fails, backup and create new
+        Copy-Item $VsCodeSettingsPath "$VsCodeSettingsPath.backup" -Force
+        $VsCodeSettings | ConvertTo-Json -Depth 10 | Set-Content $VsCodeSettingsPath
+        Write-Host "  VS Code settings created (original backed up)" -ForegroundColor Green
+    }
+} else {
+    # Create new settings file
+    $VsCodeSettings | ConvertTo-Json -Depth 10 | Set-Content $VsCodeSettingsPath
+    Write-Host "  VS Code settings created to enable prompt files" -ForegroundColor Green
 }
 
 # Create activation script with active enforcement
