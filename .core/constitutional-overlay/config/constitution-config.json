@@ -1,0 +1,156 @@
+{
+  "name": "constitutional-overlay-system",
+  "version": "3.4.0",
+  "description": "Constitutional compliance overlay for GitHub Spec Kit",
+  "type": "Constitutional Extension System",
+  "generated": "2025-09-29",
+  "constitutionSource": ".specify/memory/constitution.md",
+  "mandates": {
+    "MANDATE_8": {
+      "title": "ANTI-CIRCUMNAVIGATION ENFORCEMENT",
+      "antiCircumnavigation": true,
+      "fraudDetection": {
+        "screenshots": true,
+        "mcpResponses": true,
+        "evidenceIntegrity": true
+      }
+    },
+    "MANDATE_9": {
+      "title": "EVIDENCE INTEGRITY ENFORCEMENT", 
+      "evidenceFirst": true,
+      "fraudDetection": {
+        "screenshots": true,
+        "mcpResponses": true,
+        "evidenceIntegrity": true
+      }
+    },
+    "MANDATE_10": {
+      "title": "SUCCESSFUL COMPLIANCE ACHIEVEMENT",
+      "successPatterns": true,
+      "evidenceTemplates": true,
+      "complianceMetrics": true
+    },
+    "MANDATE_11": {
+      "title": "SPEC-TO-COMPLIANCE PIPELINE",
+      "specToCompliance": true,
+      "threeGateValidation": true,
+      "evidenceFirst": true,
+      "taskEnhancement": true
+    }
+  },
+  "validationGates": {
+    "preTask": {
+      "command": "node .specify/tools/pre-task-check.js",
+      "description": "Pre-execution validation and prerequisite checking",
+      "required": true
+    },
+    "mcpValidation": {
+      "mode": "conditional",
+      "description": "MCP browser testing for UI tasks",
+      "uiTasks": "required",
+      "serviceTasks": "not-applicable",
+      "apiTasks": "browser-testing"
+    },
+    "postTask": {
+      "command": "node .specify/tools/post-task-validation.js", 
+      "description": "Post-execution three-gate validation system",
+      "required": true
+    }
+  },
+  "evidenceRequirements": {
+    "mandatoryDirectory": "evidence/{taskId}/",
+    "structure": {
+      "screenshots": "Optional - MCP evidence preferred",
+      "mcpInteraction": "evidence/{taskId}/mcp-interaction.log",
+      "mcpResults": "evidence/{taskId}/mcp-test-results.json",
+      "functionalTests": "evidence/{taskId}/functional-test-results.json",
+      "constitutionalEvidence": "evidence/{taskId}/constitutional-evidence.md"
+    },
+    "mcpTesting": {
+      "uiTasks": "required",
+      "serviceTasks": "not-applicable",
+      "apiTasks": "browser-testing",
+      "testTasks": "not-applicable",
+      "setupTasks": "not-applicable"
+    },
+    "qualityStandards": {
+      "mcpResponseSize": "4KB+ for authentic data extraction",
+      "documentationLines": "300+ lines for comprehensive evidence",
+      "testSuccessRate": "100% for constitutional compliance",
+      "errorTolerance": "Zero compilation and linting errors"
+    }
+  },
+  "taskEnhancement": {
+    "classification": {
+      "ui": "Browser testing required with interaction validation",
+      "api": "Network tab validation and response testing",
+      "service": "Service layer implementation with unit tests",
+      "test": "Test implementation and execution validation",
+      "setup": "Configuration validation and setup verification"
+    },
+    "antiHallucination": {
+      "noTaskCompletionWithoutEvidence": true,
+      "mandatoryValidationGates": true,
+      "evidenceDirectoryRequired": true,
+      "constitutionalAuditRequired": true
+    }
+  },
+  "fraudDetection": {
+    "screenshotFraud": {
+      "enabled": true,
+      "minFileSize": 100,
+      "timestampClustering": true,
+      "contentInspection": true
+    },
+    "mcpResponseFraud": {
+      "enabled": true,
+      "minResponseSize": 200,
+      "formatValidation": true,
+      "structureValidation": true
+    },
+    "constitutionalCompliance": {
+      "enabled": true,
+      "levelValidation": true,
+      "completionFramework": "LEVEL 0-5",
+      "evidenceBackingRequired": true
+    }
+  },
+  "integration": {
+    "vanillaSpecKit": {
+      "preserveOriginal": true,
+      "extensionMethod": "composition",
+      "interceptorPattern": true,
+      "backwardCompatible": true
+    },
+    "commands": {
+      "tasks": "Enhanced with constitutional requirements",
+      "plan": "Enhanced with constitutional checks", 
+      "implement": "Enhanced with validation gates",
+      "specify": "Enhanced with constitutional requirements"
+    }
+  },
+  "tools": {
+    "constitutionalChecker": ".specify/tools/constitutional-checker.js",
+    "preTaskCheck": ".specify/tools/pre-task-check.js",
+    "postTaskValidation": ".specify/tools/post-task-validation.js",
+    "constitutionalAudit": ".specify/tools/constitutional-audit.js",
+    "mcpEvidenceValidator": ".specify/tools/mcp-evidence-validator.js"
+  },
+  "activation": {
+    "command": "node .specify/constitutional/activate.js",
+    "requirements": [
+      "GitHub Spec Kit project (.specify directory)",
+      "Constitution file (.specify/memory/constitution.md)",
+      "Node.js environment for validation tools"
+    ],
+    "options": {
+      "force": "Skip validation and overwrite existing",
+      "dryRun": "Preview changes without modification"
+    }
+  },
+  "compatibility": {
+    "specKitVersion": ">=0.0.54",
+    "nodeVersion": ">=14.0.0",
+    "constitutionVersion": ">=3.4"
+  }
+}
