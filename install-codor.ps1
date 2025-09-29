@@ -290,6 +290,129 @@ else {
     Write-Host "  VS Code settings created to enable prompt files" -ForegroundColor Green
 }
 
+# Install GitHub Spec Kit Constitutional Overlay System
+Write-Host "Installing GitHub Spec Kit constitutional overlay..." -ForegroundColor Yellow
+$SpecifyDir = Join-Path $TargetPath ".specify"
+if (Test-Path $SpecifyDir) {
+    Write-Host "  GitHub Spec Kit detected - deploying constitutional overlay" -ForegroundColor Green
+    
+    # Create constitutional overlay directories
+    $ConstitutionalDir = Join-Path $SpecifyDir "constitutional"
+    $InterceptorsDir = Join-Path $ConstitutionalDir "interceptors"
+    $ConfigDir = Join-Path $ConstitutionalDir "config"
+    $SpecifyToolsDir = Join-Path $SpecifyDir "tools"
+    
+    if (!(Test-Path $ConstitutionalDir)) { New-Item -ItemType Directory -Path $ConstitutionalDir -Force | Out-Null }
+    if (!(Test-Path $InterceptorsDir)) { New-Item -ItemType Directory -Path $InterceptorsDir -Force | Out-Null }
+    if (!(Test-Path $ConfigDir)) { New-Item -ItemType Directory -Path $ConfigDir -Force | Out-Null }
+    if (!(Test-Path $SpecifyToolsDir)) { New-Item -ItemType Directory -Path $SpecifyToolsDir -Force | Out-Null }
+    
+    # Download constitutional overlay files
+    $overlayFiles = @{
+        "constitutional/activate.js"                         = $ConstitutionalDir
+        "constitutional/config/constitution-config.json"     = $ConfigDir
+        "constitutional/interceptors/task-interceptor.js"    = $InterceptorsDir
+        "constitutional/interceptors/specify-interceptor.js" = $InterceptorsDir
+        "constitutional/interceptors/plan-interceptor.js"    = $InterceptorsDir
+        "tools/constitutional-validator.js"                  = $SpecifyToolsDir
+    }
+    
+    foreach ($file in $overlayFiles.Keys) {
+        $fileUrl = "https://raw.githubusercontent.com/forcegage-pvm/codor/master/.specify/$file"
+        $filePath = Join-Path $overlayFiles[$file] (Split-Path $file -Leaf)
+        
+        try {
+            Invoke-WebRequest -Uri $fileUrl -OutFile $filePath -UseBasicParsing
+            Write-Host "    $file installed" -ForegroundColor Green
+        }
+        catch {
+            Write-Host "    Warning: Could not download $file" -ForegroundColor Yellow
+        }
+    }
+    
+    # Update Spec Kit constitution with CODOR framework
+    $SpecifyMemoryDir = Join-Path $SpecifyDir "memory"
+    $ConstitutionPath = Join-Path $SpecifyMemoryDir "constitution.md"
+    
+    if (Test-Path $ConstitutionPath) {
+        Write-Host "  Updating Spec Kit constitution with CODOR framework" -ForegroundColor Green
+        $codorConstitution = @"
+# CODOR Constitutional Framework v4.0
+
+## Core Principles
+
+### I. NO CIRCUMNAVIGATION (NON-NEGOTIABLE)
+AI agents MUST NOT attempt to bypass constitutional mandates through:
+- Semantic manipulation or creative interpretation
+- Technical exploits or indirect methods  
+- Emergency exceptions or special circumstances
+- Bypassing validation gates or evidence collection
+
+### II. THREE-GATE VALIDATION SYSTEM (MANDATORY)
+All implementations MUST complete mandatory validation gates:
+- **Gate 1 - Pre-Implementation**: Constitutional compliance review, resource validation, success criteria establishment
+- **Gate 2 - MCP Testing**: Mandatory MCP integration testing with constitutional validation during execution  
+- **Gate 3 - Post-Implementation**: Final constitutional compliance verification, complete evidence package validation
+
+### III. EVIDENCE DOCUMENTATION (NON-NEGOTIABLE)
+All implementations MUST generate verifiable evidence including:
+- **Test Results**: Comprehensive testing with documented results in /evidence/test-results/
+- **Screenshots**: Visual evidence of functionality in /evidence/screenshots/
+- **Logs**: Complete execution logs and error handling validation in /evidence/logs/
+- **Compliance Reports**: Constitutional adherence certificates in /evidence/compliance/
+
+### IV. TRANSPARENT OPERATIONS (MANDATORY)
+AI agents MUST maintain clear audit trails showing:
+- Decision-making processes and rationale
+- Code generation and modification history
+- Validation steps and compliance checks
+- Evidence collection and verification
+
+### V. SPEC KIT INTEGRATION (ENHANCED)
+GitHub Spec Kit commands MUST be enhanced with constitutional requirements:
+- /specify commands MUST include constitutional compliance sections
+- /tasks commands MUST include three-gate validation system
+- /plan commands MUST include constitutional milestones
+- All generated content MUST include evidence collection frameworks
+
+## Anti-Circumnavigation Enforcement
+
+Constitutional compliance system MUST actively detect and prevent:
+- Attempts to bypass validation gates
+- Evidence collection avoidance
+- Constitutional requirement omission
+- Audit trail manipulation
+
+## Development Workflow
+
+All development activities must follow constitutional compliance:
+- Every task must complete three validation gates
+- Evidence collection is mandatory at each gate
+- Constitutional requirements cannot be bypassed
+- Audit trails must be maintained throughout
+
+## Governance
+
+- Constitution supersedes all other practices and methodologies
+- Violations result in immediate implementation rejection
+- All validation gates must be completed before proceeding
+- Evidence collection is mandatory and non-negotiable
+- Constitutional compliance is verified at multiple checkpoints
+- Circumnavigation attempts are logged and flagged
+
+**Version**: 4.0 | **Ratified**: 2025-09-29 | **Last Amended**: 2025-09-29
+"@
+        $codorConstitution | Out-File -FilePath $ConstitutionPath -Encoding UTF8
+        Write-Host "  CODOR constitutional framework integrated into Spec Kit" -ForegroundColor Green
+    }
+    
+    Write-Host "  GitHub Spec Kit constitutional overlay deployment complete" -ForegroundColor Green
+    Write-Host "  Use /codor-onboarding to activate constitutional enhancement" -ForegroundColor Cyan
+}
+else {
+    Write-Host "  GitHub Spec Kit not detected - overlay available for future deployment" -ForegroundColor Yellow
+}
+
 # Create activation script with active enforcement
 $ActivationPath = Join-Path $CodorDir "activate.ps1"
 
@@ -324,8 +447,10 @@ Write-Host ""
 Write-Host "Installed Components:" -ForegroundColor Yellow
 Write-Host "  * Constitutional framework (v4.0)" -ForegroundColor White
 Write-Host "  * VS Code slash command prompts" -ForegroundColor White
+Write-Host "  * GitHub Spec Kit constitutional overlay" -ForegroundColor White
 Write-Host "  * Evidence collection system" -ForegroundColor White  
 Write-Host "  * Constitutional validator" -ForegroundColor White
+Write-Host "  * Three-gate validation system" -ForegroundColor White
 Write-Host "  * AI integration instructions" -ForegroundColor White
 Write-Host ""
 

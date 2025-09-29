@@ -1,0 +1,25 @@
+{
+  "version": "4.0",
+  "constitutionSource": ".specify/memory/constitution.md",
+  "activeEnforcement": true,
+  "validationGates": {
+    "preTask": true,
+    "mcpTesting": true,
+    "postTask": true
+  },
+  "evidenceRequirement": {
+    "directory": "evidence",
+    "mandatoryArtifacts": ["test-results", "screenshots", "logs"]
+  },
+  "specKitIntegration": {
+    "interceptTasks": true,
+    "interceptPlan": true,
+    "interceptImplement": true,
+    "interceptSpecify": true
+  },
+  "antiCircumnavigation": {
+    "enabled": true,
+    "strictMode": true,
+    "auditTrail": true
+  }
+}

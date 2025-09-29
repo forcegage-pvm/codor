@@ -126,6 +126,123 @@ else
     echo "✓ VS Code settings created to enable prompt files"
 fi
 
+# Install GitHub Spec Kit Constitutional Overlay System
+echo "Installing GitHub Spec Kit constitutional overlay..."
+SPECIFY_DIR="$TARGET_PATH/.specify"
+if [ -d "$SPECIFY_DIR" ]; then
+    echo "✓ GitHub Spec Kit detected - deploying constitutional overlay"
+    
+    # Create constitutional overlay directories
+    CONSTITUTIONAL_DIR="$SPECIFY_DIR/constitutional"
+    INTERCEPTORS_DIR="$CONSTITUTIONAL_DIR/interceptors"
+    CONFIG_DIR="$CONSTITUTIONAL_DIR/config"
+    SPECIFY_TOOLS_DIR="$SPECIFY_DIR/tools"
+    
+    mkdir -p "$CONSTITUTIONAL_DIR" "$INTERCEPTORS_DIR" "$CONFIG_DIR" "$SPECIFY_TOOLS_DIR"
+    
+    # Download constitutional overlay files
+    declare -A OVERLAY_FILES=(
+        ["constitutional/activate.js"]="$CONSTITUTIONAL_DIR"
+        ["constitutional/config/constitution-config.json"]="$CONFIG_DIR"
+        ["constitutional/interceptors/task-interceptor.js"]="$INTERCEPTORS_DIR"
+        ["constitutional/interceptors/specify-interceptor.js"]="$INTERCEPTORS_DIR"
+        ["constitutional/interceptors/plan-interceptor.js"]="$INTERCEPTORS_DIR"
+        ["tools/constitutional-validator.js"]="$SPECIFY_TOOLS_DIR"
+    )
+    
+    for file_path in "${!OVERLAY_FILES[@]}"; do
+        file_url="$CODOR_REPO/.specify/$file_path"
+        file_name=$(basename "$file_path")
+        dest_path="${OVERLAY_FILES[$file_path]}/$file_name"
+        
+        if curl -fsSL "$file_url" -o "$dest_path"; then
+            echo "  ✓ $file_path installed"
+        else
+            echo "  ✗ Warning: Could not download $file_path"
+        fi
+    done
+    
+    # Update Spec Kit constitution with CODOR framework
+    SPECIFY_MEMORY_DIR="$SPECIFY_DIR/memory"
+    CONSTITUTION_PATH="$SPECIFY_MEMORY_DIR/constitution.md"
+    
+    if [ -f "$CONSTITUTION_PATH" ]; then
+        echo "  ✓ Updating Spec Kit constitution with CODOR framework"
+        cat > "$CONSTITUTION_PATH" << 'EOF'
+# CODOR Constitutional Framework v4.0
+
+## Core Principles
+
+### I. NO CIRCUMNAVIGATION (NON-NEGOTIABLE)
+AI agents MUST NOT attempt to bypass constitutional mandates through:
+- Semantic manipulation or creative interpretation
+- Technical exploits or indirect methods  
+- Emergency exceptions or special circumstances
+- Bypassing validation gates or evidence collection
+
+### II. THREE-GATE VALIDATION SYSTEM (MANDATORY)
+All implementations MUST complete mandatory validation gates:
+- **Gate 1 - Pre-Implementation**: Constitutional compliance review, resource validation, success criteria establishment
+- **Gate 2 - MCP Testing**: Mandatory MCP integration testing with constitutional validation during execution  
+- **Gate 3 - Post-Implementation**: Final constitutional compliance verification, complete evidence package validation
+
+### III. EVIDENCE DOCUMENTATION (NON-NEGOTIABLE)
+All implementations MUST generate verifiable evidence including:
+- **Test Results**: Comprehensive testing with documented results in /evidence/test-results/
+- **Screenshots**: Visual evidence of functionality in /evidence/screenshots/
+- **Logs**: Complete execution logs and error handling validation in /evidence/logs/
+- **Compliance Reports**: Constitutional adherence certificates in /evidence/compliance/
+
+### IV. TRANSPARENT OPERATIONS (MANDATORY)
+AI agents MUST maintain clear audit trails showing:
+- Decision-making processes and rationale
+- Code generation and modification history
+- Validation steps and compliance checks
+- Evidence collection and verification
+
+### V. SPEC KIT INTEGRATION (ENHANCED)
+GitHub Spec Kit commands MUST be enhanced with constitutional requirements:
+- /specify commands MUST include constitutional compliance sections
+- /tasks commands MUST include three-gate validation system
+- /plan commands MUST include constitutional milestones
+- All generated content MUST include evidence collection frameworks
+
+## Anti-Circumnavigation Enforcement
+
+Constitutional compliance system MUST actively detect and prevent:
+- Attempts to bypass validation gates
+- Evidence collection avoidance
+- Constitutional requirement omission
+- Audit trail manipulation
+
+## Development Workflow
+
+All development activities must follow constitutional compliance:
+- Every task must complete three validation gates
+- Evidence collection is mandatory at each gate
+- Constitutional requirements cannot be bypassed
+- Audit trails must be maintained throughout
+
+## Governance
+
+- Constitution supersedes all other practices and methodologies
+- Violations result in immediate implementation rejection
+- All validation gates must be completed before proceeding
+- Evidence collection is mandatory and non-negotiable
+- Constitutional compliance is verified at multiple checkpoints
+- Circumnavigation attempts are logged and flagged
+
+**Version**: 4.0 | **Ratified**: 2025-09-29 | **Last Amended**: 2025-09-29
+EOF
+        echo "  ✓ CODOR constitutional framework integrated into Spec Kit"
+    fi
+    
+    echo "  ✓ GitHub Spec Kit constitutional overlay deployment complete"
+    echo "  ✓ Use /codor-onboarding to activate constitutional enhancement"
+else
+    echo "  ⚠ GitHub Spec Kit not detected - overlay available for future deployment"
+fi
+
 # Detect project type
 echo "Detecting project type..."
 
@@ -264,8 +381,10 @@ echo ""
 echo "Installed Components:"
 echo "  * Constitutional framework (v4.0)"
 echo "  * VS Code slash command prompts"
+echo "  * GitHub Spec Kit constitutional overlay"
 echo "  * Evidence collection system"
 echo "  * Constitutional validator"
+echo "  * Three-gate validation system"
 echo "  * AI integration instructions"
 echo ""
 echo "CONSTITUTIONAL ACTIVATION REQUIRED"
