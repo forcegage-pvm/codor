@@ -65,10 +65,10 @@ Write-Host "Detected project type: $ProjectType" -ForegroundColor Green
 # Create project config
 $ConfigPath = Join-Path $CodorDir "project-config.json"
 $config = @{
-    projectType = $ProjectType
-    installedDate = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+    projectType         = $ProjectType
+    installedDate       = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
     constitutionVersion = "3.4"
-    level = 2
+    level               = 2
 } | ConvertTo-Json
 
 $config | Out-File -FilePath $ConfigPath -Encoding UTF8
@@ -222,7 +222,8 @@ if (Test-Path $ReadmePath) {
     $newContent = $constitutionalNotice + "`n`n" + $existingContent
     $newContent | Out-File -FilePath $ReadmePath -Encoding UTF8
     Write-Host "  Constitutional notice added to existing README.md" -ForegroundColor Green
-} else {
+}
+else {
     # Create new README.md with constitutional notice
     $newContent = $constitutionalNotice + "`n`n# Project Title`n`nProject description goes here."
     $newContent | Out-File -FilePath $ReadmePath -Encoding UTF8
@@ -251,7 +252,8 @@ foreach ($prompt in $prompts) {
     try {
         Invoke-WebRequest -Uri $promptUrl -OutFile $promptPath -UseBasicParsing
         Write-Host "  /$($prompt.Replace('.md','')) command installed" -ForegroundColor Green
-    } catch {
+    }
+    catch {
         Write-Host "  Warning: Could not download $prompt" -ForegroundColor Yellow
     }
 }
