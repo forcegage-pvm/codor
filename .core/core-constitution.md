@@ -328,7 +328,47 @@ validateCompletionLevel(content) {
 - **Error Rate**: Zero TypeScript compilation and linting errors
 - **Business Logic Coverage**: Complete API functionality with 3 quotes, pagination, filters, summaries
 
-### MANDATE 11: CONTINUOUS CONSTITUTIONAL IMPROVEMENT
+### MANDATE 11: SPEC-TO-COMPLIANCE PIPELINE
+**Principle**: Bridge feature specifications to constitutional compliance through amended GitHub Spec Kit integration
+
+**Constitutional Spec Kit Workflow**:
+1. **Feature Specification** → `/specify` command with constitutional requirements
+2. **Implementation Planning** → `/plan` command with constitutional checks and three-gate validation
+3. **Task Generation** → `/tasks` command with mandatory validation gates per task
+4. **Evidence Collection** → Three-gate validation system with anti-circumnavigation enforcement
+5. **Constitutional Audit** → Comprehensive compliance verification using production fraud detection tools
+
+**Mandatory Task Amendments** (Applied to Vanilla GitHub Spec Kit):
+```markdown
+- [ ] T004 [P] Contract test GET /api/quotes in packages/web/tests/contract/quotes-get.test.ts
+  - Evidence: evidence/T004/ with failing test results, contract test coverage
+  - MCP: Browser test quote list API endpoint with network tab validation
+  - Validation: node .specify/tools/pre-task-check.js T004
+  - Completion: node .specify/tools/post-task-validation.js T004
+```
+
+**Anti-Hallucination Protocol Integration**:
+- **Constitutional Enforcement**: ALL tasks protected by Constitutional Amendments 1-3
+- **Evidence Directory Requirement**: `evidence/[taskId]/` with mandatory artifacts
+- **MCP Testing Mandate**: Browser testing REQUIRED for ALL UI functionality
+- **Validation Gate Integration**: Pre-task and post-task validation with constitutional compliance checking
+- **NO Task Completion**: Without passing all three validation gates
+
+**Production-Grade Integration Tools**:
+- `constitutional-checker.js` - Validates completion claims against evidence
+- `pre-task-check.js` - Pre-execution validation and prerequisite checking
+- `post-task-validation.js` - Post-execution three-gate validation system  
+- `mcp-evidence-validator.js` - MCP browser testing validation and fraud detection
+- `constitutional-audit.js` - Comprehensive compliance auditing across all tasks
+
+**Success Achievement Pattern** (Based on T004 Integration):
+- Feature specification generates 25-30 constitutionally compliant tasks
+- Each task includes mandatory evidence collection requirements
+- Three-gate validation system prevents circumnavigation at task level
+- Constitutional audit ensures 100% compliance before feature completion
+- Production fraud detection tools achieve 100% detection rates
+
+### MANDATE 12: CONTINUOUS CONSTITUTIONAL IMPROVEMENT
 **Principle**: Framework evolution based on real-world usage and circumnavigation attempts
 
 **Improvement Process**:
@@ -339,6 +379,7 @@ validateCompletionLevel(content) {
 - Regular constitutional effectiveness auditing
 - **Real-world fraud pattern integration**: Update framework based on actual circumnavigation attempts
 - **Success pattern integration**: Update framework based on proven compliance achievements
+- **Spec Kit enhancement**: Continuous improvement of constitutional amendments to GitHub Spec Kit
 
 ---
 
@@ -581,6 +622,7 @@ validation_first_architecture:
 
 ## VERSION HISTORY
 
+- **Version 3.4** (September 2025): Spec-to-compliance pipeline integration, GitHub Spec Kit constitutional amendments, feature specification workflow with three-gate validation
 - **Version 3.3** (September 2025): Successful compliance achievement patterns, T004 case study integration, evidence template library, excellence metrics and quality benchmarks
 - **Version 3.2** (September 2025): Production-grade validation architecture, battle-tested JavaScript fraud detection code, three-gate constitutional system, 100% fraud detection rates
 - **Version 3.1** (September 2025): Enhanced anti-fraud measures based on real-world AI agent circumnavigation attempts, evidence integrity enforcement, psychological pattern prevention
