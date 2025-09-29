@@ -6,6 +6,8 @@ param([string]$TargetDir = ".")
 Write-Host "CODOR Constitutional Framework - Complete Installation" -ForegroundColor Cyan
 Write-Host "=====================================================" -ForegroundColor Cyan
 
+# Create target directory if it doesn't exist
+if (!(Test-Path $TargetDir)) { New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null }
 $TargetPath = Resolve-Path $TargetDir
 Write-Host "Installing CODOR to: $TargetPath" -ForegroundColor Green
 
