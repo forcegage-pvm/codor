@@ -1,5 +1,6 @@
-# CODOR Constitutional Framework - Complete Installer
+# CODOR Constitutional Framework - Complete Installer  
 # Usage: .\install-codor.ps1 [target-directory]
+# Clean ASCII version - no Unicode characters
 param([string]$TargetDir = ".")
 
 Write-Host "CODOR Constitutional Framework - Complete Installation" -ForegroundColor Cyan
@@ -64,10 +65,10 @@ Write-Host "Detected project type: $ProjectType" -ForegroundColor Green
 # Create project config
 $ConfigPath = Join-Path $CodorDir "project-config.json"
 $config = @{
-    projectType         = $ProjectType
-    installedDate       = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+    projectType = $ProjectType
+    installedDate = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
     constitutionVersion = "3.4"
-    level               = 2
+    level = 2
 } | ConvertTo-Json
 
 $config | Out-File -FilePath $ConfigPath -Encoding UTF8
