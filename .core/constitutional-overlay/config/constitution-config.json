@@ -16,7 +16,7 @@
       }
     },
     "MANDATE_9": {
-      "title": "EVIDENCE INTEGRITY ENFORCEMENT", 
+      "title": "EVIDENCE INTEGRITY ENFORCEMENT",
       "evidenceFirst": true,
       "fraudDetection": {
         "screenshots": true,
@@ -52,7 +52,7 @@
       "apiTasks": "browser-testing"
     },
     "postTask": {
-      "command": "node .specify/tools/post-task-validation.js", 
+      "command": "node .specify/tools/post-task-validation.js",
       "description": "Post-execution three-gate validation system",
       "required": true
     }
@@ -124,7 +124,7 @@
     },
     "commands": {
       "tasks": "Enhanced with constitutional requirements",
-      "plan": "Enhanced with constitutional checks", 
+      "plan": "Enhanced with constitutional checks",
       "implement": "Enhanced with validation gates",
       "specify": "Enhanced with constitutional requirements"
     }

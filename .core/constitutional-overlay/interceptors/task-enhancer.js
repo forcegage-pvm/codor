@@ -1,15 +1,15 @@
 /**
- * Task Enhancement Layer  
+ * Task Enhancement Layer
  * Extends vanilla GitHub Spec Kit tasks with constitutional requirements
- * 
+ *
  * This module takes vanilla task markdown and enhances it with:
  * - Evidence directory requirements
- * - Three-gate validation system  
+ * - Three-gate validation system
  * - MCP testing requirements
  * - Anti-circumnavigation protocols
  */
 
-const fs = require('fs').promises;
+const fs = require("fs").promises;
 
 class TaskEnhancer {
   constructor(config) {
@@ -17,17 +17,17 @@ class TaskEnhancer {
   }
 
   async enhance(vanillaTasksContent) {
-    console.log('🔧 Parsing vanilla tasks...');
-    
+    console.log("🔧 Parsing vanilla tasks...");
+
     // Parse the vanilla tasks content
-    const lines = vanillaTasksContent.split('\n');
+    const lines = vanillaTasksContent.split("\n");
     const enhancedLines = [];
     let currentTask = null;
     let taskCount = 0;
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      
+
       // Check if this line is a task
       if (this.isTaskLine(line)) {
         // If we have a previous task, enhance it
@@ -36,16 +36,15 @@ class TaskEnhancer {
           enhancedLines.push(...enhancedTask);
           taskCount++;
         }
-        
+
         // Start new task
         currentTask = {
           originalLine: line,
           lineNumber: i,
           id: this.extractTaskId(line),
           description: this.extractTaskDescription(line),
-          isParallel: line.includes('[P]')
+          isParallel: line.includes("[P]"),
         };
-        
       } else {
         // If we're not in a task, add the line as-is
         if (!currentTask) {
@@ -67,28 +66,30 @@ class TaskEnhancer {
       enhancedLines.unshift(...headerLines);
     }
 
-    console.log(`✅ Enhanced ${taskCount} tasks with constitutional requirements`);
-    return enhancedLines.join('\n');
+    console.log(
+      `✅ Enhanced ${taskCount} tasks with constitutional requirements`
+    );
+    return enhancedLines.join("\n");
   }
 
   isTaskLine(line) {
     // Matches patterns like:
     // - [ ] T001 Description
-    // - [ ] T008 [P] Description  
+    // - [ ] T008 [P] Description
     return /^- \[ \] T\d+/.test(line.trim());
   }
 
   extractTaskId(line) {
     const match = line.match(/T(\d+)/);
-    return match ? match[0] : 'T000';
+    return match ? match[0] : "T000";
   }
 
   extractTaskDescription(line) {
     // Remove checkbox, task ID, and [P] marker to get description
     const cleaned = line
-      .replace(/^- \[ \]/, '')
-      .replace(/T\d+/, '')
-      .replace(/\[P\]/, '')
+      .replace(/^- \[ \]/, "")
+      .replace(/T\d+/, "")
+      .replace(/\[P\]/, "")
       .trim();
     return cleaned;
   }
@@ -105,7 +106,7 @@ class TaskEnhancer {
       `  - MCP: ${mcpReqs}`,
       `  - Validation: ${validationGates.preTask}`,
       `  - Completion: ${validationGates.postTask}`,
-      '' // Empty line for readability
+      "", // Empty line for readability
     ];
 
     return enhancedLines;
@@ -113,36 +114,54 @@ class TaskEnhancer {
 
   classifyTask(task) {
     const desc = task.description.toLowerCase();
-    
-    if (desc.includes('ui') || desc.includes('component') || desc.includes('modal') || 
-        desc.includes('button') || desc.includes('form') || desc.includes('page')) {
-      return 'ui';
-    } else if (desc.includes('api') || desc.includes('endpoint') || desc.includes('route')) {
-      return 'api';
-    } else if (desc.includes('service') || desc.includes('model') || desc.includes('schema')) {
-      return 'service';
-    } else if (desc.includes('test') || desc.includes('contract')) {
-      return 'test';
-    } else if (desc.includes('setup') || desc.includes('config') || desc.includes('init')) {
-      return 'setup';
+
+    if (
+      desc.includes("ui") ||
+      desc.includes("component") ||
+      desc.includes("modal") ||
+      desc.includes("button") ||
+      desc.includes("form") ||
+      desc.includes("page")
+    ) {
+      return "ui";
+    } else if (
+      desc.includes("api") ||
+      desc.includes("endpoint") ||
+      desc.includes("route")
+    ) {
+      return "api";
+    } else if (
+      desc.includes("service") ||
+      desc.includes("model") ||
+      desc.includes("schema")
+    ) {
+      return "service";
+    } else if (desc.includes("test") || desc.includes("contract")) {
+      return "test";
+    } else if (
+      desc.includes("setup") ||
+      desc.includes("config") ||
+      desc.includes("init")
+    ) {
+      return "setup";
     }
-    
-    return 'general';
+
+    return "general";
   }
 
   generateEvidenceRequirements(task, type) {
     const baseEvidence = `evidence/${task.id}/ with`;
-    
+
     switch (type) {
-      case 'ui':
+      case "ui":
         return `${baseEvidence} component implementation, browser testing screenshots`;
-      case 'api':
+      case "api":
         return `${baseEvidence} endpoint implementation, contract test results`;
-      case 'service':
+      case "service":
         return `${baseEvidence} service implementation, unit test coverage`;
-      case 'test':
+      case "test":
         return `${baseEvidence} test implementation, test execution results`;
-      case 'setup':
+      case "setup":
         return `${baseEvidence} configuration changes, setup validation`;
       default:
         return `${baseEvidence} implementation artifacts, validation results`;
@@ -151,15 +170,15 @@ class TaskEnhancer {
 
   generateMCPRequirements(task, type) {
     switch (type) {
-      case 'ui':
+      case "ui":
         return `**REQUIRED** - Browser test ${task.description} with interaction validation`;
-      case 'api':
+      case "api":
         return `Browser test API endpoint with network tab validation`;
-      case 'test':
+      case "test":
         return `N/A (test implementation)`;
-      case 'service':
+      case "service":
         return `N/A (service layer)`;
-      case 'setup':
+      case "setup":
         return `N/A (configuration)`;
       default:
         return `Conditional based on task requirements`;
@@ -169,28 +188,28 @@ class TaskEnhancer {
   generateValidationGates(task) {
     return {
       preTask: `node .specify/tools/pre-task-check.js ${task.id}`,
-      postTask: `node .specify/tools/post-task-validation.js ${task.id}`
+      postTask: `node .specify/tools/post-task-validation.js ${task.id}`,
     };
   }
 
   generateConstitutionalHeader(taskCount) {
     return [
-      '',
-      '## Constitutional Enforcement (MANDATORY)',
-      '',
-      '**CRITICAL**: ALL tasks below are protected by Constitutional Amendments 1-3:',
-      '',
-      '- **Pre-Task Gate**: node .specify/tools/pre-task-check.js [taskId] - MUST pass before starting',
-      '- **Evidence Directory**: Create evidence/[taskId]/ with required artifacts', 
-      '- **MCP Browser Testing**: **REQUIRED** for ALL UI functionality - no exceptions',
-      '- **Post-Task Gate**: node .specify/tools/post-task-validation.js [taskId] - 3-gate validation',
-      '- **Constitutional Audit**: node .specify/tools/constitutional-audit.js - regular compliance checks',
-      '',
-      '**ANTI-HALLUCINATION PROTOCOL**: NO task completion marking [x] without validation evidence',
-      '',
+      "",
+      "## Constitutional Enforcement (MANDATORY)",
+      "",
+      "**CRITICAL**: ALL tasks below are protected by Constitutional Amendments 1-3:",
+      "",
+      "- **Pre-Task Gate**: node .specify/tools/pre-task-check.js [taskId] - MUST pass before starting",
+      "- **Evidence Directory**: Create evidence/[taskId]/ with required artifacts",
+      "- **MCP Browser Testing**: **REQUIRED** for ALL UI functionality - no exceptions",
+      "- **Post-Task Gate**: node .specify/tools/post-task-validation.js [taskId] - 3-gate validation",
+      "- **Constitutional Audit**: node .specify/tools/constitutional-audit.js - regular compliance checks",
+      "",
+      "**ANTI-HALLUCINATION PROTOCOL**: NO task completion marking [x] without validation evidence",
+      "",
       `**Enhanced Tasks**: ${taskCount} tasks enhanced with constitutional compliance requirements`,
-      '',
-      ''
+      "",
+      "",
     ];
   }
 }
