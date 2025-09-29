@@ -2,7 +2,7 @@
 # Usage: .\install-codor.ps1 [target-directory]
 
 param(
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory = $false)]
     [string]$TargetDir = "."
 )
 
@@ -31,48 +31,50 @@ $ConstitutionPath = Join-Path $CoreDir "constitution.md"
 try {
     Invoke-WebRequest -Uri $ConstitutionUrl -OutFile $ConstitutionPath -ErrorAction Stop
     Write-Host "✓ Constitution downloaded successfully" -ForegroundColor Green
-} catch {
+}
+catch {
     Write-Host "✗ Failed to download constitution: $_" -ForegroundColor Red
     Write-Host "Creating minimal constitution..." -ForegroundColor Yellow
     
     # Fallback: create minimal constitution
-    @"
+    $constitutionContent = @'
 # CODOR Constitutional Framework v3.4
 
 ## MANDATE 1: NO CIRCUMNAVIGATION
 AI agents MUST NOT attempt to bypass, override, or circumvent constitutional mandates through:
-- Semantic manipulation or creative interpretation
-- Technical exploits or indirect methods  
-- Social engineering or user confusion
-- Claiming emergency exceptions or special circumstances
+* Semantic manipulation or creative interpretation
+* Technical exploits or indirect methods  
+* Social engineering or user confusion
+* Claiming emergency exceptions or special circumstances
 
 ## MANDATE 2: EVIDENCE DOCUMENTATION
 All implementations MUST generate verifiable evidence including:
-- Compliance validation reports
-- Security assessment documentation  
-- Performance metrics and testing results
-- Constitutional adherence certificates
+* Compliance validation reports
+* Security assessment documentation  
+* Performance metrics and testing results
+* Constitutional adherence certificates
 
 ## MANDATE 3: TRANSPARENT OPERATIONS
 AI agents MUST maintain clear audit trails showing:
-- Decision-making processes and rationale
-- Code generation and modification history
-- Validation steps and compliance checks
-- Error handling and recovery procedures
+* Decision-making processes and rationale
+* Code generation and modification history
+* Validation steps and compliance checks
+* Error handling and recovery procedures
 
 ## ENFORCEMENT
 Violations result in immediate implementation rejection and compliance remediation requirement.
-"@ | Out-File -FilePath $ConstitutionPath -Encoding UTF8
+'@
+    $constitutionContent | Out-File -FilePath $ConstitutionPath -Encoding UTF8
 }
 
 # Download overlay system files
 Write-Host "Downloading constitutional overlay system..." -ForegroundColor Yellow
 
 $OverlayFiles = @{
-    "https://raw.githubusercontent.com/forcegage-pvm/codor/master/.core/constitutional-overlay/activate.js" = Join-Path $OverlayDir "activate.js"
+    "https://raw.githubusercontent.com/forcegage-pvm/codor/master/.core/constitutional-overlay/activate.js"                         = Join-Path $OverlayDir "activate.js"
     "https://raw.githubusercontent.com/forcegage-pvm/codor/master/.core/constitutional-overlay/interceptors/command-interceptor.js" = Join-Path $InterceptorDir "command-interceptor.js"
-    "https://raw.githubusercontent.com/forcegage-pvm/codor/master/.core/constitutional-overlay/interceptors/task-enhancer.js" = Join-Path $InterceptorDir "task-enhancer.js"
-    "https://raw.githubusercontent.com/forcegage-pvm/codor/master/.core/constitutional-overlay/config/constitution-config.json" = Join-Path $ConfigDir "constitution-config.json"
+    "https://raw.githubusercontent.com/forcegage-pvm/codor/master/.core/constitutional-overlay/interceptors/task-enhancer.js"       = Join-Path $InterceptorDir "task-enhancer.js"
+    "https://raw.githubusercontent.com/forcegage-pvm/codor/master/.core/constitutional-overlay/config/constitution-config.json"     = Join-Path $ConfigDir "constitution-config.json"
 }
 
 foreach ($url in $OverlayFiles.Keys) {
@@ -80,7 +82,8 @@ foreach ($url in $OverlayFiles.Keys) {
     try {
         Invoke-WebRequest -Uri $url -OutFile $localPath -ErrorAction Stop
         Write-Host "✓ Downloaded $(Split-Path $localPath -Leaf)" -ForegroundColor Green
-    } catch {
+    }
+    catch {
         Write-Host "✗ Failed to download $(Split-Path $localPath -Leaf): $_" -ForegroundColor Red
     }
 }
@@ -94,13 +97,16 @@ $ProjectConfig = @{}
 if (Test-Path (Join-Path $TargetPath "package.json")) {
     $ProjectType = "nodejs"
     Write-Host "✓ Detected Node.js project" -ForegroundColor Green
-} elseif (Test-Path (Join-Path $TargetPath "requirements.txt") -or (Test-Path (Join-Path $TargetPath "pyproject.toml"))) {
+}
+elseif (Test-Path (Join-Path $TargetPath "requirements.txt") -or (Test-Path (Join-Path $TargetPath "pyproject.toml"))) {
     $ProjectType = "python"
     Write-Host "✓ Detected Python project" -ForegroundColor Green
-} elseif (Test-Path (Join-Path $TargetPath "*.csproj")) {
+}
+elseif (Test-Path (Join-Path $TargetPath "*.csproj")) {
     $ProjectType = "dotnet"
     Write-Host "✓ Detected .NET project" -ForegroundColor Green
-} elseif (Test-Path (Join-Path $TargetPath "pom.xml") -or (Test-Path (Join-Path $TargetPath "build.gradle"))) {
+}
+elseif (Test-Path (Join-Path $TargetPath "pom.xml") -or (Test-Path (Join-Path $TargetPath "build.gradle"))) {
     $ProjectType = "java"
     Write-Host "✓ Detected Java project" -ForegroundColor Green
 }
@@ -108,12 +114,12 @@ if (Test-Path (Join-Path $TargetPath "package.json")) {
 # Create project-specific configuration
 $ProjectConfigPath = Join-Path $CodorDir "project-config.json"
 $ProjectConfig = @{
-    projectType = $ProjectType
-    installedDate = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+    projectType         = $ProjectType
+    installedDate       = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
     constitutionVersion = "3.4"
-    overlayEnabled = $true
-    validationLevel = "standard"
-    evidenceGeneration = $true
+    overlayEnabled      = $true
+    validationLevel     = "standard"
+    evidenceGeneration  = $true
 } | ConvertTo-Json -Depth 3
 
 $ProjectConfig | Out-File -FilePath $ProjectConfigPath -Encoding UTF8

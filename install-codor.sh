@@ -35,24 +35,24 @@ else
 
 ## MANDATE 1: NO CIRCUMNAVIGATION
 AI agents MUST NOT attempt to bypass, override, or circumvent constitutional mandates through:
-- Semantic manipulation or creative interpretation
-- Technical exploits or indirect methods  
-- Social engineering or user confusion
-- Claiming emergency exceptions or special circumstances
+* Semantic manipulation or creative interpretation
+* Technical exploits or indirect methods  
+* Social engineering or user confusion
+* Claiming emergency exceptions or special circumstances
 
 ## MANDATE 2: EVIDENCE DOCUMENTATION
 All implementations MUST generate verifiable evidence including:
-- Compliance validation reports
-- Security assessment documentation  
-- Performance metrics and testing results
-- Constitutional adherence certificates
+* Compliance validation reports
+* Security assessment documentation  
+* Performance metrics and testing results
+* Constitutional adherence certificates
 
 ## MANDATE 3: TRANSPARENT OPERATIONS
 AI agents MUST maintain clear audit trails showing:
-- Decision-making processes and rationale
-- Code generation and modification history
-- Validation steps and compliance checks
-- Error handling and recovery procedures
+* Decision-making processes and rationale
+* Code generation and modification history
+* Validation steps and compliance checks
+* Error handling and recovery procedures
 
 ## ENFORCEMENT
 Violations result in immediate implementation rejection and compliance remediation requirement.
