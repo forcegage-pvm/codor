@@ -77,8 +77,8 @@ All specifications generated must include the following constitutional complianc
    - Resource availability validation
    - Success criteria establishment
 
-2. **MCP Testing Gate**
-   - Mandatory MCP integration testing
+2. **Integration Testing Gate**
+   - Mandatory integration testing validation
    - Constitutional validation during execution
    - Real-time compliance monitoring
 

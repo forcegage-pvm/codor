@@ -50,9 +50,10 @@ Based on the project constitution, the following compliance requirements are man
 
 ### Pre-Task Validation Gate
 Before beginning implementation:
-1. **Constitutional Review**: Verify the task aligns with constitutional principles
-2. **Validation Criteria**: Establish clear success criteria based on constitutional requirements
-3. **Evidence Framework**: Define what evidence must be collected during implementation
+1. **TDD Debt Blocking Check**: Verify no CRITICAL TDD debt blocks development (Constitutional Amendment VII)
+2. **Constitutional Review**: Verify the task aligns with constitutional principles
+3. **Validation Criteria**: Establish clear success criteria based on constitutional requirements
+4. **Evidence Framework**: Define what evidence must be collected during implementation
 
 ### Implementation Requirements
 All tasks must include:
@@ -69,15 +70,47 @@ All tasks must include:
    - Resource validation
    - Success criteria definition
 
-2. **Gate 2 - MCP Testing**
-   - Mandatory MCP integration testing
+2. **Gate 2 - Integration Testing**
+   - Mandatory integration testing validation
+   - Exact Functional Correspondence validation (Constitutional Amendment VI)
    - Constitutional validation during execution
    - Evidence collection validation
 
 3. **Gate 3 - Post-Implementation**
+   - TDD Debt Resolution validation (if debt task)
+   - Anti-Fraud Enforcement checks (Constitutional Amendment VIII)
    - Final constitutional compliance verification
    - Complete evidence package validation
    - Documentation completeness check
+
+### TDD Debt Management Framework
+If this task involves TDD tests or API implementation:
+
+\`\`\`markdown
+## TDD Debt Tracking (Constitutional Amendment VII)
+
+### Automated Debt Detection
+- All test failures automatically analyzed and classified
+- All debt added to inventory for tracking
+- Only current sprint assigned debt blocks development
+- Implementation tasks auto-generated (T{base}.{increment})
+
+### Debt Classification:
+- **CRITICAL**: Business logic gaps, security vulnerabilities (inventory tracking)
+- **HIGH**: Performance issues, UX friction (next sprint priority)  
+- **MEDIUM/LOW**: Enhancements, code quality (future consideration)
+
+### Sprint Management:
+- **Inventory**: All debt tracked, does not block development
+- **Sprint Assignment**: Team assigns debt to current sprint
+- **Blocking**: Only current sprint debt blocks development
+
+### Pre-Task Requirement
+Run constitutional validator to check for blocking current sprint debt:
+\`node .specify/tools/constitutional-validator.js pre-task\`
+
+If current sprint debt exists, resolve debt tasks first before proceeding.
+\`\`\`
 
 ### Enhanced Task Structure
 Each generated task must include:
@@ -87,14 +120,15 @@ Each generated task must include:
 
 ### Constitutional Requirements
 - [Specific constitutional principles that apply]
+- [TDD debt management compliance if applicable]
 - [Compliance criteria based on constitution]
 
 ### Implementation Steps
 [Original implementation steps enhanced with validation checkpoints]
 
 ### Validation Gates
-- [ ] **Gate 1**: Pre-implementation constitutional check
-- [ ] **Gate 2**: MCP testing with constitutional validation
+- [ ] **Gate 1**: Pre-implementation constitutional check (includes TDD debt blocking)
+- [ ] **Gate 2**: Integration testing with exact functional correspondence
 - [ ] **Gate 3**: Post-implementation compliance verification
 
 ### Evidence Collection Requirements
@@ -102,12 +136,14 @@ Each generated task must include:
 - [ ] Screenshots saved to /evidence/screenshots/
 - [ ] Execution logs in /evidence/logs/
 - [ ] Constitutional compliance report
+- [ ] TDD debt resolution evidence (if debt task)
 
 ### Success Criteria
 - All validation gates passed
 - Complete evidence package collected
 - Constitutional compliance verified
-- No circumnavigation attempts detected
+- TDD debt properly managed
+- No fraud or circumnavigation attempts detected
 \`\`\`
 
 ## Anti-Circumnavigation Measures

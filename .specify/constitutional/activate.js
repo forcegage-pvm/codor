@@ -151,7 +151,7 @@ class ConstitutionalActivator {
       activeEnforcement: true,
       validationGates: {
         preTask: true,
-        mcpTesting: true,
+        integrationTesting: true,
         postTask: true,
       },
       evidenceRequirement: {

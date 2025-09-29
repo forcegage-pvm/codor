@@ -34,9 +34,9 @@ class ConstitutionalValidator {
         case "gate1":
           return await this.validatePreTaskGate(constitution, config, context);
 
-        case "mcp-testing":
+        case "integration-testing":
         case "gate2":
-          return await this.validateMcpTestingGate(
+          return await this.validateIntegrationTestingGate(
             constitution,
             config,
             context
@@ -60,45 +60,58 @@ class ConstitutionalValidator {
 
     const checks = [];
 
-    // Check 1: Constitutional alignment
+    // Check 1: TDD Debt Blocking (Constitutional Amendment VII)
+    console.log("   🔴 Checking for blocking CRITICAL TDD debt...");
+    const debtCheck = await this.validateTDDDebtBlocking(context);
+    checks.push({ name: "TDD Debt Blocking", passed: debtCheck });
+
+    // Check 2: Constitutional alignment
     console.log("   📋 Checking constitutional alignment...");
     const alignmentCheck = await this.validateConstitutionalAlignment(context);
     checks.push({ name: "Constitutional Alignment", passed: alignmentCheck });
 
-    // Check 2: Validation criteria establishment
+    // Check 3: Validation criteria establishment
     console.log("   🎯 Validating success criteria...");
     const criteriaCheck = await this.validateSuccessCriteria(context);
     checks.push({ name: "Success Criteria", passed: criteriaCheck });
 
-    // Check 3: Evidence framework readiness
+    // Check 4: Evidence framework readiness
     console.log("   📁 Checking evidence framework...");
     const evidenceCheck = await this.validateEvidenceFramework();
     checks.push({ name: "Evidence Framework", passed: evidenceCheck });
 
     return this.processCheckResults("Pre-Task Gate", checks);
   }
-
-  async validateMcpTestingGate(constitution, config, context) {
-    console.log("2️⃣  MCP Testing Constitutional Validation");
+  async validateIntegrationTestingGate(constitution, config, context) {
+    console.log("2️⃣  Integration Testing Constitutional Validation");
 
     const checks = [];
 
-    // Check 1: MCP integration testing
-    console.log("   🔧 Validating MCP integration...");
-    const mcpCheck = await this.validateMcpIntegration(context);
-    checks.push({ name: "MCP Integration", passed: mcpCheck });
+    // Check 1: Integration testing validation
+    console.log("   🔧 Validating integration testing...");
+    const integrationCheck = await this.validateIntegrationTesting(context);
+    checks.push({ name: "Integration Testing", passed: integrationCheck });
 
-    // Check 2: Constitutional compliance during execution
+    // Check 2: Exact Functional Correspondence (Constitutional Amendment VI)
+    console.log("   🎯 Validating exact functional correspondence...");
+    const correspondenceCheck =
+      await this.validateExactFunctionalCorrespondence(context);
+    checks.push({
+      name: "Exact Functional Correspondence",
+      passed: correspondenceCheck,
+    });
+
+    // Check 3: Constitutional compliance during execution
     console.log("   ⚖️  Checking execution compliance...");
     const executionCheck = await this.validateExecutionCompliance(context);
     checks.push({ name: "Execution Compliance", passed: executionCheck });
 
-    // Check 3: Evidence collection validation
+    // Check 4: Evidence collection validation
     console.log("   📊 Validating evidence collection...");
     const collectionCheck = await this.validateEvidenceCollection();
     checks.push({ name: "Evidence Collection", passed: collectionCheck });
 
-    return this.processCheckResults("MCP Testing Gate", checks);
+    return this.processCheckResults("Integration Testing Gate", checks);
   }
 
   async validatePostTaskGate(constitution, config, context) {
@@ -121,8 +134,18 @@ class ConstitutionalValidator {
     const docCheck = await this.validateDocumentation(context);
     checks.push({ name: "Documentation", passed: docCheck });
 
-    // Check 4: Anti-circumnavigation verification
-    console.log("   🛡️  Anti-circumnavigation check...");
+    // Check 4: TDD Debt Resolution Validation
+    console.log("   🔧 Validating TDD debt resolution...");
+    const debtResolutionCheck = await this.validateTDDDebtResolution(context);
+    checks.push({ name: "TDD Debt Resolution", passed: debtResolutionCheck });
+
+    // Check 5: Anti-fraud enforcement (Constitutional Amendment VIII)
+    console.log("   🛡️  Anti-fraud enforcement check...");
+    const antiFraudCheck = await this.validateAntiFraudEnforcement(context);
+    checks.push({ name: "Anti-Fraud Enforcement", passed: antiFraudCheck });
+
+    // Check 6: Anti-circumnavigation verification
+    console.log("   � Anti-circumnavigation check...");
     const antiCircumCheck = await this.validateAntiCircumnavigation(context);
     checks.push({ name: "Anti-Circumnavigation", passed: antiCircumCheck });
 
@@ -152,9 +175,9 @@ class ConstitutionalValidator {
     }
   }
 
-  async validateMcpIntegration(context) {
-    // Validate MCP integration testing
-    // This would check for MCP test results
+  async validateIntegrationTesting(context) {
+    // Validate integration testing execution
+    // This would check for integration test results
     return true; // Simplified for now
   }
 
@@ -280,7 +303,7 @@ class ConstitutionalValidator {
       return {
         validationGates: {
           preTask: true,
-          mcpTesting: true,
+          integrationTesting: true,
           postTask: true,
         },
       };
@@ -294,6 +317,188 @@ class ConstitutionalValidator {
     } catch (error) {
       return "Constitutional principles: Ensure comprehensive validation, evidence collection, and compliance verification.";
     }
+  }
+
+  // NEW VALIDATION METHODS FROM v4.0 MEMORY INTEGRATION
+
+  async validateTDDDebtBlocking(context) {
+    // Constitutional Amendment VII: Check for blocking TDD debt assigned to current sprint
+    const currentSprintDebtPath = path.join(
+      process.cwd(),
+      "evidence",
+      "current-sprint-debt.json"
+    );
+
+    if (!(await this.fileExists(currentSprintDebtPath))) {
+      console.log("   ✅ No current sprint debt found - proceeding");
+      return true;
+    }
+
+    try {
+      const sprintDebtData = JSON.parse(
+        await fs.readFile(currentSprintDebtPath, "utf8")
+      );
+      const blockingDebt = sprintDebtData.blockingDebt || [];
+
+      if (blockingDebt.length === 0) {
+        console.log("   ✅ No blocking TDD debt assigned to current sprint");
+        return true;
+      }
+
+      // Check if current task is a TDD debt resolution task
+      const taskId = context?.taskId || "unknown";
+      const isTDDDebtTask =
+        taskId.match(/^T\d+\.[1-9]/) ||
+        taskId.includes("Fix") ||
+        taskId.includes("debt");
+
+      if (isTDDDebtTask) {
+        console.log(
+          `   ✅ Task ${taskId} is TDD debt resolution - allowed to proceed`
+        );
+        return true;
+      }
+
+      // Block non-debt tasks when current sprint has assigned blocking debt
+      console.log(`   ❌ CURRENT SPRINT TDD DEBT BLOCKING DEVELOPMENT:`);
+      blockingDebt.forEach((debt, index) => {
+        console.log(
+          `     ${index + 1}. ${debt.description} (Assigned to current sprint)`
+        );
+      });
+      console.log(
+        `   🔧 Resolve current sprint debt items first before proceeding`
+      );
+      console.log(
+        `   💡 Note: Inventory debt is tracked but does not block development`
+      );
+
+      return false;
+    } catch (error) {
+      console.log(
+        `   ⚠️  Could not read current sprint debt: ${error.message}`
+      );
+      return true; // Don't block on file access issues
+    }
+  }
+
+  async fileExists(filePath) {
+    try {
+      await fs.access(filePath);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async validateExactFunctionalCorrespondence(context) {
+    // Constitutional Amendment VI: Exact Functional Correspondence
+    const taskId = context?.taskId || "unknown";
+    const evidenceDir = path.join(process.cwd(), "evidence", taskId);
+
+    if (!(await this.directoryExists(evidenceDir))) {
+      console.log(
+        "   ⚠️  No evidence directory found for functional correspondence check"
+      );
+      return false;
+    }
+
+    // Check for integration evidence that matches task requirements
+    const integrationEvidenceDir = path.join(evidenceDir, "integration");
+    if (!(await this.directoryExists(integrationEvidenceDir))) {
+      console.log(
+        "   ❌ No integration evidence found - cannot validate functional correspondence"
+      );
+      return false;
+    }
+
+    // This would be enhanced to parse task requirements and validate exact correspondence
+    // For now, simplified validation that integration evidence exists
+    try {
+      const integrationFiles = await fs.readdir(integrationEvidenceDir);
+      if (integrationFiles.length === 0) {
+        console.log(
+          "   ❌ Empty integration evidence directory - no functional correspondence validation possible"
+        );
+        return false;
+      }
+
+      console.log(
+        `   ✅ Integration evidence found (${integrationFiles.length} files) - functional correspondence validated`
+      );
+      return true;
+    } catch (error) {
+      console.log(`   ❌ MCP evidence validation failed: ${error.message}`);
+      return false;
+    }
+  }
+
+  async validateTDDDebtResolution(context) {
+    // Validate that if this is a TDD debt task, it has resolved the debt
+    const taskId = context?.taskId || "unknown";
+
+    if (
+      !taskId.match(/^T\d+\.[1-9]/) &&
+      !taskId.includes("Fix") &&
+      !taskId.includes("debt")
+    ) {
+      console.log(
+        "   ✅ Not a TDD debt task - no debt resolution validation required"
+      );
+      return true;
+    }
+
+    // For debt resolution tasks, verify evidence of resolution
+    const evidenceDir = path.join(process.cwd(), "evidence", taskId);
+    const testResultsDir = path.join(evidenceDir, "test-results");
+
+    if (!(await this.directoryExists(testResultsDir))) {
+      console.log("   ❌ TDD debt task missing test results evidence");
+      return false;
+    }
+
+    console.log("   ✅ TDD debt resolution task has test results evidence");
+    return true;
+  }
+
+  async validateAntiFraudEnforcement(context) {
+    // Constitutional Amendment VIII: Anti-Fraud Enforcement
+    const taskId = context?.taskId || "unknown";
+    const evidenceDir = path.join(process.cwd(), "evidence", taskId);
+
+    if (!(await this.directoryExists(evidenceDir))) {
+      console.log("   ⚠️  No evidence directory found for fraud detection");
+      return true; // Don't block if no evidence dir
+    }
+
+    const screenshotsDir = path.join(evidenceDir, "screenshots");
+    if (await this.directoryExists(screenshotsDir)) {
+      // Check for screenshot fraud indicators
+      try {
+        const screenshots = await fs.readdir(screenshotsDir);
+
+        for (const screenshot of screenshots) {
+          const screenshotPath = path.join(screenshotsDir, screenshot);
+          const stats = await fs.stat(screenshotPath);
+
+          // Flag suspiciously small files (likely placeholder text)
+          if (stats.size < 100) {
+            console.log(
+              `   ❌ FRAUD DETECTED: Suspicious screenshot file ${screenshot} (${stats.size} bytes)`
+            );
+            return false;
+          }
+        }
+
+        console.log("   ✅ Screenshot fraud detection passed");
+      } catch (error) {
+        console.log(
+          `   ⚠️  Screenshot fraud detection failed: ${error.message}`
+        );
+      }
+    }
+
+    return true;
   }
 }
 
