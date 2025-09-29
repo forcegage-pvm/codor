@@ -1,12 +1,13 @@
 #!/bin/bash
-# CODOR Constitutional Framework - Quick Install Script (Unix/Linux/macOS)
+# CODOR Constitutional Framework v4.0 - Complete Installer with VS Code Integration
 # Usage: ./install-codor.sh [target-directory]
+# Installs constitutional framework + VS Code slash commands for professional AI agent integration
 
 TARGET_DIR=${1:-.}
 CODOR_REPO="https://raw.githubusercontent.com/forcegage-pvm/codor/master"
 
-echo "🏛️  CODOR Constitutional Framework Installer"
-echo "======================================="
+echo "CODOR Constitutional Framework v4.0 - Complete Installation"
+echo "============================================================"
 
 TARGET_PATH=$(realpath "$TARGET_DIR")
 echo "Installing CODOR to: $TARGET_PATH"
@@ -78,6 +79,52 @@ for url in "${!OVERLAY_FILES[@]}"; do
         echo "✗ Failed to download $filename"
     fi
 done
+
+# Install VS Code integration
+echo "Installing constitutional slash commands..."
+
+# Create .github/prompts directory for VS Code integration
+GITHUB_DIR="$TARGET_PATH/.github"
+PROMPTS_DIR="$GITHUB_DIR/prompts"
+mkdir -p "$PROMPTS_DIR"
+
+# Download VS Code prompt files
+PROMPTS=(
+    "codor-onboarding.prompt.md"
+    "codor-validate.prompt.md" 
+    "codor-evidence.prompt.md"
+    "codor-status.prompt.md"
+)
+
+for prompt in "${PROMPTS[@]}"; do
+    prompt_url="$CODOR_REPO/.github/prompts/$prompt"
+    prompt_path="$PROMPTS_DIR/$prompt"
+    
+    if curl -fsSL "$prompt_url" -o "$prompt_path"; then
+        echo "✓ /${prompt%.prompt.md} command installed"
+    else
+        echo "✗ Failed to download $prompt"
+    fi
+done
+
+# Create VS Code workspace settings to enable prompt files
+VSCODE_DIR="$TARGET_PATH/.vscode"
+mkdir -p "$VSCODE_DIR"
+
+VSCODE_SETTINGS="$VSCODE_DIR/settings.json"
+if [ -f "$VSCODE_SETTINGS" ]; then
+    # Merge with existing settings (simple append if valid JSON)
+    if ! grep -q "chat.promptFiles" "$VSCODE_SETTINGS" 2>/dev/null; then
+        # Add setting if it doesn't exist
+        sed -i '$s/}$/,\n    "chat.promptFiles": true\n}/' "$VSCODE_SETTINGS" 2>/dev/null || \
+        echo '{"chat.promptFiles": true}' > "$VSCODE_SETTINGS"
+        echo "✓ VS Code settings updated to enable prompt files"
+    fi
+else
+    # Create new settings file
+    echo '{"chat.promptFiles": true}' > "$VSCODE_SETTINGS"
+    echo "✓ VS Code settings created to enable prompt files"
+fi
 
 # Detect project type
 echo "Detecting project type..."
@@ -210,15 +257,33 @@ CODOR is now configured for your **$PROJECT_TYPE** project and will:
 EOF
 
 echo ""
-echo "🎉 CODOR Installation Complete!"
-echo "======================================="
-echo "Installation Directory: $CODOR_DIR"
-echo "Project Type: $PROJECT_TYPE"
-echo "Constitution Version: 3.4"
+echo "========================================="
+echo "CODOR v4.0 INSTALLATION COMPLETE!"
+echo "========================================="
 echo ""
-echo "Next Steps:"
-echo "1. cd '$TARGET_PATH'"
-echo "2. source .codor/activate-codor.sh"
-echo "3. Start your development workflow!"
+echo "Installed Components:"
+echo "  * Constitutional framework (v4.0)"
+echo "  * VS Code slash command prompts"
+echo "  * Evidence collection system"
+echo "  * Constitutional validator"
+echo "  * AI integration instructions"
 echo ""
-echo "CODOR is ready to ensure constitutional compliance! 🏛️"
+echo "CONSTITUTIONAL ACTIVATION REQUIRED"
+echo "================================="
+echo ""
+echo "To activate constitutional compliance, run this command in VS Code:"
+echo ""
+echo "  /codor-onboarding"
+echo ""
+echo "This will:"
+echo "  + Discover and load constitutional framework"
+echo "  + Internalize constitutional mandates"
+echo "  + Initialize evidence generation system"
+echo "  + Establish audit trail for transparency"
+echo ""
+echo "Additional Commands Available:"
+echo "  /codor-status     - Check constitutional compliance status"
+echo "  /codor-validate   - Validate constitutional enforcement"
+echo "  /codor-evidence   - Generate constitutional evidence"
+echo ""
+echo "Constitutional framework installed - ready for activation!"

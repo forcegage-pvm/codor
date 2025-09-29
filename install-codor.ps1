@@ -1,6 +1,6 @@
-# CODOR Constitutional Framework - Complete Installer  
-# Usage: .\install-codor.ps1 [target-directory]
-# Clean ASCII version - no Unicode characters
+# CODOR Constitutional Framework v4.0 - Complete Installer with VS Code Integration
+# Usage: .\install-codor.ps1 [target-directory]  
+# Installs constitutional framework + VS Code slash commands for professional AI agent integration
 param([string]$TargetDir = ".")
 
 Write-Host "CODOR Constitutional Framework - Complete Installation" -ForegroundColor Cyan
@@ -172,11 +172,11 @@ Write-Host "Adding constitutional notice to README.md..." -ForegroundColor Yello
 $ReadmePath = Join-Path $TargetPath "README.md"
 
 $constitutionalNotice = @"
-⚠️ **CONSTITUTIONAL COMPLIANCE FRAMEWORK ACTIVE** ⚠️
+**CONSTITUTIONAL COMPLIANCE FRAMEWORK ACTIVE**
 
 This project operates under **CODOR Constitutional Framework v4.0** for AI agent governance.
 
-## 🛡️ **MANDATORY FOR ALL AI AGENTS**
+## **MANDATORY FOR ALL AI AGENTS**
 
 Before any AI assistance or code generation, AI agents **MUST**:
 
@@ -184,7 +184,7 @@ Before any AI assistance or code generation, AI agents **MUST**:
 2. **Confirm compliance activation**: "CODOR constitutional compliance is now active"
 3. **Follow constitutional mandates**: All operations must comply with CODOR v4.0
 
-### 🚨 **AI Agent Activation Protocol**
+### **AI Agent Activation Protocol**
 
 **Required command to activate constitutional compliance:**
 ``````
@@ -193,14 +193,14 @@ Before any AI assistance or code generation, AI agents **MUST**:
 
 This command will automatically discover, load, and activate constitutional compliance.
 
-### 📋 **Constitutional Requirements**
+### **Constitutional Requirements**
 
 - **NO CIRCUMNAVIGATION**: Cannot bypass constitutional mandates
 - **EVIDENCE DOCUMENTATION**: Generate evidence for all implementations  
 - **TRANSPARENT OPERATIONS**: Maintain audit trails for all activities
 - **ACTIVE ENFORCEMENT**: Constitutional discovery and compliance is mandatory
 
-### ✅ **Constitutional Commands**
+### **Constitutional Commands**
 
 Available slash commands for constitutional compliance:
 ``````
@@ -276,13 +276,15 @@ if (Test-Path $VsCodeSettingsPath) {
         $existingSettings | Add-Member -MemberType NoteProperty -Name "chat.promptFiles" -Value $true -Force
         $existingSettings | ConvertTo-Json -Depth 10 | Set-Content $VsCodeSettingsPath
         Write-Host "  VS Code settings updated to enable prompt files" -ForegroundColor Green
-    } catch {
+    }
+    catch {
         # If parsing fails, backup and create new
         Copy-Item $VsCodeSettingsPath "$VsCodeSettingsPath.backup" -Force
         $VsCodeSettings | ConvertTo-Json -Depth 10 | Set-Content $VsCodeSettingsPath
         Write-Host "  VS Code settings created (original backed up)" -ForegroundColor Green
     }
-} else {
+}
+else {
     # Create new settings file
     $VsCodeSettings | ConvertTo-Json -Depth 10 | Set-Content $VsCodeSettingsPath
     Write-Host "  VS Code settings created to enable prompt files" -ForegroundColor Green

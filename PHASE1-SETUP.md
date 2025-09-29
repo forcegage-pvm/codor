@@ -1,44 +1,63 @@
-# CODOR Phase 1 Quick Setup Guide
+# CODOR v4.0 Quick Setup Guide
 
-## 🚀 One-Line Installation
+## 🚀 **VS Code Integration (Recommended)**
 
-Install CODOR constitutional compliance in any existing project:
+### One-Line Installation + VS Code Slash Commands
 
-### Windows (PowerShell)
+**Windows (PowerShell)**
 ```powershell
-# Install in current directory
+# Install in current directory with VS Code integration
 .\install-codor.ps1
 
 # Install in specific project
 .\install-codor.ps1 "C:\path\to\your\project"
-
-# Quick test on sample project  
-.\test-codor.ps1
 ```
 
-### Linux/macOS (Bash)
+**Linux/macOS (Bash)**
 ```bash
-# Install in current directory
+# Make executable first
+chmod +x install-codor.sh
+
+# Install in current directory with VS Code integration
 ./install-codor.sh
 
 # Install in specific project
 ./install-codor.sh "/path/to/your/project"
-
-# Make executable first
-chmod +x install-codor.sh validate-codor.sh
 ```
 
-## 🔍 Validation
+### 🎯 **Constitutional Activation**
 
-Verify CODOR installation:
+After installation, activate constitutional compliance in VS Code:
 
+```
+/codor-onboarding
+```
+
+**Additional Commands Available:**
+- `/codor-validate` - Verify constitutional enforcement is active (not passive)
+- `/codor-evidence` - Generate constitutional compliance evidence
+- `/codor-status` - Comprehensive compliance status report
+
+## 🔍 **Validation**
+
+### VS Code Validation (Recommended)
+```
+/codor-validate
+```
+*Run this command in VS Code chat to verify constitutional enforcement is active.*
+
+### Manual Validation
 ```powershell
+# Windows
 .\validate-codor.ps1 "path\to\project"
+
+# Linux/macOS
+./validate-codor.sh "path/to/project"
 ```
 
-## 🏛️ Activation
+## 🏛️ **Legacy Activation** (Manual)
 
-Activate constitutional compliance in your project:
+For non-VS Code environments:
 
 ### Windows
 ```powershell

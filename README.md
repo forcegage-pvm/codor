@@ -2,7 +2,7 @@
 
 *Technology-Agnostic Framework for Preventing AI Development Hallucination*
 
-**Version**: 3.0  
+**Version**: 4.0  
 **Status**: Production Ready  
 **Last Updated**: September 29, 2025
 
@@ -20,6 +20,31 @@ CODOR (Constitutional Operations for Development and Operations Reliability) is 
 
 ## Quick Start (5 Minutes)
 
+### 🚀 **VS Code Integration (Recommended)**
+
+**One-Command Installation:**
+```powershell
+# Windows PowerShell
+.\install-codor.ps1 "your-project"
+
+# Linux/macOS
+./install-codor.sh "your-project"
+```
+
+**Activate Constitutional Compliance:**
+```
+/codor-onboarding
+```
+*Type this command in VS Code chat to automatically discover, load, and activate constitutional compliance.*
+
+**Available Commands:**
+- `/codor-onboarding` - Initialize constitutional framework
+- `/codor-validate` - Verify active enforcement  
+- `/codor-evidence` - Generate compliance evidence
+- `/codor-status` - Check compliance metrics
+
+### 📋 **Manual Integration**
+
 1. **Read the Constitution**: Start with [📋 Current Constitution](.core/core-constitution.md) 
 2. **Choose Your Level**: Pick from [5 Implementation Levels](#implementation-levels)
 3. **Select Your Context**: Find your [Implementation Pathway](#implementation-pathways)
@@ -32,12 +57,14 @@ CODOR (Constitutional Operations for Development and Operations Reliability) is 
 ## 📁 Framework Navigation
 
 ### 🎯 Essential Reading
-- **[📋 Current Constitution](.core/core-constitution.md)** - Start here: CODOR 3.0 framework
-- **[🚀 Quick Start Guide](#quick-start-5-minutes)** - 5-minute implementation
+- **[📋 Current Constitution](.core/core-constitution.md)** - Start here: CODOR 4.0 framework
+- **[🚀 Quick Start Guide](#quick-start-5-minutes)** - 5-minute VS Code integration
+- **[⚡ VS Code Slash Commands](#-vs-code-integration-recommended)** - Professional AI agent integration
 
 ### 🔄 Version History  
 - **[📋 Constitution v2.0](.core/core-constitution-2.0.md)** - Previous framework version
 - **[📈 Version Evolution](#version-history)** - Complete version changelog
+- **🆕 v4.0**: VS Code slash command integration with professional prompt files
 
 ### 📊 Deep Analysis (Optional)
 - **[🔍 Framework Analysis](.core/analysis/)** - Comprehensive optimization research
