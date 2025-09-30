@@ -4,24 +4,62 @@
  * Generates structured evidence files for unfakeable test results
  */
 
-const fs = require("fs");
-const path = require("path");
+import * as fs from "fs";
+import * as path from "path";
 
-class EvidenceCollector {
-  constructor(workspaceRoot, evidenceDir) {
+export interface ActionResult {
+  phase?: string;
+  action: {
+    type: string;
+    description?: string;
+  };
+  startTime: string;
+  success: boolean;
+  durationMs: number;
+  data?: any;
+  error?: string;
+}
+
+export interface TaskResult {
+  endTime: string;
+  validationResult?: {
+    passed: boolean;
+    evaluations?: any[];
+  };
+  [key: string]: any;
+}
+
+export interface ExecutionReport {
+  summary: {
+    total: number;
+    passed: number;
+    failed: number;
+  };
+  [key: string]: any;
+}
+
+export class EvidenceCollector {
+  private workspaceRoot: string;
+  private evidenceBaseDir: string;
+
+  constructor(workspaceRoot: string, evidenceDir: string) {
     this.workspaceRoot = workspaceRoot;
     this.evidenceBaseDir = path.join(workspaceRoot, evidenceDir);
     this.ensureDirectory(this.evidenceBaseDir);
   }
 
-  ensureDirectory(dir) {
+  private ensureDirectory(dir: string): void {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
       console.log(`📁 Created directory: ${dir}`);
     }
   }
 
-  async saveActionEvidence(taskId, actionId, result) {
+  async saveActionEvidence(
+    taskId: string,
+    actionId: string,
+    result: ActionResult
+  ): Promise<void> {
     const taskDir = path.join(this.evidenceBaseDir, taskId);
     this.ensureDirectory(taskDir);
 
@@ -67,7 +105,10 @@ class EvidenceCollector {
     fs.writeFileSync(evidenceFile, JSON.stringify(evidence, null, 2));
   }
 
-  async saveTaskEvidence(taskId, taskResult) {
+  async saveTaskEvidence(
+    taskId: string,
+    taskResult: TaskResult
+  ): Promise<void> {
     const taskDir = path.join(this.evidenceBaseDir, taskId);
     this.ensureDirectory(taskDir);
 
@@ -91,8 +132,8 @@ class EvidenceCollector {
         timestamp: taskResult.endTime,
         overallPassed: taskResult.validationResult.passed,
         total: evaluations.length,
-        passed: evaluations.filter((v) => v.passed).length,
-        failed: evaluations.filter((v) => !v.passed).length,
+        passed: evaluations.filter((v: any) => v.passed).length,
+        failed: evaluations.filter((v: any) => !v.passed).length,
         results: evaluations,
       };
       fs.writeFileSync(
@@ -104,7 +145,7 @@ class EvidenceCollector {
     console.log(`📊 Saved task summary: ${summaryFile}`);
   }
 
-  async generateFinalReport(results) {
+  async generateFinalReport(results: ExecutionReport): Promise<void> {
     // Generate timestamped report to preserve history
     const timestamp = new Date()
       .toISOString()
@@ -148,4 +189,4 @@ class EvidenceCollector {
   }
 }
 
-module.exports = EvidenceCollector;
+export default EvidenceCollector;

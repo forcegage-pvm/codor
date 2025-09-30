@@ -15,10 +15,10 @@
 
 const fs = require("fs");
 const path = require("path");
-const PluginRegistry = require("./plugin-registry");
-const SpecificationLoader = require("./specification-loader");
-const EvidenceCollector = require("./evidence-collector");
-const ValidationEngine = require("./validation-engine");
+const { PluginRegistry } = require("./plugin-registry");
+const { SpecificationLoader } = require("./specification-loader");
+const { EvidenceCollector } = require("./evidence-collector");
+const { ValidationEngine } = require("./validation-engine");
 
 // ============================================================================
 // CORE ENGINE CLASS
@@ -149,11 +149,11 @@ class TestExecutionEngine {
           taskResult.durationMs = taskResult.endTime - taskResult.startTime;
 
           this.log("\n🔍 Analyzing Failure", "info");
-          
+
           // Run ALL failure analyzers and collect results
           const failureAnalyses = [];
           const analyzers = this.pluginRegistry.getFailureAnalyzers();
-          
+
           for (const analyzer of analyzers) {
             try {
               const result = await analyzer.analyze(
@@ -161,21 +161,26 @@ class TestExecutionEngine {
                 taskResult.failureReason,
                 taskSpec
               );
-              
+
               if (result) {
                 failureAnalyses.push(result);
               }
             } catch (error) {
-              this.log(`⚠️  Analyzer ${analyzer.name} failed: ${error.message}`, "warn");
+              this.log(
+                `⚠️  Analyzer ${analyzer.name} failed: ${error.message}`,
+                "warn"
+              );
             }
           }
-          
+
           taskResult.failureAnalysis = failureAnalyses;
           taskResult.technicalDebt = null;
 
           if (failureAnalyses.length > 0) {
             this.log(
-              `📊 Failure Categories: ${failureAnalyses.map(a => a.category).join(", ")}`,
+              `📊 Failure Categories: ${failureAnalyses
+                .map((a) => a.category)
+                .join(", ")}`,
               "info"
             );
           }
@@ -218,37 +223,37 @@ class TestExecutionEngine {
       if (taskResult.status === "PASSED") {
         // Detect technical debt in passing tests - run ALL detectors
         this.log("\n🔍 Analyzing for Technical Debt", "info");
-        
+
         const debts = [];
         const detectors = this.pluginRegistry.getDebtDetectors();
-        
+
         for (const detector of detectors) {
           try {
             const results = await detector.analyze(taskResult.steps, taskSpec);
-            
+
             if (results && results.length > 0) {
               debts.push(...results);
             }
           } catch (error) {
-            this.log(`⚠️  Detector ${detector.name} failed: ${error.message}`, "warn");
+            this.log(
+              `⚠️  Detector ${detector.name} failed: ${error.message}`,
+              "warn"
+            );
           }
         }
-        
+
         taskResult.technicalDebt = debts.length > 0 ? debts : null;
 
         if (debts.length > 0) {
-          this.log(
-            `⚠️  Found ${debts.length} technical debt item(s)`,
-            "warn"
-          );
+          this.log(`⚠️  Found ${debts.length} technical debt item(s)`, "warn");
         }
       } else {
         // Analyze failure for categorization - run ALL analyzers
         this.log("\n🔍 Analyzing Failure", "info");
-        
+
         const failureAnalyses = [];
         const analyzers = this.pluginRegistry.getFailureAnalyzers();
-        
+
         for (const analyzer of analyzers) {
           try {
             const result = await analyzer.analyze(
@@ -256,21 +261,26 @@ class TestExecutionEngine {
               taskResult.failureReason || "Unknown failure",
               taskSpec
             );
-            
+
             if (result) {
               failureAnalyses.push(result);
             }
           } catch (error) {
-            this.log(`⚠️  Analyzer ${analyzer.name} failed: ${error.message}`, "warn");
+            this.log(
+              `⚠️  Analyzer ${analyzer.name} failed: ${error.message}`,
+              "warn"
+            );
           }
         }
-        
+
         taskResult.failureAnalysis = failureAnalyses;
         taskResult.technicalDebt = null; // No debt on failures
 
         if (failureAnalyses.length > 0) {
           this.log(
-            `📊 Failure Categories: ${failureAnalyses.map(a => a.category).join(", ")}`,
+            `📊 Failure Categories: ${failureAnalyses
+              .map((a) => a.category)
+              .join(", ")}`,
             "info"
           );
         }
@@ -283,7 +293,7 @@ class TestExecutionEngine {
       // Analyze unexpected error - run ALL analyzers
       const failureAnalyses = [];
       const analyzers = this.pluginRegistry.getFailureAnalyzers();
-      
+
       for (const analyzer of analyzers) {
         try {
           const result = await analyzer.analyze(
@@ -291,15 +301,18 @@ class TestExecutionEngine {
             error.message,
             taskSpec
           );
-          
+
           if (result) {
             failureAnalyses.push(result);
           }
         } catch (analyzerError) {
-          this.log(`⚠️  Analyzer ${analyzer.name} failed: ${analyzerError.message}`, "warn");
+          this.log(
+            `⚠️  Analyzer ${analyzer.name} failed: ${analyzerError.message}`,
+            "warn"
+          );
         }
       }
-      
+
       taskResult.failureAnalysis = failureAnalyses;
       taskResult.technicalDebt = null;
     }

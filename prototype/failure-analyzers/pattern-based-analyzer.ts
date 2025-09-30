@@ -1,30 +1,44 @@
 /**
- * Failure Analyzer
- * Categorizes test failures and provides actionable guidance
+ * Pattern-Based Failure Analyzer
+ * Categorizes test failures based on error patterns and provides actionable guidance
  */
 
-class FailureAnalyzer {
-  constructor(config = {}) {
-    this.config = config;
+import {
+  BaseFailureAnalyzer,
+  FailureAnalysisResult,
+  FailureAnalyzerConfig,
+} from "../core/base-failure-analyzer";
+
+interface ExecutionStep {
+  success: boolean;
+  error?: string;
+  action?: any;
+  phase?: string;
+  data?: any;
+}
+
+export class PatternBasedAnalyzer extends BaseFailureAnalyzer {
+  constructor(config: FailureAnalyzerConfig = {}) {
+    super("pattern-based-analyzer", config);
   }
 
   /**
-   * Analyze failed task and categorize failure
-   * @param {Array} steps - Execution steps
-   * @param {string} failureReason - Reason for failure
-   * @param {Object} taskSpec - Task specification
-   * @returns {Object} Failure analysis
+   * Analyze failed task and categorize failure based on error patterns
    */
-  async analyze(steps, failureReason, taskSpec) {
+  async analyze(
+    steps: any[],
+    failureReason: string,
+    taskSpec: any
+  ): Promise<FailureAnalysisResult | null> {
     // Find first failed step
-    const failedStep = steps.find((s) => !s.success);
+    const failedStep = steps.find((s) => !s.success) as ExecutionStep;
 
     if (!failedStep) {
-      return this.createAnalysis(
+      return this.createResult(
         "UNKNOWN_ERROR",
         "Task failed but no failed step found",
-        [],
-        "Review task execution logs"
+        "Review task execution logs",
+        { phase: "unknown", errorType: "UnknownError" }
       );
     }
 
@@ -33,7 +47,7 @@ class FailureAnalyzer {
 
     // Detect category based on error patterns
     const category = this.detectCategory(error, action, failedStep);
-    
+
     if (!category) {
       return null; // No pattern match
     }
@@ -45,23 +59,29 @@ class FailureAnalyzer {
       failedStep
     );
 
-    return {
-      analyzer: this.name,
-      ...analysis,
-      detectedAt: new Date().toISOString(),
-      evidence: {
+    return this.createResult(
+      analysis.category,
+      analysis.reason,
+      analysis.suggestedAction,
+      {
         actionId: action.actionId,
+        actionType: action.type,
         phase: failedStep.phase,
         errorType: this.extractErrorType(error),
         fullError: error,
       },
-    };
+      analysis.blockedBy
+    );
   }
 
   /**
    * Detect failure category from error patterns
    */
-  detectCategory(error, action, step) {
+  private detectCategory(
+    error: string,
+    action: any,
+    step: ExecutionStep
+  ): string | null {
     const errorLower = error.toLowerCase();
 
     // File/Path errors -> INCOMPLETE_IMPLEMENTATION
@@ -164,7 +184,17 @@ class FailureAnalyzer {
   /**
    * Create detailed analysis for specific category
    */
-  categorizeFailure(category, error, action, step) {
+  private categorizeFailure(
+    category: string,
+    error: string,
+    action: any,
+    step: ExecutionStep
+  ): {
+    category: string;
+    reason: string;
+    blockedBy: string[];
+    suggestedAction: string;
+  } {
     switch (category) {
       case "INCOMPLETE_IMPLEMENTATION":
         return this.analyzeIncompleteImplementation(error, action);
@@ -203,37 +233,41 @@ class FailureAnalyzer {
     }
   }
 
-  analyzeIncompleteImplementation(error, action) {
+  private analyzeIncompleteImplementation(error: string, action: any) {
     const filePath = this.extractFilePath(error, action);
     return this.createAnalysis(
       "INCOMPLETE_IMPLEMENTATION",
       this.extractReason(error) || "Required implementation doesn't exist",
-      [filePath].filter(Boolean),
+      [filePath].filter(Boolean) as string[],
       "Create the missing file/implementation following TDD approach"
     );
   }
 
-  analyzeCompilationError(error, action) {
+  private analyzeCompilationError(error: string, action: any) {
     const errors = this.extractCompilationErrors(error);
     return this.createAnalysis(
       "COMPILATION_ERROR",
-      `TypeScript/JavaScript compilation failed`,
+      "TypeScript/JavaScript compilation failed",
       errors,
       "Fix compilation errors before running tests"
     );
   }
 
-  analyzeEnvironmentError(error, action) {
+  private analyzeEnvironmentError(error: string, action: any) {
     const service = this.extractServiceName(error);
     return this.createAnalysis(
       "ENVIRONMENT_ERROR",
       this.extractReason(error) || "Environment service unavailable",
-      [service].filter(Boolean),
+      [service].filter(Boolean) as string[],
       "Start required services or check environment configuration"
     );
   }
 
-  analyzeAuthenticationError(error, action, step) {
+  private analyzeAuthenticationError(
+    error: string,
+    action: any,
+    step: ExecutionStep
+  ) {
     return this.createAnalysis(
       "AUTHENTICATION_ERROR",
       `Authentication failed: ${
@@ -244,20 +278,20 @@ class FailureAnalyzer {
     );
   }
 
-  analyzeTimeout(error, action, step) {
+  private analyzeTimeout(error: string, action: any, step: ExecutionStep) {
     const url =
       action.parameters?.url ||
       action.parameters?.command ||
       "Unknown operation";
     return this.createAnalysis(
       "TIMEOUT",
-      `Operation exceeded timeout threshold`,
+      "Operation exceeded timeout threshold",
       [url],
       "Check operation performance or increase timeout threshold"
     );
   }
 
-  analyzeDependencyError(error, action) {
+  private analyzeDependencyError(error: string, action: any) {
     const packages = this.extractPackageNames(error);
     return this.createAnalysis(
       "DEPENDENCY_ERROR",
@@ -267,17 +301,21 @@ class FailureAnalyzer {
     );
   }
 
-  analyzeRuntimeError(error, action) {
+  private analyzeRuntimeError(error: string, action: any) {
     const location = this.extractStackLocation(error);
     return this.createAnalysis(
       "RUNTIME_ERROR",
       this.extractReason(error) || "Uncaught exception during execution",
-      [location].filter(Boolean),
+      [location].filter(Boolean) as string[],
       "Add error handling or fix the runtime exception"
     );
   }
 
-  analyzeValidationFailure(error, action, step) {
+  private analyzeValidationFailure(
+    error: string,
+    action: any,
+    step: ExecutionStep
+  ) {
     const validations = this.extractValidationErrors(error, step);
     return this.createAnalysis(
       "VALIDATION_FAILURE",
@@ -287,12 +325,12 @@ class FailureAnalyzer {
     );
   }
 
-  analyzeConfigurationError(error, action) {
+  private analyzeConfigurationError(error: string, action: any) {
     const configFile = this.extractConfigFile(error, action);
     return this.createAnalysis(
       "CONFIGURATION_ERROR",
       this.extractReason(error) || "Invalid or missing configuration",
-      [configFile].filter(Boolean),
+      [configFile].filter(Boolean) as string[],
       "Fix configuration file syntax or add missing settings"
     );
   }
@@ -300,7 +338,17 @@ class FailureAnalyzer {
   /**
    * Helper: Create analysis object
    */
-  createAnalysis(category, reason, blockedBy, suggestedAction) {
+  private createAnalysis(
+    category: string,
+    reason: string,
+    blockedBy: string[],
+    suggestedAction: string
+  ): {
+    category: string;
+    reason: string;
+    blockedBy: string[];
+    suggestedAction: string;
+  } {
     return {
       category,
       reason,
@@ -312,7 +360,7 @@ class FailureAnalyzer {
   /**
    * Extract helpers
    */
-  extractFilePath(error, action) {
+  private extractFilePath(error: string, action: any): string | null {
     // Try to extract from error message
     const fileMatch =
       error.match(/File not found: (.+)$/i) || error.match(/ENOENT: (.+)$/i);
@@ -324,13 +372,13 @@ class FailureAnalyzer {
     return null;
   }
 
-  extractReason(error) {
+  private extractReason(error: string): string {
     // Get first line of error (usually most descriptive)
     const firstLine = error.split("\n")[0];
     return firstLine.trim();
   }
 
-  extractCompilationErrors(error) {
+  private extractCompilationErrors(error: string): string[] {
     // Extract TS error lines
     const lines = error.split("\n");
     return lines
@@ -339,7 +387,7 @@ class FailureAnalyzer {
       .map((line) => line.trim());
   }
 
-  extractServiceName(error) {
+  private extractServiceName(error: string): string {
     const matches =
       error.match(/(\w+)\s+not running/i) ||
       error.match(/connect.*:(\d+)/i) ||
@@ -347,18 +395,21 @@ class FailureAnalyzer {
     return matches ? matches[1] : "Required service";
   }
 
-  extractPackageNames(error) {
+  private extractPackageNames(error: string): string[] {
     const packageMatch = error.match(/@[\w-]+\/[\w-]+|[\w-]+@[\d.]+/g);
     return packageMatch || ["npm dependencies"];
   }
 
-  extractStackLocation(error) {
+  private extractStackLocation(error: string): string | null {
     const stackMatch = error.match(/at .+ \((.+:\d+:\d+)\)/);
     return stackMatch ? stackMatch[1] : null;
   }
 
-  extractValidationErrors(error, step) {
-    const errors = [];
+  private extractValidationErrors(
+    error: string,
+    step: ExecutionStep
+  ): string[] {
+    const errors: string[] = [];
 
     // Extract from error message
     if (error.includes("Expected") && error.includes("but got")) {
@@ -377,7 +428,7 @@ class FailureAnalyzer {
     return errors.length > 0 ? errors : ["Validation criteria not met"];
   }
 
-  extractConfigFile(error, action) {
+  private extractConfigFile(error: string, action: any): string {
     const fileMatch = error.match(/([\w.]+\.json|[\w.]+\.yaml|[\w.]+\.yml)/i);
     if (fileMatch) return fileMatch[1];
 
@@ -386,10 +437,10 @@ class FailureAnalyzer {
     return "configuration file";
   }
 
-  extractErrorType(error) {
+  private extractErrorType(error: string): string {
     const typeMatch = error.match(/^(\w+Error|ENOENT|ECONNREFUSED|ETIMEDOUT):/);
     return typeMatch ? typeMatch[1] : "Error";
   }
 }
 
-module.exports = FailureAnalyzer;
+export default PatternBasedAnalyzer;

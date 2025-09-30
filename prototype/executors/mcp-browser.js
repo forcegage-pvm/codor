@@ -8,7 +8,7 @@
  */
 
 const { spawn } = require("child_process");
-const BaseExecutor = require("../core/base-executor");
+const { BaseExecutor } = require("../core/base-executor");
 
 class MCPBrowserExecutor extends BaseExecutor {
   constructor() {

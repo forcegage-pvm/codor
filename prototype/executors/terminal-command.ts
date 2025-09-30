@@ -7,15 +7,42 @@
  * Action Type: TERMINAL_COMMAND
  */
 
-const { spawn } = require("child_process");
-const BaseExecutor = require("../core/base-executor");
+import { spawn, ChildProcess } from "child_process";
+import { BaseExecutor, ExecutorConfig, ExecutionResult } from "../core/base-executor";
 
-class TerminalCommandExecutor extends BaseExecutor {
-  getActionTypes() {
+interface TerminalCommandParameters {
+  command: string;
+  workingDirectory?: string;
+  environment?: Record<string, string>;
+  expectedExitCodes?: number[];
+  shell?: string;
+  background?: boolean;
+}
+
+interface TerminalCommandResult {
+  command: string;
+  workingDirectory: string;
+  exitCode?: number;
+  stdout?: string;
+  stderr?: string;
+  expectedExitCodes?: number[];
+  timestamp: string;
+  background?: boolean;
+  pid?: number;
+  status?: string;
+}
+
+export class TerminalCommandExecutor extends BaseExecutor {
+  private backgroundProcesses: ChildProcess[] = [];
+
+  getActionTypes(): string[] {
     return ["TERMINAL_COMMAND"];
   }
 
-  async execute(parameters, globalConfig) {
+  async execute(
+    parameters: TerminalCommandParameters,
+    globalConfig: ExecutorConfig
+  ): Promise<ExecutionResult> {
     this.validateParameters(parameters, ["command"]);
 
     const {
@@ -24,14 +51,14 @@ class TerminalCommandExecutor extends BaseExecutor {
       environment = {},
       expectedExitCodes = [0],
       shell = "powershell.exe", // Default to PowerShell on Windows
-      background = false, // NEW: Support background processes
+      background = false,
     } = parameters;
 
     // Background process (e.g., dev server)
     if (background) {
       return this.executeBackground(
         command,
-        workingDirectory || globalConfig.workspaceRoot,
+        workingDirectory || (globalConfig.workspaceRoot as string),
         environment,
         globalConfig
       );
@@ -41,12 +68,12 @@ class TerminalCommandExecutor extends BaseExecutor {
     return new Promise((resolve, reject) => {
       const mergedEnv = {
         ...process.env,
-        ...globalConfig.environment,
+        ...(globalConfig.environment as Record<string, string>),
         ...environment,
       };
 
       const child = spawn(shell, ["-Command", command], {
-        cwd: workingDirectory || globalConfig.workspaceRoot,
+        cwd: workingDirectory || (globalConfig.workspaceRoot as string),
         env: mergedEnv,
         stdio: ["pipe", "pipe", "pipe"],
       });
@@ -54,23 +81,23 @@ class TerminalCommandExecutor extends BaseExecutor {
       let stdout = "";
       let stderr = "";
 
-      child.stdout.on("data", (data) => {
+      child.stdout?.on("data", (data: Buffer) => {
         const output = data.toString();
         stdout += output;
         process.stdout.write(output); // Real-time output
       });
 
-      child.stderr.on("data", (data) => {
+      child.stderr?.on("data", (data: Buffer) => {
         const output = data.toString();
         stderr += output;
         process.stderr.write(output);
       });
 
-      child.on("close", (code) => {
-        const result = {
+      child.on("close", (code: number | null) => {
+        const result: TerminalCommandResult = {
           command,
-          workingDirectory: workingDirectory || globalConfig.workspaceRoot,
-          exitCode: code,
+          workingDirectory: workingDirectory || (globalConfig.workspaceRoot as string),
+          exitCode: code || 0,
           stdout,
           stderr,
           expectedExitCodes,
@@ -78,10 +105,10 @@ class TerminalCommandExecutor extends BaseExecutor {
         };
 
         // Check if exit code is acceptable
-        if (expectedExitCodes.includes(code)) {
-          resolve(result);
+        if (expectedExitCodes.includes(code || 0)) {
+          resolve({ success: true, data: result });
         } else {
-          const error = new Error(
+          const error: any = new Error(
             `Command exited with code ${code}. Expected: ${expectedExitCodes.join(
               ", "
             )}`
@@ -91,7 +118,7 @@ class TerminalCommandExecutor extends BaseExecutor {
         }
       });
 
-      child.on("error", (error) => {
+      child.on("error", (error: Error) => {
         reject(error);
       });
     });
@@ -100,10 +127,15 @@ class TerminalCommandExecutor extends BaseExecutor {
   /**
    * Execute command in background (for dev servers, etc.)
    */
-  executeBackground(command, workingDirectory, environment, globalConfig) {
+  private executeBackground(
+    command: string,
+    workingDirectory: string,
+    environment: Record<string, string>,
+    globalConfig: ExecutorConfig
+  ): Promise<ExecutionResult> {
     const mergedEnv = {
       ...process.env,
-      ...globalConfig.environment,
+      ...(globalConfig.environment as Record<string, string>),
       ...environment,
     };
 
@@ -115,38 +147,38 @@ class TerminalCommandExecutor extends BaseExecutor {
     });
 
     // Store process for cleanup
-    if (!this.backgroundProcesses) {
-      this.backgroundProcesses = [];
-    }
     this.backgroundProcesses.push(child);
 
     let stdout = "";
     let stderr = "";
 
-    child.stdout.on("data", (data) => {
+    child.stdout?.on("data", (data: Buffer) => {
       stdout += data.toString();
     });
 
-    child.stderr.on("data", (data) => {
+    child.stderr?.on("data", (data: Buffer) => {
       stderr += data.toString();
     });
 
     // Return immediately for background process
     return Promise.resolve({
-      command,
-      workingDirectory,
-      background: true,
-      pid: child.pid,
-      status: "started",
-      timestamp: new Date().toISOString(),
+      success: true,
+      data: {
+        command,
+        workingDirectory,
+        background: true,
+        pid: child.pid,
+        status: "started",
+        timestamp: new Date().toISOString(),
+      },
     });
   }
 
   /**
    * Cleanup background processes
    */
-  async cleanup() {
-    if (this.backgroundProcesses && this.backgroundProcesses.length > 0) {
+  async cleanup(): Promise<void> {
+    if (this.backgroundProcesses.length > 0) {
       console.log(
         `🧹 Stopping ${this.backgroundProcesses.length} background processes...`
       );
@@ -166,4 +198,4 @@ class TerminalCommandExecutor extends BaseExecutor {
   }
 }
 
-module.exports = TerminalCommandExecutor;
+export default TerminalCommandExecutor;

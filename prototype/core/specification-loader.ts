@@ -4,13 +4,35 @@
  * Loads and validates test specifications (v2.0.0 schema)
  */
 
-const fs = require("fs");
+import * as fs from "fs";
+import * as path from "path";
 
-class SpecificationLoader {
-  async load(testSpecPath) {
+export interface TestSpecification {
+  schemaVersion: string;
+  metadata?: {
+    taskTitle?: string;
+    [key: string]: any;
+  };
+  globalConfiguration: {
+    [key: string]: any;
+  };
+  tasks: {
+    [taskId: string]: {
+      testExecution: {
+        steps: any[];
+      };
+      validationCriteria: any;
+      [key: string]: any;
+    };
+  };
+  [key: string]: any;
+}
+
+export class SpecificationLoader {
+  async load(testSpecPath: string): Promise<TestSpecification> {
     try {
       const content = fs.readFileSync(testSpecPath, "utf8");
-      const spec = JSON.parse(content);
+      const spec = JSON.parse(content) as TestSpecification;
 
       // Validate structure
       this.validate(spec);
@@ -24,7 +46,7 @@ class SpecificationLoader {
       console.log(`📋 Tasks: ${Object.keys(spec.tasks || {}).join(", ")}`);
 
       return spec;
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(`Failed to load specification: ${error.message}`);
     }
   }
@@ -33,22 +55,20 @@ class SpecificationLoader {
    * Substitute environment variables in the spec
    * Replaces ${VAR_NAME} with actual values
    */
-  substituteEnvVars(spec) {
-    const path = require("path");
-
+  private substituteEnvVars(spec: TestSpecification): void {
     // Auto-detect workspace root (test-case folder)
     const repoRoot = process.cwd().replace(/[\\\/]prototype$/, "");
     const workspaceRoot =
       process.env.WORKSPACE_ROOT || path.join(repoRoot, "test-case");
 
-    const envVars = {
+    const envVars: Record<string, string> = {
       WORKSPACE_ROOT: workspaceRoot,
       API_BASE_URL: process.env.API_BASE_URL || "http://localhost:3000",
       ...process.env,
     };
 
     // Recursively replace variables in the spec
-    const replaceInObject = (obj) => {
+    const replaceInObject = (obj: any): any => {
       if (typeof obj === "string") {
         return obj.replace(/\$\{([^}]+)\}/g, (match, varName) => {
           return envVars[varName] || match;
@@ -60,7 +80,7 @@ class SpecificationLoader {
       }
 
       if (obj && typeof obj === "object") {
-        const result = {};
+        const result: any = {};
         for (const [key, value] of Object.entries(obj)) {
           result[key] = replaceInObject(value);
         }
@@ -74,7 +94,7 @@ class SpecificationLoader {
     Object.assign(spec, replaceInObject(spec));
   }
 
-  validate(spec) {
+  private validate(spec: TestSpecification): void {
     if (!spec.schemaVersion) {
       throw new Error("Missing schemaVersion");
     }
@@ -100,4 +120,4 @@ class SpecificationLoader {
   }
 }
 
-module.exports = SpecificationLoader;
+export default SpecificationLoader;

@@ -6,6 +6,15 @@
  * Usage: node run.js <test-spec.json> [options]
  */
 
+// Register ts-node to handle TypeScript modules
+require("ts-node").register({
+  transpileOnly: true,
+  compilerOptions: {
+    module: "commonjs",
+    target: "es2019",
+  },
+});
+
 const TestExecutionEngine = require("./core/engine");
 
 async function main() {

@@ -7,14 +7,38 @@
  * Action Type: HTTP_REQUEST
  */
 
-const BaseExecutor = require("../core/base-executor");
+import { BaseExecutor, ExecutorConfig, ExecutionResult } from "../core/base-executor";
 
-class HTTPRequestExecutor extends BaseExecutor {
-  getActionTypes() {
+interface HTTPRequestParameters {
+  url: string;
+  method: string;
+  headers?: Record<string, string>;
+  body?: any;
+  expectedStatus?: number[];
+  timeout?: number;
+}
+
+interface HTTPRequestResult {
+  url: string;
+  method: string;
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+  body: any;
+  responseTime: number;
+  timestamp: string;
+  expectedStatus: number[];
+}
+
+export class HTTPRequestExecutor extends BaseExecutor {
+  getActionTypes(): string[] {
     return ["HTTP_REQUEST"];
   }
 
-  async execute(parameters, globalConfig) {
+  async execute(
+    parameters: HTTPRequestParameters,
+    globalConfig: ExecutorConfig
+  ): Promise<ExecutionResult> {
     this.validateParameters(parameters, ["url", "method"]);
 
     const {
@@ -27,9 +51,9 @@ class HTTPRequestExecutor extends BaseExecutor {
     } = parameters;
 
     // Use native fetch (Node 18+) or fallback
-    const fetchImpl = globalThis.fetch || require("node-fetch");
+    const fetchImpl = (globalThis as any).fetch || require("node-fetch");
 
-    const requestOptions = {
+    const requestOptions: any = {
       method,
       headers: {
         "Content-Type": "application/json",
@@ -50,7 +74,7 @@ class HTTPRequestExecutor extends BaseExecutor {
 
       // Parse response body
       const contentType = response.headers.get("content-type");
-      let responseBody;
+      let responseBody: any;
 
       if (contentType && contentType.includes("application/json")) {
         responseBody = await response.json();
@@ -58,7 +82,7 @@ class HTTPRequestExecutor extends BaseExecutor {
         responseBody = await response.text();
       }
 
-      const result = {
+      const result: HTTPRequestResult = {
         url,
         method,
         status: response.status,
@@ -72,9 +96,9 @@ class HTTPRequestExecutor extends BaseExecutor {
 
       // Check if status code is acceptable
       if (expectedStatus.includes(response.status)) {
-        return result;
+        return { success: true, data: result };
       } else {
-        const error = new Error(
+        const error: any = new Error(
           `HTTP ${response.status} ${
             response.statusText
           }. Expected: ${expectedStatus.join(", ")}`
@@ -82,7 +106,7 @@ class HTTPRequestExecutor extends BaseExecutor {
         error.result = result;
         throw error;
       }
-    } catch (error) {
+    } catch (error: any) {
       if (error.name === "AbortError") {
         throw new Error(`HTTP request timeout after ${timeout}ms`);
       }
@@ -91,4 +115,4 @@ class HTTPRequestExecutor extends BaseExecutor {
   }
 }
 
-module.exports = HTTPRequestExecutor;
+export default HTTPRequestExecutor;

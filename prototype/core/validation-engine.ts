@@ -4,9 +4,49 @@
  * Evaluates validation criteria against execution results
  */
 
-class ValidationEngine {
-  evaluate(stepResults, validationCriteria) {
-    const result = {
+export interface ValidationCondition {
+  condition: string;
+  description: string;
+}
+
+export interface ValidationCriteria {
+  successConditions?: ValidationCondition[];
+  failureConditions?: ValidationCondition[];
+}
+
+export interface ValidationEvaluation {
+  condition: string;
+  description: string;
+  passed: boolean;
+}
+
+export interface ValidationResult {
+  passed: boolean;
+  successConditions: any[];
+  failureConditions: any[];
+  evaluations: ValidationEvaluation[];
+}
+
+export interface StepResult {
+  success: boolean;
+  action: {
+    actionId: string;
+    [key: string]: any;
+  };
+  data?: {
+    stdout?: string;
+    stderr?: string;
+    [key: string]: any;
+  };
+  [key: string]: any;
+}
+
+export class ValidationEngine {
+  evaluate(
+    stepResults: StepResult[],
+    validationCriteria: ValidationCriteria
+  ): ValidationResult {
+    const result: ValidationResult = {
       passed: true,
       successConditions: [],
       failureConditions: [],
@@ -19,7 +59,7 @@ class ValidationEngine {
     // Evaluate success conditions
     for (const condition of validationCriteria.successConditions || []) {
       try {
-        const evaluation = {
+        const evaluation: ValidationEvaluation = {
           condition: condition.condition,
           description: condition.description,
           passed: this.evaluateCondition(condition.condition, context),
@@ -33,7 +73,7 @@ class ValidationEngine {
         } else {
           console.log(`✅ Passed: ${condition.description}`);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.log(`⚠️ Evaluation error: ${error.message}`);
         result.passed = false;
       }
@@ -42,8 +82,8 @@ class ValidationEngine {
     return result;
   }
 
-  buildContext(stepResults) {
-    const context = {};
+  private buildContext(stepResults: StepResult[]): Record<string, any> {
+    const context: Record<string, any> = {};
 
     for (const step of stepResults) {
       const actionId = step.action.actionId;
@@ -62,14 +102,17 @@ class ValidationEngine {
     return context;
   }
 
-  evaluateCondition(condition, context) {
+  private evaluateCondition(
+    condition: string,
+    context: Record<string, any>
+  ): boolean {
     // Replace STEP.N notation with bracket notation STEP["N"]
     // This allows JavaScript to handle numeric IDs
     try {
       // Create scope objects for STEP, PREREQ, CLEANUP
-      const STEP = {};
-      const PREREQ = {};
-      const CLEANUP = {};
+      const STEP: Record<string, any> = {};
+      const PREREQ: Record<string, any> = {};
+      const CLEANUP: Record<string, any> = {};
 
       // Populate with context data
       for (const [actionId, data] of Object.entries(context)) {
@@ -81,19 +124,19 @@ class ValidationEngine {
 
       // Evaluate condition with proper scope
       return eval(condition);
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Condition evaluation error: ${error.message}`);
       return false;
     }
   }
 
-  countErrors(text) {
+  private countErrors(text: string): number {
     return (text.match(/error/gi) || []).length;
   }
 
-  countWarnings(text) {
+  private countWarnings(text: string): number {
     return (text.match(/warning/gi) || []).length;
   }
 }
 
-module.exports = ValidationEngine;
+export default ValidationEngine;

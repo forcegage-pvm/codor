@@ -5,28 +5,40 @@
  * - Executors from /executors/ directory
  * - Validators from /validators/ directory
  * - Reporters from /reporters/ directory
+ * - Failure Analyzers from /failure-analyzers/ directory
+ * - Technical Debt Detectors from /technical-debt-detectors/ directory
  *
  * Contributors add new features by simply dropping a file in the appropriate folder
  * No core engine changes required
  */
 
-const fs = require("fs");
-const path = require("path");
+import * as fs from "fs";
+import * as path from "path";
+import { BaseExecutor } from "./base-executor";
+import { BaseFailureAnalyzer } from "./base-failure-analyzer";
+import { BaseTechnicalDebtDetector } from "./base-technical-debt-detector";
 
-class PluginRegistry {
-  constructor(baseDir) {
+export class PluginRegistry {
+  private baseDir: string;
+  private executors: Map<string, BaseExecutor>;
+  private validators: Map<string, any>;
+  private reporters: Map<string, any>;
+  private failureAnalyzers: BaseFailureAnalyzer[];
+  private debtDetectors: BaseTechnicalDebtDetector[];
+
+  constructor(baseDir: string) {
     this.baseDir = baseDir;
     this.executors = new Map();
     this.validators = new Map();
     this.reporters = new Map();
-    this.failureAnalyzers = []; // Array of analyzer instances
-    this.debtDetectors = []; // Array of detector instances
+    this.failureAnalyzers = [];
+    this.debtDetectors = [];
   }
 
   /**
    * Load all plugins from their directories
    */
-  async loadAll() {
+  async loadAll(): Promise<void> {
     console.log("🔌 Loading plugins...");
 
     await this.loadExecutors();
@@ -43,7 +55,7 @@ class PluginRegistry {
   /**
    * Auto-discover and load all executor plugins
    */
-  async loadExecutors() {
+  private async loadExecutors(): Promise<void> {
     const executorsDir = path.join(this.baseDir, "executors");
 
     if (!fs.existsSync(executorsDir)) {
@@ -53,20 +65,25 @@ class PluginRegistry {
 
     const files = fs
       .readdirSync(executorsDir)
-      .filter((f) => f.endsWith(".js") && !f.startsWith("_")); // Ignore helper files starting with _
+      .filter(
+        (f) => (f.endsWith(".js") || f.endsWith(".ts")) && !f.startsWith("_")
+      );
 
     for (const file of files) {
       try {
-        const ExecutorClass = require(path.join(executorsDir, file));
+        const modulePath = path.join(executorsDir, file);
+        const ExecutorModule = require(modulePath);
+
+        // Handle both CommonJS and ES6 exports
+        const ExecutorClass = ExecutorModule.default || ExecutorModule;
         const executor = new ExecutorClass();
 
-        // Register by the action type(s) this executor handles
         const actionTypes = executor.getActionTypes();
         for (const type of actionTypes) {
           this.executors.set(type, executor);
           console.log(`  📦 Loaded executor: ${type} (${file})`);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error(`  ❌ Failed to load executor ${file}: ${error.message}`);
       }
     }
@@ -75,7 +92,7 @@ class PluginRegistry {
   /**
    * Auto-discover and load all validator plugins
    */
-  async loadValidators() {
+  private async loadValidators(): Promise<void> {
     const validatorsDir = path.join(this.baseDir, "validators");
 
     if (!fs.existsSync(validatorsDir)) {
@@ -85,11 +102,16 @@ class PluginRegistry {
 
     const files = fs
       .readdirSync(validatorsDir)
-      .filter((f) => f.endsWith(".js") && !f.startsWith("_"));
+      .filter(
+        (f) => (f.endsWith(".js") || f.endsWith(".ts")) && !f.startsWith("_")
+      );
 
     for (const file of files) {
       try {
-        const ValidatorClass = require(path.join(validatorsDir, file));
+        const modulePath = path.join(validatorsDir, file);
+        const ValidatorModule = require(modulePath);
+
+        const ValidatorClass = ValidatorModule.default || ValidatorModule;
         const validator = new ValidatorClass();
 
         const validatorTypes = validator.getValidatorTypes();
@@ -97,7 +119,7 @@ class PluginRegistry {
           this.validators.set(type, validator);
           console.log(`  📦 Loaded validator: ${type} (${file})`);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error(
           `  ❌ Failed to load validator ${file}: ${error.message}`
         );
@@ -108,7 +130,7 @@ class PluginRegistry {
   /**
    * Auto-discover and load all reporter plugins
    */
-  async loadReporters() {
+  private async loadReporters(): Promise<void> {
     const reportersDir = path.join(this.baseDir, "reporters");
 
     if (!fs.existsSync(reportersDir)) {
@@ -118,11 +140,16 @@ class PluginRegistry {
 
     const files = fs
       .readdirSync(reportersDir)
-      .filter((f) => f.endsWith(".js") && !f.startsWith("_"));
+      .filter(
+        (f) => (f.endsWith(".js") || f.endsWith(".ts")) && !f.startsWith("_")
+      );
 
     for (const file of files) {
       try {
-        const ReporterClass = require(path.join(reportersDir, file));
+        const modulePath = path.join(reportersDir, file);
+        const ReporterModule = require(modulePath);
+
+        const ReporterClass = ReporterModule.default || ReporterModule;
         const reporter = new ReporterClass();
 
         const reporterTypes = reporter.getReporterTypes();
@@ -130,7 +157,7 @@ class PluginRegistry {
           this.reporters.set(type, reporter);
           console.log(`  📦 Loaded reporter: ${type} (${file})`);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error(`  ❌ Failed to load reporter ${file}: ${error.message}`);
       }
     }
@@ -139,7 +166,7 @@ class PluginRegistry {
   /**
    * Auto-discover and load all failure analyzer plugins
    */
-  async loadFailureAnalyzers() {
+  private async loadFailureAnalyzers(): Promise<void> {
     const analyzersDir = path.join(this.baseDir, "failure-analyzers");
 
     if (!fs.existsSync(analyzersDir)) {
@@ -149,17 +176,25 @@ class PluginRegistry {
 
     const files = fs
       .readdirSync(analyzersDir)
-      .filter((f) => f.endsWith(".js") && !f.startsWith("_"));
+      .filter(
+        (f) => (f.endsWith(".js") || f.endsWith(".ts")) && !f.startsWith("_")
+      );
 
     for (const file of files) {
       try {
-        const AnalyzerClass = require(path.join(analyzersDir, file));
+        const modulePath = path.join(analyzersDir, file);
+        const AnalyzerModule = require(modulePath);
+
+        // Handle both CommonJS and ES6 exports
+        const AnalyzerClass = AnalyzerModule.default || AnalyzerModule;
         const analyzer = new AnalyzerClass();
 
         this.failureAnalyzers.push(analyzer);
         console.log(`  📦 Loaded failure analyzer: ${analyzer.name || file}`);
-      } catch (error) {
-        console.error(`  ❌ Failed to load failure analyzer ${file}: ${error.message}`);
+      } catch (error: any) {
+        console.error(
+          `  ❌ Failed to load failure analyzer ${file}: ${error.message}`
+        );
       }
     }
   }
@@ -167,27 +202,37 @@ class PluginRegistry {
   /**
    * Auto-discover and load all technical debt detector plugins
    */
-  async loadDebtDetectors() {
+  private async loadDebtDetectors(): Promise<void> {
     const detectorsDir = path.join(this.baseDir, "technical-debt-detectors");
 
     if (!fs.existsSync(detectorsDir)) {
-      console.warn(`⚠️ Technical debt detectors directory not found: ${detectorsDir}`);
+      console.warn(
+        `⚠️ Technical debt detectors directory not found: ${detectorsDir}`
+      );
       return;
     }
 
     const files = fs
       .readdirSync(detectorsDir)
-      .filter((f) => f.endsWith(".js") && !f.startsWith("_"));
+      .filter(
+        (f) => (f.endsWith(".js") || f.endsWith(".ts")) && !f.startsWith("_")
+      );
 
     for (const file of files) {
       try {
-        const DetectorClass = require(path.join(detectorsDir, file));
+        const modulePath = path.join(detectorsDir, file);
+        const DetectorModule = require(modulePath);
+
+        // Handle both CommonJS and ES6 exports
+        const DetectorClass = DetectorModule.default || DetectorModule;
         const detector = new DetectorClass();
 
         this.debtDetectors.push(detector);
         console.log(`  📦 Loaded debt detector: ${detector.name || file}`);
-      } catch (error) {
-        console.error(`  ❌ Failed to load debt detector ${file}: ${error.message}`);
+      } catch (error: any) {
+        console.error(
+          `  ❌ Failed to load debt detector ${file}: ${error.message}`
+        );
       }
     }
   }
@@ -195,67 +240,73 @@ class PluginRegistry {
   /**
    * Get executor for action type
    */
-  getExecutor(actionType) {
+  getExecutor(actionType: string): BaseExecutor | undefined {
     return this.executors.get(actionType);
   }
 
   /**
    * Get validator for validator type
    */
-  getValidator(validatorType) {
+  getValidator(validatorType: string): any | undefined {
     return this.validators.get(validatorType);
   }
 
   /**
    * Get reporter for reporter type
    */
-  getReporter(reporterType) {
+  getReporter(reporterType: string): any | undefined {
     return this.reporters.get(reporterType);
   }
 
   /**
    * Get all failure analyzers
    */
-  getFailureAnalyzers() {
+  getFailureAnalyzers(): BaseFailureAnalyzer[] {
     return this.failureAnalyzers;
   }
 
   /**
    * Get all technical debt detectors
    */
-  getDebtDetectors() {
+  getDebtDetectors(): BaseTechnicalDebtDetector[] {
     return this.debtDetectors;
   }
 
   /**
    * Get count of loaded executors
    */
-  getExecutorCount() {
+  getExecutorCount(): number {
     return this.executors.size;
   }
 
   /**
    * List all available plugins
    */
-  listAll() {
+  listAll(): {
+    executors: string[];
+    validators: string[];
+    reporters: string[];
+    failureAnalyzers: string[];
+    debtDetectors: string[];
+  } {
     return {
       executors: Array.from(this.executors.keys()),
       validators: Array.from(this.validators.keys()),
       reporters: Array.from(this.reporters.keys()),
-      failureAnalyzers: this.failureAnalyzers.map(a => a.name || "unnamed"),
-      debtDetectors: this.debtDetectors.map(d => d.name || "unnamed"),
+      failureAnalyzers: this.failureAnalyzers.map((a) => a.name || "unnamed"),
+      debtDetectors: this.debtDetectors.map((d) => d.name || "unnamed"),
     };
   }
 
   /**
    * Cleanup all plugins
    */
-  async cleanupAll() {
+  async cleanupAll(): Promise<void> {
     for (const [type, executor] of this.executors) {
       if (executor.cleanup) {
         try {
           await executor.cleanup();
-        } catch (error) {
+        } catch (error: any) {
           console.error(
             `⚠️ Cleanup error for executor ${type}: ${error.message}`
           );
@@ -265,4 +316,4 @@ class PluginRegistry {
   }
 }
 
-module.exports = PluginRegistry;
+export default PluginRegistry;

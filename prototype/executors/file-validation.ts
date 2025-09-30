@@ -7,16 +7,44 @@
  * Action Type: FILE_VALIDATION
  */
 
-const fs = require("fs");
-const path = require("path");
-const BaseExecutor = require("../core/base-executor");
+import * as fs from "fs";
+import * as path from "path";
+import { BaseExecutor, ExecutorConfig, ExecutionResult } from "../core/base-executor";
 
-class FileValidationExecutor extends BaseExecutor {
-  getActionTypes() {
+interface FileValidationParameters {
+  filePath: string;
+  validationType: "EXISTS" | "NOT_EXISTS" | "CONTENT_MATCH" | "CONTENT_PATTERN" | "JSON_VALID";
+  expectedContent?: string;
+  contentPattern?: string;
+  minSize?: number;
+  maxSize?: number;
+  encoding?: BufferEncoding;
+}
+
+interface FileValidationResult {
+  filePath: string;
+  validationType: string;
+  exists: boolean;
+  timestamp: string;
+  size?: number;
+  modified?: string;
+  isDirectory?: boolean;
+  contentLength?: number;
+  contentMatches?: boolean;
+  patternMatches?: boolean;
+  json?: any;
+  isValidJSON?: boolean;
+}
+
+export class FileValidationExecutor extends BaseExecutor {
+  getActionTypes(): string[] {
     return ["FILE_VALIDATION"];
   }
 
-  async execute(parameters, globalConfig) {
+  async execute(
+    parameters: FileValidationParameters,
+    globalConfig: ExecutorConfig
+  ): Promise<ExecutionResult> {
     this.validateParameters(parameters, ["filePath", "validationType"]);
 
     const {
@@ -31,9 +59,9 @@ class FileValidationExecutor extends BaseExecutor {
 
     const absolutePath = path.isAbsolute(filePath)
       ? filePath
-      : path.join(globalConfig.workspaceRoot, filePath);
+      : path.join(globalConfig.workspaceRoot as string, filePath);
 
-    const result = {
+    const result: FileValidationResult = {
       filePath: absolutePath,
       validationType,
       exists: fs.existsSync(absolutePath),
@@ -43,7 +71,7 @@ class FileValidationExecutor extends BaseExecutor {
     // Check existence
     if (!result.exists) {
       if (validationType === "NOT_EXISTS") {
-        return result; // Success - file doesn't exist as expected
+        return { success: true, data: result }; // Success - file doesn't exist as expected
       } else {
         throw new Error(`File not found: ${absolutePath}`);
       }
@@ -106,14 +134,14 @@ class FileValidationExecutor extends BaseExecutor {
         const content = fs.readFileSync(absolutePath, encoding);
         result.json = JSON.parse(content);
         result.isValidJSON = true;
-      } catch (error) {
+      } catch (error: any) {
         result.isValidJSON = false;
         throw new Error(`Invalid JSON: ${error.message}`);
       }
     }
 
-    return result;
+    return { success: true, data: result };
   }
 }
 
-module.exports = FileValidationExecutor;
+export default FileValidationExecutor;
