@@ -7,10 +7,56 @@
  * Action Type: MCP_BROWSER_COMMAND
  */
 
-const { spawn } = require("child_process");
-const { BaseExecutor } = require("../core/base-executor");
+import { ChildProcess, spawn } from "child_process";
+import {
+  BaseExecutor,
+  ExecutionResult,
+  ExecutorConfig,
+} from "../core/base-executor";
+
+interface MCPRequest {
+  jsonrpc: string;
+  id: number;
+  method: string;
+  params: any;
+}
+
+interface MCPNotification {
+  jsonrpc: string;
+  method: string;
+  params?: any;
+}
+
+interface MCPResponse {
+  jsonrpc: string;
+  id?: number;
+  result?: any;
+  error?: {
+    code: number;
+    message: string;
+    data?: any;
+  };
+  method?: string;
+}
+
+interface PendingRequest {
+  resolve: (value: any) => void;
+  reject: (reason: Error) => void;
+}
+
+interface MCPBrowserParameters {
+  action: string;
+  [key: string]: any;
+}
 
 class MCPBrowserExecutor extends BaseExecutor {
+  private mcpProcess: ChildProcess | null;
+  private mcpInitialized: boolean;
+  private messageId: number;
+  private pendingRequests: Map<number, PendingRequest>;
+  private mcpCapabilities: any;
+  private outputBuffer: string;
+
   constructor() {
     super();
     this.mcpProcess = null;
@@ -21,11 +67,14 @@ class MCPBrowserExecutor extends BaseExecutor {
     this.outputBuffer = "";
   }
 
-  getActionTypes() {
+  getActionTypes(): string[] {
     return ["MCP_BROWSER_COMMAND"];
   }
 
-  async execute(parameters, globalConfig) {
+  async execute(
+    parameters: MCPBrowserParameters,
+    globalConfig: ExecutorConfig
+  ): Promise<ExecutionResult> {
     this.validateParameters(parameters, ["action"]);
 
     const { action, ...actionParams } = parameters;
@@ -39,10 +88,13 @@ class MCPBrowserExecutor extends BaseExecutor {
     if (!this.mcpInitialized && action === "initialize") {
       const initResult = await this.initializeMCP();
       return {
-        action,
-        initialized: true,
-        capabilities: initResult,
-        timestamp: new Date().toISOString(),
+        success: true,
+        data: {
+          action,
+          initialized: true,
+          capabilities: initResult,
+          timestamp: new Date().toISOString(),
+        },
       };
     }
 
@@ -50,10 +102,13 @@ class MCPBrowserExecutor extends BaseExecutor {
     if (action === "list_tools") {
       const tools = await this.listTools();
       return {
-        action,
-        tools,
-        count: tools.length,
-        timestamp: new Date().toISOString(),
+        success: true,
+        data: {
+          action,
+          tools,
+          count: tools.length,
+          timestamp: new Date().toISOString(),
+        },
       };
     }
 
@@ -61,17 +116,20 @@ class MCPBrowserExecutor extends BaseExecutor {
     const result = await this.executeMCPTool(action, actionParams);
 
     return {
-      action,
-      parameters: actionParams,
-      result,
-      timestamp: new Date().toISOString(),
+      success: true,
+      data: {
+        action,
+        parameters: actionParams,
+        result,
+        timestamp: new Date().toISOString(),
+      },
     };
   }
 
   /**
    * Start the MCP server process
    */
-  async startMCPServer() {
+  private async startMCPServer(): Promise<void> {
     return new Promise((resolve, reject) => {
       console.log("🌐 Starting Chrome DevTools MCP server...");
 
@@ -90,12 +148,12 @@ class MCPBrowserExecutor extends BaseExecutor {
       );
 
       // Set up output handling
-      this.mcpProcess.stdout.on("data", (data) => {
+      this.mcpProcess.stdout!.on("data", (data: Buffer) => {
         this.outputBuffer += data.toString();
         this.processMessages();
       });
 
-      this.mcpProcess.stderr.on("data", (data) => {
+      this.mcpProcess.stderr!.on("data", (data: Buffer) => {
         const message = data.toString();
         // Filter out npm warnings
         if (!message.includes("npm") && !message.includes("WARN")) {
@@ -103,11 +161,11 @@ class MCPBrowserExecutor extends BaseExecutor {
         }
       });
 
-      this.mcpProcess.on("error", (error) => {
+      this.mcpProcess.on("error", (error: Error) => {
         reject(new Error(`Failed to start MCP server: ${error.message}`));
       });
 
-      this.mcpProcess.on("exit", (code) => {
+      this.mcpProcess.on("exit", (code: number | null) => {
         if (code !== 0 && code !== null) {
           console.log(`⚠️  MCP server exited with code ${code}`);
         }
@@ -124,8 +182,8 @@ class MCPBrowserExecutor extends BaseExecutor {
   /**
    * Initialize MCP protocol
    */
-  async initializeMCP() {
-    const request = {
+  private async initializeMCP(): Promise<any> {
+    const request: MCPRequest = {
       jsonrpc: "2.0",
       id: this.messageId++,
       method: "initialize",
@@ -157,8 +215,8 @@ class MCPBrowserExecutor extends BaseExecutor {
   /**
    * List available MCP tools
    */
-  async listTools() {
-    const request = {
+  private async listTools(): Promise<any[]> {
+    const request: MCPRequest = {
       jsonrpc: "2.0",
       id: this.messageId++,
       method: "tools/list",
@@ -172,8 +230,8 @@ class MCPBrowserExecutor extends BaseExecutor {
   /**
    * Execute an MCP tool
    */
-  async executeMCPTool(toolName, params) {
-    const request = {
+  private async executeMCPTool(toolName: string, params: any): Promise<any> {
+    const request: MCPRequest = {
       jsonrpc: "2.0",
       id: this.messageId++,
       method: "tools/call",
@@ -189,7 +247,7 @@ class MCPBrowserExecutor extends BaseExecutor {
   /**
    * Send JSON-RPC request and wait for response
    */
-  async sendRequest(request) {
+  private async sendRequest(request: MCPRequest): Promise<any> {
     return new Promise((resolve, reject) => {
       const requestId = request.id;
 
@@ -198,7 +256,7 @@ class MCPBrowserExecutor extends BaseExecutor {
 
       // Send request
       const message = JSON.stringify(request) + "\n";
-      this.mcpProcess.stdin.write(message);
+      this.mcpProcess!.stdin!.write(message);
 
       // Timeout after 30 seconds
       setTimeout(() => {
@@ -217,15 +275,15 @@ class MCPBrowserExecutor extends BaseExecutor {
   /**
    * Send notification (no response expected)
    */
-  async sendNotification(notification) {
+  private async sendNotification(notification: MCPNotification): Promise<void> {
     const message = JSON.stringify(notification) + "\n";
-    this.mcpProcess.stdin.write(message);
+    this.mcpProcess!.stdin!.write(message);
   }
 
   /**
    * Process incoming messages from MCP server
    */
-  processMessages() {
+  private processMessages(): void {
     const lines = this.outputBuffer.split("\n");
     this.outputBuffer = lines.pop() || ""; // Keep incomplete line
 
@@ -233,11 +291,11 @@ class MCPBrowserExecutor extends BaseExecutor {
       if (!line.trim()) continue;
 
       try {
-        const message = JSON.parse(line);
+        const message: MCPResponse = JSON.parse(line);
 
         // Handle response
-        if (message.id && this.pendingRequests.has(message.id)) {
-          const pending = this.pendingRequests.get(message.id);
+        if (message.id !== undefined && this.pendingRequests.has(message.id)) {
+          const pending = this.pendingRequests.get(message.id)!;
           this.pendingRequests.delete(message.id);
 
           if (message.error) {
@@ -254,7 +312,7 @@ class MCPBrowserExecutor extends BaseExecutor {
         }
 
         // Handle notifications (if needed in future)
-        if (message.method && !message.id) {
+        if (message.method && message.id === undefined) {
           // Server notification - can log or handle if needed
         }
       } catch (error) {
@@ -267,7 +325,7 @@ class MCPBrowserExecutor extends BaseExecutor {
   /**
    * Cleanup MCP connection
    */
-  async cleanup() {
+  async cleanup(): Promise<void> {
     if (this.mcpProcess) {
       console.log("🧹 Closing MCP server connection...");
 
@@ -299,4 +357,4 @@ class MCPBrowserExecutor extends BaseExecutor {
   }
 }
 
-module.exports = MCPBrowserExecutor;
+export default MCPBrowserExecutor;

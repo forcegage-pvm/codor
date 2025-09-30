@@ -13,14 +13,13 @@
  * @date 2025-09-30
  */
 
-import * as fs from "fs";
 import * as path from "path";
-import { PluginRegistry } from "./plugin-registry";
-import { SpecificationLoader, TestSpecification } from "./specification-loader";
-import { EvidenceCollector } from "./evidence-collector";
-import { ValidationEngine } from "./validation-engine";
 import { FailureAnalysisResult } from "./base-failure-analyzer";
 import { TechnicalDebtItem } from "./base-technical-debt-detector";
+import { EvidenceCollector } from "./evidence-collector";
+import { PluginRegistry } from "./plugin-registry";
+import { SpecificationLoader, TestSpecification } from "./specification-loader";
+import { ValidationEngine } from "./validation-engine";
 
 // ============================================================================
 // TYPE DEFINITIONS
@@ -171,7 +170,8 @@ class TestExecutionEngine {
     }
 
     results.endTime = new Date();
-    results.durationMs = results.endTime.getTime() - results.startTime.getTime();
+    results.durationMs =
+      results.endTime.getTime() - results.startTime.getTime();
 
     // Generate final report
     await this.evidenceCollector!.generateFinalReport(results);
@@ -182,7 +182,10 @@ class TestExecutionEngine {
   /**
    * Execute single task
    */
-  private async executeTask(taskId: string, taskSpec: any): Promise<TaskResult> {
+  private async executeTask(
+    taskId: string,
+    taskSpec: any
+  ): Promise<TaskResult> {
     const taskResult: TaskResult = {
       taskId,
       title: taskSpec.title,
@@ -212,7 +215,8 @@ class TestExecutionEngine {
 
           // Analyze failure before returning
           taskResult.endTime = new Date();
-          taskResult.durationMs = taskResult.endTime.getTime() - taskResult.startTime.getTime();
+          taskResult.durationMs =
+            taskResult.endTime.getTime() - taskResult.startTime.getTime();
 
           this.log("\n🔍 Analyzing Failure", "info");
 
@@ -389,10 +393,14 @@ class TestExecutionEngine {
     }
 
     taskResult.endTime = new Date();
-    taskResult.durationMs = taskResult.endTime.getTime() - taskResult.startTime.getTime();
+    taskResult.durationMs =
+      taskResult.endTime.getTime() - taskResult.startTime.getTime();
 
     // Save task evidence
-    await this.evidenceCollector!.saveTaskEvidence(taskId, taskResult);
+    await this.evidenceCollector!.saveTaskEvidence(
+      taskId,
+      this.convertTaskResultForEvidence(taskResult)
+    );
 
     return taskResult;
   }
@@ -481,7 +489,7 @@ class TestExecutionEngine {
     await this.evidenceCollector!.saveActionEvidence(
       taskId,
       action.actionId,
-      result
+      this.convertActionResultForEvidence(result)
     );
 
     return result;
@@ -517,6 +525,37 @@ class TestExecutionEngine {
     };
 
     console.log(`${symbols[level] || ""} ${message}`);
+  }
+
+  /**
+   * Convert engine ActionResult to evidence collector format (with ISO string dates)
+   */
+  private convertActionResultForEvidence(result: ActionResult): import("./evidence-collector").ActionResult {
+    return {
+      phase: result.phase,
+      action: result.action,
+      startTime: result.startTime.toISOString(),
+      success: result.success,
+      durationMs: result.durationMs || 0,
+      data: result.data,
+      error: result.error || undefined,
+    };
+  }
+
+  /**
+   * Convert engine TaskResult to evidence collector format (with ISO string dates)
+   */
+  private convertTaskResultForEvidence(result: TaskResult): import("./evidence-collector").TaskResult {
+    return {
+      ...result,
+      startTime: result.startTime.toISOString(),
+      endTime: result.endTime ? result.endTime.toISOString() : new Date().toISOString(),
+      steps: result.steps.map(step => ({
+        ...step,
+        startTime: step.startTime.toISOString(),
+        endTime: step.endTime ? step.endTime.toISOString() : undefined,
+      })),
+    };
   }
 
   /**

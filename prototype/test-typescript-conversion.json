@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "2.0.0",
+  "testId": "TS-CONVERT-TEST",
+  "title": "TypeScript Conversion Validation Test",
+  "description": "Simple test to validate all TypeScript executors work correctly",
+  "version": "1.0.0",
+  "globalConfiguration": {
+    "workspaceRoot": "../test-case",
+    "evidenceDirectory": "evidence",
+    "timeout": 10000
+  },
+  "tasks": {
+    "TS-TEST": {
+      "title": "TypeScript Executor Validation",
+      "description": "Test all TypeScript executors load and execute",
+      "testExecution": {
+        "prerequisites": [
+          {
+            "actionId": "PREREQ.1",
+            "type": "FILE_VALIDATION",
+            "description": "Verify package.json exists",
+            "parameters": {
+              "filePath": "package.json",
+              "validationType": "EXISTS"
+            },
+            "continueOnFailure": false
+          }
+        ],
+        "steps": [
+          {
+            "actionId": "STEP.1",
+            "type": "FILE_VALIDATION",
+            "description": "Check package.json is valid JSON",
+            "parameters": {
+              "filePath": "package.json",
+              "validationType": "JSON_VALID"
+            }
+          },
+          {
+            "actionId": "STEP.2",
+            "type": "TERMINAL_COMMAND",
+            "description": "Run simple echo command",
+            "parameters": {
+              "command": "echo 'TypeScript conversion test'",
+              "workingDirectory": ".",
+              "expectedExitCode": 0
+            }
+          },
+          {
+            "actionId": "STEP.3",
+            "type": "TERMINAL_COMMAND",
+            "description": "Check Node.js version",
+            "parameters": {
+              "command": "node --version",
+              "workingDirectory": ".",
+              "expectedExitCode": 0
+            }
+          }
+        ],
+        "cleanup": []
+      },
+      "validationCriteria": {
+        "type": "AND",
+        "conditions": [
+          {
+            "type": "ACTION_SUCCESS",
+            "actionId": "PREREQ.1"
+          },
+          {
+            "type": "ACTION_SUCCESS",
+            "actionId": "STEP.1"
+          },
+          {
+            "type": "ACTION_SUCCESS",
+            "actionId": "STEP.2"
+          },
+          {
+            "type": "ACTION_SUCCESS",
+            "actionId": "STEP.3"
+          }
+        ]
+      }
+    }
+  }
+}
