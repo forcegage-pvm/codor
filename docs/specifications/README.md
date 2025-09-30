@@ -149,6 +149,26 @@ Task status updated (locked by script)
 
 ---
 
+#### [Test Task Specification Schema](testing-system/test-task-specification.schema.json)
+**Purpose**: Authoritative JSON schema for agent-generated test specifications (THE BIBLE)  
+**Version**: 2.0.0  
+**Key Features**:
+- 7 supported action types (TERMINAL_COMMAND, MCP_BROWSER_COMMAND, HTTP_REQUEST, DOCKER_COMMAND, DATABASE_QUERY, CUSTOM_SCRIPT, FILE_VALIDATION)
+- Complete parameter validation for each action type
+- Evidence capture requirements
+- Technical debt configuration
+- Task status lock enforcement
+
+**Documentation**: [Test Task Schema Bible](testing-system/TEST-TASK-SCHEMA-BIBLE.md) - Complete reference guide with examples
+
+**Critical Role**: This schema ENFORCES agent compliance. All test specifications MUST validate against this schema to be executable.
+
+**Dependencies**: Script-Based Testing Framework Specification
+
+**Status**: ✅ Schema complete - Authoritative v2.0.0
+
+---
+
 #### [Script-Based Testing Framework Amendments](testing-system/SCRIPT-BASED-TESTING-FRAMEWORK-AMENDMENTS.md)
 **Purpose**: Critical amendments addressing three design decisions  
 **Created**: September 30, 2025  
