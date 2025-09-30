@@ -13,19 +13,81 @@
  * @date 2025-09-30
  */
 
-const fs = require("fs");
-const path = require("path");
-const { PluginRegistry } = require("./plugin-registry");
-const { SpecificationLoader } = require("./specification-loader");
-const { EvidenceCollector } = require("./evidence-collector");
-const { ValidationEngine } = require("./validation-engine");
+import * as fs from "fs";
+import * as path from "path";
+import { PluginRegistry } from "./plugin-registry";
+import { SpecificationLoader, TestSpecification } from "./specification-loader";
+import { EvidenceCollector } from "./evidence-collector";
+import { ValidationEngine } from "./validation-engine";
+import { FailureAnalysisResult } from "./base-failure-analyzer";
+import { TechnicalDebtItem } from "./base-technical-debt-detector";
+
+// ============================================================================
+// TYPE DEFINITIONS
+// ============================================================================
+
+interface EngineConfig {
+  verbose?: boolean;
+  dryRun?: boolean;
+  stopOnFailure?: boolean;
+  [key: string]: any;
+}
+
+interface ActionResult {
+  action: any;
+  phase: string;
+  taskId: string;
+  startTime: Date;
+  endTime?: Date;
+  durationMs?: number;
+  success: boolean;
+  data: any;
+  error: string | null;
+}
+
+interface TaskResult {
+  taskId: string;
+  title: string;
+  startTime: Date;
+  endTime?: Date;
+  durationMs?: number;
+  steps: ActionResult[];
+  status: "PENDING" | "PASSED" | "FAILED" | "SKIPPED";
+  failureReason?: string;
+  validationResult?: any;
+  failureAnalysis?: FailureAnalysisResult[];
+  technicalDebt?: TechnicalDebtItem[] | null;
+  error?: string;
+}
+
+interface ExecutionResults {
+  startTime: Date;
+  endTime?: Date;
+  durationMs?: number;
+  tasks: { [taskId: string]: TaskResult };
+  summary: {
+    total: number;
+    passed: number;
+    failed: number;
+    skipped: number;
+  };
+}
+
+type LogLevel = "info" | "success" | "warn" | "error";
 
 // ============================================================================
 // CORE ENGINE CLASS
 // ============================================================================
 
 class TestExecutionEngine {
-  constructor(config = {}) {
+  private config: EngineConfig;
+  private testSpec: TestSpecification | null;
+  private pluginRegistry: PluginRegistry | null;
+  private evidenceCollector: EvidenceCollector | null;
+  private validationEngine: ValidationEngine | null;
+  private executionContext: Map<string, ActionResult>;
+
+  constructor(config: EngineConfig = {}) {
     this.config = {
       verbose: config.verbose || false,
       dryRun: config.dryRun || false,
@@ -43,7 +105,7 @@ class TestExecutionEngine {
   /**
    * Initialize engine with test specification
    */
-  async initialize(testSpecPath) {
+  async initialize(testSpecPath: string): Promise<TestExecutionEngine> {
     this.log("🚀 Initializing Test Execution Engine v2.0", "info");
 
     // Load specification
@@ -74,10 +136,14 @@ class TestExecutionEngine {
   /**
    * Execute all tasks in specification
    */
-  async execute() {
+  async execute(): Promise<ExecutionResults> {
+    if (!this.testSpec) {
+      throw new Error("Engine not initialized. Call initialize() first.");
+    }
+
     this.log("\n🎯 Beginning Test Execution", "info");
 
-    const results = {
+    const results: ExecutionResults = {
       startTime: new Date(),
       tasks: {},
       summary: { total: 0, passed: 0, failed: 0, skipped: 0 },
@@ -105,10 +171,10 @@ class TestExecutionEngine {
     }
 
     results.endTime = new Date();
-    results.durationMs = results.endTime - results.startTime;
+    results.durationMs = results.endTime.getTime() - results.startTime.getTime();
 
     // Generate final report
-    await this.evidenceCollector.generateFinalReport(results);
+    await this.evidenceCollector!.generateFinalReport(results);
 
     return results;
   }
@@ -116,8 +182,8 @@ class TestExecutionEngine {
   /**
    * Execute single task
    */
-  async executeTask(taskId, taskSpec) {
-    const taskResult = {
+  private async executeTask(taskId: string, taskSpec: any): Promise<TaskResult> {
+    const taskResult: TaskResult = {
       taskId,
       title: taskSpec.title,
       startTime: new Date(),
@@ -146,13 +212,13 @@ class TestExecutionEngine {
 
           // Analyze failure before returning
           taskResult.endTime = new Date();
-          taskResult.durationMs = taskResult.endTime - taskResult.startTime;
+          taskResult.durationMs = taskResult.endTime.getTime() - taskResult.startTime.getTime();
 
           this.log("\n🔍 Analyzing Failure", "info");
 
           // Run ALL failure analyzers and collect results
-          const failureAnalyses = [];
-          const analyzers = this.pluginRegistry.getFailureAnalyzers();
+          const failureAnalyses: FailureAnalysisResult[] = [];
+          const analyzers = this.pluginRegistry!.getFailureAnalyzers();
 
           for (const analyzer of analyzers) {
             try {
@@ -166,8 +232,9 @@ class TestExecutionEngine {
                 failureAnalyses.push(result);
               }
             } catch (error) {
+              const err = error as Error;
               this.log(
-                `⚠️  Analyzer ${analyzer.name} failed: ${error.message}`,
+                `⚠️  Analyzer ${analyzer.constructor.name} failed: ${err.message}`,
                 "warn"
               );
             }
@@ -211,7 +278,7 @@ class TestExecutionEngine {
 
       // Evaluate validation criteria
       this.log("\n✓ Evaluating Validation Criteria", "info");
-      const validationResult = this.validationEngine.evaluate(
+      const validationResult = this.validationEngine!.evaluate(
         taskResult.steps,
         taskSpec.validationCriteria
       );
@@ -224,8 +291,8 @@ class TestExecutionEngine {
         // Detect technical debt in passing tests - run ALL detectors
         this.log("\n🔍 Analyzing for Technical Debt", "info");
 
-        const debts = [];
-        const detectors = this.pluginRegistry.getDebtDetectors();
+        const debts: TechnicalDebtItem[] = [];
+        const detectors = this.pluginRegistry!.getDebtDetectors();
 
         for (const detector of detectors) {
           try {
@@ -235,8 +302,9 @@ class TestExecutionEngine {
               debts.push(...results);
             }
           } catch (error) {
+            const err = error as Error;
             this.log(
-              `⚠️  Detector ${detector.name} failed: ${error.message}`,
+              `⚠️  Detector ${detector.constructor.name} failed: ${err.message}`,
               "warn"
             );
           }
@@ -251,8 +319,8 @@ class TestExecutionEngine {
         // Analyze failure for categorization - run ALL analyzers
         this.log("\n🔍 Analyzing Failure", "info");
 
-        const failureAnalyses = [];
-        const analyzers = this.pluginRegistry.getFailureAnalyzers();
+        const failureAnalyses: FailureAnalysisResult[] = [];
+        const analyzers = this.pluginRegistry!.getFailureAnalyzers();
 
         for (const analyzer of analyzers) {
           try {
@@ -266,8 +334,9 @@ class TestExecutionEngine {
               failureAnalyses.push(result);
             }
           } catch (error) {
+            const err = error as Error;
             this.log(
-              `⚠️  Analyzer ${analyzer.name} failed: ${error.message}`,
+              `⚠️  Analyzer ${analyzer.constructor.name} failed: ${err.message}`,
               "warn"
             );
           }
@@ -286,19 +355,20 @@ class TestExecutionEngine {
         }
       }
     } catch (error) {
+      const err = error as Error;
       taskResult.status = "FAILED";
-      taskResult.error = error.message;
-      this.log(`❌ Task execution error: ${error.message}`, "error");
+      taskResult.error = err.message;
+      this.log(`❌ Task execution error: ${err.message}`, "error");
 
       // Analyze unexpected error - run ALL analyzers
-      const failureAnalyses = [];
-      const analyzers = this.pluginRegistry.getFailureAnalyzers();
+      const failureAnalyses: FailureAnalysisResult[] = [];
+      const analyzers = this.pluginRegistry!.getFailureAnalyzers();
 
       for (const analyzer of analyzers) {
         try {
           const result = await analyzer.analyze(
             taskResult.steps,
-            error.message,
+            err.message,
             taskSpec
           );
 
@@ -306,8 +376,9 @@ class TestExecutionEngine {
             failureAnalyses.push(result);
           }
         } catch (analyzerError) {
+          const analyzerErr = analyzerError as Error;
           this.log(
-            `⚠️  Analyzer ${analyzer.name} failed: ${analyzerError.message}`,
+            `⚠️  Analyzer ${analyzer.constructor.name} failed: ${analyzerErr.message}`,
             "warn"
           );
         }
@@ -318,10 +389,10 @@ class TestExecutionEngine {
     }
 
     taskResult.endTime = new Date();
-    taskResult.durationMs = taskResult.endTime - taskResult.startTime;
+    taskResult.durationMs = taskResult.endTime.getTime() - taskResult.startTime.getTime();
 
     // Save task evidence
-    await this.evidenceCollector.saveTaskEvidence(taskId, taskResult);
+    await this.evidenceCollector!.saveTaskEvidence(taskId, taskResult);
 
     return taskResult;
   }
@@ -329,8 +400,12 @@ class TestExecutionEngine {
   /**
    * Execute array of actions
    */
-  async executeActions(actions, taskId, phase) {
-    const results = [];
+  private async executeActions(
+    actions: any[],
+    taskId: string,
+    phase: string
+  ): Promise<ActionResult[]> {
+    const results: ActionResult[] = [];
 
     for (const action of actions) {
       const result = await this.executeAction(action, taskId, phase);
@@ -355,11 +430,15 @@ class TestExecutionEngine {
   /**
    * Execute single action (delegates to plugin)
    */
-  async executeAction(action, taskId, phase) {
+  private async executeAction(
+    action: any,
+    taskId: string,
+    phase: string
+  ): Promise<ActionResult> {
     this.log(`\n🔹 ${action.actionId}: ${action.description}`, "info");
 
     const startTime = new Date();
-    let result = {
+    const result: ActionResult = {
       action,
       phase,
       taskId,
@@ -371,7 +450,7 @@ class TestExecutionEngine {
 
     try {
       // Get executor from plugin registry
-      const executor = this.pluginRegistry.getExecutor(action.type);
+      const executor = this.pluginRegistry!.getExecutor(action.type);
       if (!executor) {
         throw new Error(
           `No executor plugin found for action type: ${action.type}`
@@ -380,25 +459,26 @@ class TestExecutionEngine {
 
       // Execute action with timeout
       const timeout =
-        action.timeout || this.testSpec.globalConfiguration.timeout || 60000;
+        action.timeout || this.testSpec!.globalConfiguration.timeout || 60000;
       result.data = await this.executeWithTimeout(
-        executor.execute(action.parameters, this.testSpec.globalConfiguration),
+        executor.execute(action.parameters, this.testSpec!.globalConfiguration),
         timeout
       );
 
       result.success = true;
       this.log(`✅ ${action.actionId} completed successfully`, "success");
     } catch (error) {
-      result.error = error.message;
+      const err = error as Error;
+      result.error = err.message;
       result.success = false;
-      this.log(`❌ ${action.actionId} failed: ${error.message}`, "error");
+      this.log(`❌ ${action.actionId} failed: ${err.message}`, "error");
     }
 
     result.endTime = new Date();
-    result.durationMs = result.endTime - startTime;
+    result.durationMs = result.endTime.getTime() - startTime.getTime();
 
     // Save individual action evidence
-    await this.evidenceCollector.saveActionEvidence(
+    await this.evidenceCollector!.saveActionEvidence(
       taskId,
       action.actionId,
       result
@@ -410,10 +490,13 @@ class TestExecutionEngine {
   /**
    * Execute with timeout
    */
-  async executeWithTimeout(promise, timeout) {
+  private async executeWithTimeout<T>(
+    promise: Promise<T>,
+    timeout: number
+  ): Promise<T> {
     return Promise.race([
       promise,
-      new Promise((_, reject) =>
+      new Promise<T>((_, reject) =>
         setTimeout(
           () => reject(new Error(`Timeout after ${timeout}ms`)),
           timeout
@@ -425,8 +508,8 @@ class TestExecutionEngine {
   /**
    * Logging utility
    */
-  log(message, level = "info") {
-    const symbols = {
+  private log(message: string, level: LogLevel = "info"): void {
+    const symbols: Record<LogLevel, string> = {
       info: "ℹ️",
       success: "✅",
       warn: "⚠️",
@@ -439,14 +522,14 @@ class TestExecutionEngine {
   /**
    * Cleanup resources
    */
-  async cleanup() {
+  async cleanup(): Promise<void> {
     this.log("\n🧹 Cleaning up resources...", "info");
 
     // Cleanup all executor plugins
-    await this.pluginRegistry.cleanupAll();
+    await this.pluginRegistry!.cleanupAll();
 
     this.log("✅ Cleanup complete", "success");
   }
 }
 
-module.exports = TestExecutionEngine;
+export default TestExecutionEngine;

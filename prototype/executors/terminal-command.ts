@@ -7,8 +7,12 @@
  * Action Type: TERMINAL_COMMAND
  */
 
-import { spawn, ChildProcess } from "child_process";
-import { BaseExecutor, ExecutorConfig, ExecutionResult } from "../core/base-executor";
+import { ChildProcess, spawn } from "child_process";
+import {
+  BaseExecutor,
+  ExecutionResult,
+  ExecutorConfig,
+} from "../core/base-executor";
 
 interface TerminalCommandParameters {
   command: string;
@@ -96,7 +100,8 @@ export class TerminalCommandExecutor extends BaseExecutor {
       child.on("close", (code: number | null) => {
         const result: TerminalCommandResult = {
           command,
-          workingDirectory: workingDirectory || (globalConfig.workspaceRoot as string),
+          workingDirectory:
+            workingDirectory || (globalConfig.workspaceRoot as string),
           exitCode: code || 0,
           stdout,
           stderr,

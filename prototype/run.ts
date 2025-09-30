@@ -3,28 +3,26 @@
 /**
  * CODOR Test Execution Engine - CLI Entry Point
  *
- * Usage: node run.js <test-spec.json> [options]
+ * Usage: ts-node run.ts <test-spec.json> [options]
  */
 
-// Register ts-node to handle TypeScript modules
-require("ts-node").register({
-  transpileOnly: true,
-  compilerOptions: {
-    module: "commonjs",
-    target: "es2019",
-  },
-});
+import TestExecutionEngine from "./core/engine";
+import { PluginRegistry } from "./core/plugin-registry";
 
-const TestExecutionEngine = require("./core/engine");
+interface CLIConfig {
+  verbose: boolean;
+  dryRun: boolean;
+  stopOnFailure: boolean;
+}
 
-async function main() {
+async function main(): Promise<void> {
   const args = process.argv.slice(2);
 
   if (args.length === 0 || args.includes("--help")) {
     console.log(`
 🎯 CODOR Test Execution Engine v2.0
 
-Usage: node run.js <test-spec.json> [options]
+Usage: ts-node run.ts <test-spec.json> [options]
 
 Options:
   --verbose          Verbose output
@@ -33,27 +31,26 @@ Options:
   --list-plugins     List all available plugins
   
 Example:
-  node run.js ../docs/specifications/testing-system/examples/T004-quotes-get-test-specification.json
+  ts-node run.ts ../docs/specifications/testing-system/examples/T004-quotes-get-test-specification.json
     `);
     process.exit(0);
   }
 
   // List plugins
   if (args.includes("--list-plugins")) {
-    const PluginRegistry = require("./core/plugin-registry");
     const registry = new PluginRegistry(__dirname);
     await registry.loadAll();
 
     const plugins = registry.listAll();
     console.log("\n📦 Available Plugins:");
     console.log("\nExecutors:", plugins.executors.join(", "));
-    console.log("Validators:", plugins.validators.join(", "));
-    console.log("Reporters:", plugins.reporters.join(", "));
+    console.log("Failure Analyzers:", plugins.failureAnalyzers.join(", "));
+    console.log("Debt Detectors:", plugins.debtDetectors.join(", "));
     process.exit(0);
   }
 
   const testSpecPath = args[0];
-  const config = {
+  const config: CLIConfig = {
     verbose: args.includes("--verbose"),
     dryRun: args.includes("--dry-run"),
     stopOnFailure: args.includes("--stop-on-failure"),
@@ -69,8 +66,11 @@ Example:
     // Exit with appropriate code
     process.exit(results.summary.failed > 0 ? 1 : 0);
   } catch (error) {
-    console.error(`💥 Fatal error: ${error.message}`);
-    console.error(error.stack);
+    const err = error as Error;
+    console.error(`💥 Fatal error: ${err.message}`);
+    if (err.stack) {
+      console.error(err.stack);
+    }
     await engine.cleanup();
     process.exit(1);
   }
@@ -81,4 +81,4 @@ if (require.main === module) {
   main().catch(console.error);
 }
 
-module.exports = main;
+export default main;

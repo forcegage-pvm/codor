@@ -9,11 +9,20 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import { BaseExecutor, ExecutorConfig, ExecutionResult } from "../core/base-executor";
+import {
+  BaseExecutor,
+  ExecutionResult,
+  ExecutorConfig,
+} from "../core/base-executor";
 
 interface FileValidationParameters {
   filePath: string;
-  validationType: "EXISTS" | "NOT_EXISTS" | "CONTENT_MATCH" | "CONTENT_PATTERN" | "JSON_VALID";
+  validationType:
+    | "EXISTS"
+    | "NOT_EXISTS"
+    | "CONTENT_MATCH"
+    | "CONTENT_PATTERN"
+    | "JSON_VALID";
   expectedContent?: string;
   contentPattern?: string;
   minSize?: number;

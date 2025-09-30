@@ -7,7 +7,11 @@
  * Action Type: HTTP_REQUEST
  */
 
-import { BaseExecutor, ExecutorConfig, ExecutionResult } from "../core/base-executor";
+import {
+  BaseExecutor,
+  ExecutionResult,
+  ExecutorConfig,
+} from "../core/base-executor";
 
 interface HTTPRequestParameters {
   url: string;
