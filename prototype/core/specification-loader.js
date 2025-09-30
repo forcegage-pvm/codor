@@ -35,11 +35,12 @@ class SpecificationLoader {
    */
   substituteEnvVars(spec) {
     const path = require("path");
-    
+
     // Auto-detect workspace root (test-case folder)
     const repoRoot = process.cwd().replace(/[\\\/]prototype$/, "");
-    const workspaceRoot = process.env.WORKSPACE_ROOT || path.join(repoRoot, "test-case");
-    
+    const workspaceRoot =
+      process.env.WORKSPACE_ROOT || path.join(repoRoot, "test-case");
+
     const envVars = {
       WORKSPACE_ROOT: workspaceRoot,
       API_BASE_URL: process.env.API_BASE_URL || "http://localhost:3000",

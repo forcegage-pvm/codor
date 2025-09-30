@@ -19,6 +19,8 @@ const PluginRegistry = require("./plugin-registry");
 const SpecificationLoader = require("./specification-loader");
 const EvidenceCollector = require("./evidence-collector");
 const ValidationEngine = require("./validation-engine");
+const FailureAnalyzer = require("./failure-analyzer");
+const TechnicalDebtDetector = require("./technical-debt-detector");
 
 // ============================================================================
 // CORE ENGINE CLASS
@@ -37,6 +39,8 @@ class TestExecutionEngine {
     this.pluginRegistry = null;
     this.evidenceCollector = null;
     this.validationEngine = null;
+    this.failureAnalyzer = null;
+    this.debtDetector = null;
     this.executionContext = new Map();
   }
 
@@ -62,6 +66,12 @@ class TestExecutionEngine {
 
     // Initialize validation engine
     this.validationEngine = new ValidationEngine();
+
+    // Initialize failure analyzer
+    this.failureAnalyzer = new FailureAnalyzer();
+
+    // Initialize technical debt detector
+    this.debtDetector = new TechnicalDebtDetector();
 
     this.log(
       `✅ Initialized with ${this.pluginRegistry.getExecutorCount()} executors`,
@@ -143,6 +153,25 @@ class TestExecutionEngine {
         if (blockedPrereq) {
           taskResult.status = "FAILED";
           taskResult.failureReason = `Prerequisite ${blockedPrereq.action.actionId} failed`;
+          
+          // Analyze failure before returning
+          taskResult.endTime = new Date();
+          taskResult.durationMs = taskResult.endTime - taskResult.startTime;
+          
+          this.log("\n🔍 Analyzing Failure", "info");
+          const failureAnalysis = await this.failureAnalyzer.analyze(
+            taskResult.steps,
+            taskResult.failureReason,
+            taskSpec
+          );
+          taskResult.failureAnalysis = failureAnalysis;
+          taskResult.technicalDebt = null;
+          
+          this.log(
+            `📊 Failure Category: ${failureAnalysis.category}`,
+            "info"
+          );
+          
           return taskResult;
         }
       }
@@ -176,10 +205,49 @@ class TestExecutionEngine {
 
       taskResult.status = validationResult.passed ? "PASSED" : "FAILED";
       taskResult.validationResult = validationResult;
+
+      // Analyze results based on status
+      if (taskResult.status === "PASSED") {
+        // Detect technical debt in passing tests
+        this.log("\n🔍 Analyzing for Technical Debt", "info");
+        const technicalDebt = await this.debtDetector.analyze(
+          taskResult.steps,
+          taskSpec
+        );
+        taskResult.technicalDebt = technicalDebt.length > 0 ? technicalDebt : null;
+
+        if (technicalDebt.length > 0) {
+          this.log(`⚠️  Found ${technicalDebt.length} technical debt item(s)`, "warn");
+        }
+      } else {
+        // Analyze failure for categorization
+        this.log("\n🔍 Analyzing Failure", "info");
+        const failureAnalysis = await this.failureAnalyzer.analyze(
+          taskResult.steps,
+          taskResult.failureReason || "Unknown failure",
+          taskSpec
+        );
+        taskResult.failureAnalysis = failureAnalysis;
+        taskResult.technicalDebt = null; // No debt on failures
+
+        this.log(
+          `📊 Failure Category: ${failureAnalysis.category}`,
+          "info"
+        );
+      }
     } catch (error) {
       taskResult.status = "FAILED";
       taskResult.error = error.message;
       this.log(`❌ Task execution error: ${error.message}`, "error");
+
+      // Analyze unexpected error
+      const failureAnalysis = await this.failureAnalyzer.analyze(
+        taskResult.steps,
+        error.message,
+        taskSpec
+      );
+      taskResult.failureAnalysis = failureAnalysis;
+      taskResult.technicalDebt = null;
     }
 
     taskResult.endTime = new Date();
