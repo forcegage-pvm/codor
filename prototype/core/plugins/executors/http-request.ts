@@ -7,11 +7,8 @@
  * Action Type: HTTP_REQUEST
  */
 
-import {
-  BaseExecutor,
-  ExecutionResult,
-  ExecutorConfig,
-} from "../core/base-executor";
+import { BaseExecutor } from "../../base/BaseExecutor";
+import { ExecutionResult, ExecutorConfig } from "../../interfaces/IExecutor";
 
 interface HTTPRequestParameters {
   url: string;
@@ -35,6 +32,9 @@ interface HTTPRequestResult {
 }
 
 export class HTTPRequestExecutor extends BaseExecutor {
+  readonly name = "http-request";
+  readonly version = "1.0.0";
+
   getActionTypes(): string[] {
     return ["HTTP_REQUEST"];
   }

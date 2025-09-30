@@ -14,10 +14,10 @@
  */
 
 import * as path from "path";
-import { FailureAnalysisResult } from "./base-failure-analyzer";
-import { TechnicalDebtItem } from "./base-technical-debt-detector";
 import { EvidenceCollector } from "./evidence-collector";
-import { PluginRegistry } from "./plugin-registry";
+import { FailureAnalysisResult } from "./interfaces/IFailureAnalyzer";
+import { TechnicalDebtItem } from "./interfaces/ITechnicalDebtDetector";
+import { PluginRegistry } from "./plugin-registry-new";
 import { SpecificationLoader, TestSpecification } from "./specification-loader";
 import { ValidationEngine } from "./validation-engine";
 
@@ -457,13 +457,16 @@ class TestExecutionEngine {
     };
 
     try {
-      // Get executor from plugin registry
-      const executor = this.pluginRegistry!.getExecutor(action.type);
-      if (!executor) {
+      // Get executors from plugin registry (supports multiple executors per action type)
+      const executors = this.pluginRegistry!.getExecutorsForAction(action.type);
+      if (!executors || executors.length === 0) {
         throw new Error(
           `No executor plugin found for action type: ${action.type}`
         );
       }
+
+      // Use first executor (in future, could support running multiple)
+      const executor = executors[0];
 
       // Execute action with timeout
       const timeout =
@@ -530,7 +533,9 @@ class TestExecutionEngine {
   /**
    * Convert engine ActionResult to evidence collector format (with ISO string dates)
    */
-  private convertActionResultForEvidence(result: ActionResult): import("./evidence-collector").ActionResult {
+  private convertActionResultForEvidence(
+    result: ActionResult
+  ): import("./evidence-collector").ActionResult {
     return {
       phase: result.phase,
       action: result.action,
@@ -545,12 +550,16 @@ class TestExecutionEngine {
   /**
    * Convert engine TaskResult to evidence collector format (with ISO string dates)
    */
-  private convertTaskResultForEvidence(result: TaskResult): import("./evidence-collector").TaskResult {
+  private convertTaskResultForEvidence(
+    result: TaskResult
+  ): import("./evidence-collector").TaskResult {
     return {
       ...result,
       startTime: result.startTime.toISOString(),
-      endTime: result.endTime ? result.endTime.toISOString() : new Date().toISOString(),
-      steps: result.steps.map(step => ({
+      endTime: result.endTime
+        ? result.endTime.toISOString()
+        : new Date().toISOString(),
+      steps: result.steps.map((step) => ({
         ...step,
         startTime: step.startTime.toISOString(),
         endTime: step.endTime ? step.endTime.toISOString() : undefined,

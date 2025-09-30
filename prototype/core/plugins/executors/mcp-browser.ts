@@ -8,11 +8,8 @@
  */
 
 import { ChildProcess, spawn } from "child_process";
-import {
-  BaseExecutor,
-  ExecutionResult,
-  ExecutorConfig,
-} from "../core/base-executor";
+import { BaseExecutor } from "../../base/BaseExecutor";
+import { ExecutionResult, ExecutorConfig } from "../../interfaces/IExecutor";
 
 interface MCPRequest {
   jsonrpc: string;
@@ -50,6 +47,9 @@ interface MCPBrowserParameters {
 }
 
 class MCPBrowserExecutor extends BaseExecutor {
+  readonly name = "mcp-browser";
+  readonly version = "1.0.0";
+
   private mcpProcess: ChildProcess | null;
   private mcpInitialized: boolean;
   private messageId: number;

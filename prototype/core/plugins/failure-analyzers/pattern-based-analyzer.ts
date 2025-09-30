@@ -3,11 +3,8 @@
  * Categorizes test failures based on error patterns and provides actionable guidance
  */
 
-import {
-  BaseFailureAnalyzer,
-  FailureAnalysisResult,
-  FailureAnalyzerConfig,
-} from "../core/base-failure-analyzer";
+import { BaseFailureAnalyzer } from "../../base/BaseFailureAnalyzer";
+import { FailureAnalysisResult } from "../../interfaces/IFailureAnalyzer";
 
 interface ExecutionStep {
   success: boolean;
@@ -18,9 +15,8 @@ interface ExecutionStep {
 }
 
 export class PatternBasedAnalyzer extends BaseFailureAnalyzer {
-  constructor(config: FailureAnalyzerConfig = {}) {
-    super("pattern-based-analyzer", config);
-  }
+  readonly name = "pattern-based-analyzer";
+  readonly priority = 100; // High priority for pattern matching
 
   /**
    * Analyze failed task and categorize failure based on error patterns

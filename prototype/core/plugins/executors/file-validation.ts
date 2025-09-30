@@ -9,11 +9,8 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import {
-  BaseExecutor,
-  ExecutionResult,
-  ExecutorConfig,
-} from "../core/base-executor";
+import { BaseExecutor } from "../../base/BaseExecutor";
+import { ExecutionResult, ExecutorConfig } from "../../interfaces/IExecutor";
 
 interface FileValidationParameters {
   filePath: string;
@@ -46,6 +43,9 @@ interface FileValidationResult {
 }
 
 export class FileValidationExecutor extends BaseExecutor {
+  readonly name = "file-validation";
+  readonly version = "1.0.0";
+
   getActionTypes(): string[] {
     return ["FILE_VALIDATION"];
   }

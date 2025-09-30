@@ -3,20 +3,13 @@
  * Analyzes PASSED tests for quality, performance, and implementation issues
  */
 
-import {
-  BaseTechnicalDebtDetector,
-  TechnicalDebtDetectorConfig,
-  TechnicalDebtItem,
-} from "../core/base-technical-debt-detector";
+import { BaseTechnicalDebtDetector } from "../../base/BaseTechnicalDebtDetector";
+import { TechnicalDebtItem } from "../../interfaces/ITechnicalDebtDetector";
 
 interface PerformanceThresholds {
   httpRequest: number;
   dbQuery: number;
   memoryUsage: number;
-}
-
-interface PerformanceDetectorConfig extends TechnicalDebtDetectorConfig {
-  performanceThresholds?: Partial<PerformanceThresholds>;
 }
 
 interface ExecutionStep {
@@ -27,16 +20,18 @@ interface ExecutionStep {
 }
 
 export class PerformanceDetector extends BaseTechnicalDebtDetector {
+  readonly name = "performance-detector";
+  readonly priority = 50; // Medium priority for performance analysis
+
   private thresholds: PerformanceThresholds;
 
-  constructor(config: PerformanceDetectorConfig = {}) {
-    super("performance-detector", config);
+  constructor() {
+    super();
 
     this.thresholds = {
       httpRequest: 1000, // ms
       dbQuery: 500, // ms
       memoryUsage: 100 * 1024 * 1024, // 100MB
-      ...config.performanceThresholds,
     };
   }
 

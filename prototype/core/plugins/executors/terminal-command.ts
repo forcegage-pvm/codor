@@ -8,11 +8,8 @@
  */
 
 import { ChildProcess, spawn } from "child_process";
-import {
-  BaseExecutor,
-  ExecutionResult,
-  ExecutorConfig,
-} from "../core/base-executor";
+import { BaseExecutor } from "../../base/BaseExecutor";
+import { ExecutionResult, ExecutorConfig } from "../../interfaces/IExecutor";
 
 interface TerminalCommandParameters {
   command: string;
@@ -37,6 +34,9 @@ interface TerminalCommandResult {
 }
 
 export class TerminalCommandExecutor extends BaseExecutor {
+  readonly name = "terminal-command";
+  readonly version = "1.0.0";
+
   private backgroundProcesses: ChildProcess[] = [];
 
   getActionTypes(): string[] {
