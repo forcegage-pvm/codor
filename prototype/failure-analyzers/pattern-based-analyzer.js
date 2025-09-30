@@ -20,7 +20,12 @@ class FailureAnalyzer {
     const failedStep = steps.find((s) => !s.success);
 
     if (!failedStep) {
-      return this.createAnalysis("UNKNOWN_ERROR", "Task failed but no failed step found", [], "Review task execution logs");
+      return this.createAnalysis(
+        "UNKNOWN_ERROR",
+        "Task failed but no failed step found",
+        [],
+        "Review task execution logs"
+      );
     }
 
     const error = failedStep.error || "";
@@ -28,9 +33,20 @@ class FailureAnalyzer {
 
     // Detect category based on error patterns
     const category = this.detectCategory(error, action, failedStep);
-    const analysis = this.categorizeFailure(category, error, action, failedStep);
+    
+    if (!category) {
+      return null; // No pattern match
+    }
+
+    const analysis = this.categorizeFailure(
+      category,
+      error,
+      action,
+      failedStep
+    );
 
     return {
+      analyzer: this.name,
       ...analysis,
       detectedAt: new Date().toISOString(),
       evidence: {
@@ -62,10 +78,11 @@ class FailureAnalyzer {
 
     // Compilation errors
     if (
-      errorLower.includes("ts") && /ts\d+:/.test(errorLower) ||
+      (errorLower.includes("ts") && /ts\d+:/.test(errorLower)) ||
       errorLower.includes("syntaxerror") ||
       errorLower.includes("compilation failed") ||
-      (action.type === "TERMINAL_COMMAND" && action.parameters?.command?.includes("tsc"))
+      (action.type === "TERMINAL_COMMAND" &&
+        action.parameters?.command?.includes("tsc"))
     ) {
       return "COMPILATION_ERROR";
     }
@@ -102,10 +119,11 @@ class FailureAnalyzer {
 
     // Dependency errors
     if (
-      errorLower.includes("npm") && errorLower.includes("err") ||
+      (errorLower.includes("npm") && errorLower.includes("err")) ||
       errorLower.includes("package not found") ||
       errorLower.includes("eresolve") ||
-      (action.type === "TERMINAL_COMMAND" && action.parameters?.command?.includes("npm install"))
+      (action.type === "TERMINAL_COMMAND" &&
+        action.parameters?.command?.includes("npm install"))
     ) {
       return "DEPENDENCY_ERROR";
     }
@@ -123,10 +141,10 @@ class FailureAnalyzer {
 
     // Validation failures
     if (
-      errorLower.includes("expected") && errorLower.includes("but got") ||
+      (errorLower.includes("expected") && errorLower.includes("but got")) ||
       errorLower.includes("assertion failed") ||
       errorLower.includes("schema validation") ||
-      action.type === "HTTP_REQUEST" && step.data?.status >= 400
+      (action.type === "HTTP_REQUEST" && step.data?.status >= 400)
     ) {
       return "VALIDATION_FAILURE";
     }
@@ -134,7 +152,7 @@ class FailureAnalyzer {
     // Configuration errors
     if (
       errorLower.includes("invalid configuration") ||
-      errorLower.includes("config") && errorLower.includes("error") ||
+      (errorLower.includes("config") && errorLower.includes("error")) ||
       errorLower.includes("parse error")
     ) {
       return "CONFIGURATION_ERROR";
@@ -176,7 +194,12 @@ class FailureAnalyzer {
         return this.analyzeConfigurationError(error, action);
 
       default:
-        return this.createAnalysis(category, error, [], "Review error details and check logs");
+        return this.createAnalysis(
+          category,
+          error,
+          [],
+          "Review error details and check logs"
+        );
     }
   }
 
@@ -213,14 +236,19 @@ class FailureAnalyzer {
   analyzeAuthenticationError(error, action, step) {
     return this.createAnalysis(
       "AUTHENTICATION_ERROR",
-      `Authentication failed: ${this.extractReason(error) || "Invalid credentials"}`,
+      `Authentication failed: ${
+        this.extractReason(error) || "Invalid credentials"
+      }`,
       ["Check authentication token or credentials"],
       "Ensure AUTH_TOKEN or credentials are set correctly"
     );
   }
 
   analyzeTimeout(error, action, step) {
-    const url = action.parameters?.url || action.parameters?.command || "Unknown operation";
+    const url =
+      action.parameters?.url ||
+      action.parameters?.command ||
+      "Unknown operation";
     return this.createAnalysis(
       "TIMEOUT",
       `Operation exceeded timeout threshold`,
@@ -286,7 +314,8 @@ class FailureAnalyzer {
    */
   extractFilePath(error, action) {
     // Try to extract from error message
-    const fileMatch = error.match(/File not found: (.+)$/i) || error.match(/ENOENT: (.+)$/i);
+    const fileMatch =
+      error.match(/File not found: (.+)$/i) || error.match(/ENOENT: (.+)$/i);
     if (fileMatch) return fileMatch[1].trim();
 
     // Try from action parameters
@@ -312,7 +341,9 @@ class FailureAnalyzer {
 
   extractServiceName(error) {
     const matches =
-      error.match(/(\w+)\s+not running/i) || error.match(/connect.*:(\d+)/i) || error.match(/ECONNREFUSED.*\/\/([^:]+)/i);
+      error.match(/(\w+)\s+not running/i) ||
+      error.match(/connect.*:(\d+)/i) ||
+      error.match(/ECONNREFUSED.*\/\/([^:]+)/i);
     return matches ? matches[1] : "Required service";
   }
 
@@ -336,7 +367,11 @@ class FailureAnalyzer {
 
     // Extract from HTTP response
     if (step.data?.status >= 400) {
-      errors.push(`HTTP ${step.data.status}: ${step.data.statusText || "Validation failed"}`);
+      errors.push(
+        `HTTP ${step.data.status}: ${
+          step.data.statusText || "Validation failed"
+        }`
+      );
     }
 
     return errors.length > 0 ? errors : ["Validation criteria not met"];

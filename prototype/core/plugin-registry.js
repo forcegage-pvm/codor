@@ -19,6 +19,8 @@ class PluginRegistry {
     this.executors = new Map();
     this.validators = new Map();
     this.reporters = new Map();
+    this.failureAnalyzers = []; // Array of analyzer instances
+    this.debtDetectors = []; // Array of detector instances
   }
 
   /**
@@ -30,9 +32,11 @@ class PluginRegistry {
     await this.loadExecutors();
     await this.loadValidators();
     await this.loadReporters();
+    await this.loadFailureAnalyzers();
+    await this.loadDebtDetectors();
 
     console.log(
-      `✅ Loaded ${this.executors.size} executors, ${this.validators.size} validators, ${this.reporters.size} reporters`
+      `✅ Loaded ${this.executors.size} executors, ${this.validators.size} validators, ${this.reporters.size} reporters, ${this.failureAnalyzers.length} failure analyzers, ${this.debtDetectors.length} debt detectors`
     );
   }
 
@@ -133,6 +137,62 @@ class PluginRegistry {
   }
 
   /**
+   * Auto-discover and load all failure analyzer plugins
+   */
+  async loadFailureAnalyzers() {
+    const analyzersDir = path.join(this.baseDir, "failure-analyzers");
+
+    if (!fs.existsSync(analyzersDir)) {
+      console.warn(`⚠️ Failure analyzers directory not found: ${analyzersDir}`);
+      return;
+    }
+
+    const files = fs
+      .readdirSync(analyzersDir)
+      .filter((f) => f.endsWith(".js") && !f.startsWith("_"));
+
+    for (const file of files) {
+      try {
+        const AnalyzerClass = require(path.join(analyzersDir, file));
+        const analyzer = new AnalyzerClass();
+
+        this.failureAnalyzers.push(analyzer);
+        console.log(`  📦 Loaded failure analyzer: ${analyzer.name || file}`);
+      } catch (error) {
+        console.error(`  ❌ Failed to load failure analyzer ${file}: ${error.message}`);
+      }
+    }
+  }
+
+  /**
+   * Auto-discover and load all technical debt detector plugins
+   */
+  async loadDebtDetectors() {
+    const detectorsDir = path.join(this.baseDir, "technical-debt-detectors");
+
+    if (!fs.existsSync(detectorsDir)) {
+      console.warn(`⚠️ Technical debt detectors directory not found: ${detectorsDir}`);
+      return;
+    }
+
+    const files = fs
+      .readdirSync(detectorsDir)
+      .filter((f) => f.endsWith(".js") && !f.startsWith("_"));
+
+    for (const file of files) {
+      try {
+        const DetectorClass = require(path.join(detectorsDir, file));
+        const detector = new DetectorClass();
+
+        this.debtDetectors.push(detector);
+        console.log(`  📦 Loaded debt detector: ${detector.name || file}`);
+      } catch (error) {
+        console.error(`  ❌ Failed to load debt detector ${file}: ${error.message}`);
+      }
+    }
+  }
+
+  /**
    * Get executor for action type
    */
   getExecutor(actionType) {
@@ -154,6 +214,20 @@ class PluginRegistry {
   }
 
   /**
+   * Get all failure analyzers
+   */
+  getFailureAnalyzers() {
+    return this.failureAnalyzers;
+  }
+
+  /**
+   * Get all technical debt detectors
+   */
+  getDebtDetectors() {
+    return this.debtDetectors;
+  }
+
+  /**
    * Get count of loaded executors
    */
   getExecutorCount() {
@@ -168,6 +242,8 @@ class PluginRegistry {
       executors: Array.from(this.executors.keys()),
       validators: Array.from(this.validators.keys()),
       reporters: Array.from(this.reporters.keys()),
+      failureAnalyzers: this.failureAnalyzers.map(a => a.name || "unnamed"),
+      debtDetectors: this.debtDetectors.map(d => d.name || "unnamed"),
     };
   }
 

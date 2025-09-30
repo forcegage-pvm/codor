@@ -1,10 +1,16 @@
 /**
- * Technical Debt Detector
+ * Performance-Based Technical Debt Detector Plugin
  * Analyzes PASSED tests for quality, performance, and implementation issues
+ * 
+ * Plugin Interface:
+ * - analyze(steps, taskSpec) -> array of debt items
+ * - Each detector returns an ARRAY of debt items
+ * - Engine collects results from ALL detectors into technicalDebt[]
  */
 
-class TechnicalDebtDetector {
+class PerformanceDetector {
   constructor(config = {}) {
+    this.name = "performance-detector";
     this.config = {
       performanceThresholds: {
         httpRequest: 1000, // ms
@@ -46,7 +52,8 @@ class TechnicalDebtDetector {
       debts.push(...this.detectIntegrationIssues(step));
     }
 
-    return debts;
+    // Add detector name to all debt items
+    return debts.map(debt => ({ detector: this.name, ...debt }));
   }
 
   /**
@@ -58,13 +65,22 @@ class TechnicalDebtDetector {
     const duration = step.durationMs || 0;
 
     // HTTP request performance
-    if (action.type === "HTTP_REQUEST" && duration > this.config.performanceThresholds.httpRequest) {
+    if (
+      action.type === "HTTP_REQUEST" &&
+      duration > this.config.performanceThresholds.httpRequest
+    ) {
       issues.push({
         category: "PERFORMANCE_DEGRADATION",
-        severity: this.calculateSeverity(duration, this.config.performanceThresholds.httpRequest),
+        severity: this.calculateSeverity(
+          duration,
+          this.config.performanceThresholds.httpRequest
+        ),
         description: `HTTP request took ${duration}ms, exceeds ${this.config.performanceThresholds.httpRequest}ms threshold`,
-        location: `${action.parameters?.method || "GET"} ${action.parameters?.url || "Unknown URL"}`,
-        suggestedFix: "Optimize API endpoint, add caching, or implement pagination",
+        location: `${action.parameters?.method || "GET"} ${
+          action.parameters?.url || "Unknown URL"
+        }`,
+        suggestedFix:
+          "Optimize API endpoint, add caching, or implement pagination",
         detectedAt: new Date().toISOString(),
         relatedSteps: [action.actionId],
       });
@@ -74,14 +90,19 @@ class TechnicalDebtDetector {
     if (
       action.type === "TERMINAL_COMMAND" &&
       duration > this.config.performanceThresholds.dbQuery &&
-      (action.parameters?.command?.includes("query") || action.parameters?.command?.includes("test"))
+      (action.parameters?.command?.includes("query") ||
+        action.parameters?.command?.includes("test"))
     ) {
       issues.push({
         category: "PERFORMANCE_DEGRADATION",
-        severity: this.calculateSeverity(duration, this.config.performanceThresholds.dbQuery),
+        severity: this.calculateSeverity(
+          duration,
+          this.config.performanceThresholds.dbQuery
+        ),
         description: `Command execution took ${duration}ms, exceeds ${this.config.performanceThresholds.dbQuery}ms threshold`,
         location: action.parameters?.command || "Unknown command",
-        suggestedFix: "Profile and optimize slow operations, add database indexes",
+        suggestedFix:
+          "Profile and optimize slow operations, add database indexes",
         detectedAt: new Date().toISOString(),
         relatedSteps: [action.actionId],
       });
@@ -99,29 +120,46 @@ class TechnicalDebtDetector {
     const data = step.data || {};
 
     // HTTP response missing expected validations
-    if (action.type === "HTTP_REQUEST" && data.status >= 200 && data.status < 300) {
+    if (
+      action.type === "HTTP_REQUEST" &&
+      data.status >= 200 &&
+      data.status < 300
+    ) {
       const body = data.body || {};
 
       // Check for missing pagination on list endpoints
-      if (Array.isArray(body) && body.length > 10 && !data.headers?.["x-total-count"]) {
+      if (
+        Array.isArray(body) &&
+        body.length > 10 &&
+        !data.headers?.["x-total-count"]
+      ) {
         issues.push({
           category: "API_ENDPOINT_INCOMPLETE",
           severity: "LOW",
           description: "List endpoint missing pagination metadata",
-          location: `${action.parameters?.method || "GET"} ${action.parameters?.url || "Unknown URL"}`,
-          suggestedFix: "Add pagination support with totalCount, page, limit metadata",
+          location: `${action.parameters?.method || "GET"} ${
+            action.parameters?.url || "Unknown URL"
+          }`,
+          suggestedFix:
+            "Add pagination support with totalCount, page, limit metadata",
           detectedAt: new Date().toISOString(),
           relatedSteps: [action.actionId],
         });
       }
 
       // Check for generic error handling (if error field exists but is generic)
-      if (body.error && typeof body.error === "string" && body.error.length < 20) {
+      if (
+        body.error &&
+        typeof body.error === "string" &&
+        body.error.length < 20
+      ) {
         issues.push({
           category: "ERROR_HANDLING_INCOMPLETE",
           severity: "MEDIUM",
           description: "API returns generic error message without details",
-          location: `${action.parameters?.method || "GET"} ${action.parameters?.url || "Unknown URL"}`,
+          location: `${action.parameters?.method || "GET"} ${
+            action.parameters?.url || "Unknown URL"
+          }`,
           suggestedFix: "Add specific error codes and detailed error messages",
           detectedAt: new Date().toISOString(),
           relatedSteps: [action.actionId],
@@ -145,9 +183,13 @@ class TechnicalDebtDetector {
       issues.push({
         category: "ERROR_HANDLING_INCOMPLETE",
         severity: "HIGH",
-        description: "API endpoint returned 500 error (should be 4xx for client errors)",
-        location: `${action.parameters?.method || "GET"} ${action.parameters?.url || "Unknown URL"}`,
-        suggestedFix: "Add proper error handling to return 400-level errors for validation issues",
+        description:
+          "API endpoint returned 500 error (should be 4xx for client errors)",
+        location: `${action.parameters?.method || "GET"} ${
+          action.parameters?.url || "Unknown URL"
+        }`,
+        suggestedFix:
+          "Add proper error handling to return 400-level errors for validation issues",
         detectedAt: new Date().toISOString(),
         relatedSteps: [action.actionId],
       });
@@ -189,7 +231,9 @@ class TechnicalDebtDetector {
         category: "API_ENDPOINT_INCOMPLETE",
         severity: "LOW",
         description: "Response missing Content-Type header",
-        location: `${action.parameters?.method || "GET"} ${action.parameters?.url || "Unknown URL"}`,
+        location: `${action.parameters?.method || "GET"} ${
+          action.parameters?.url || "Unknown URL"
+        }`,
         suggestedFix: "Add Content-Type header to response",
         detectedAt: new Date().toISOString(),
         relatedSteps: [action.actionId],
@@ -264,7 +308,8 @@ class TechnicalDebtDetector {
         severity: "MEDIUM",
         description: "Tests may be using mocks instead of real integrations",
         location: action.parameters?.command || "test",
-        suggestedFix: "Replace mocks with real integration tests where appropriate",
+        suggestedFix:
+          "Replace mocks with real integration tests where appropriate",
         detectedAt: new Date().toISOString(),
         relatedSteps: [action.actionId],
       });
@@ -291,7 +336,10 @@ class TechnicalDebtDetector {
     const lines = output.split("\n");
 
     for (const line of lines) {
-      if (line.toLowerCase().includes("warning") || line.toLowerCase().includes("deprecated")) {
+      if (
+        line.toLowerCase().includes("warning") ||
+        line.toLowerCase().includes("deprecated")
+      ) {
         warnings.push(line.trim().substring(0, 100)); // Max 100 chars per warning
       }
     }
@@ -300,4 +348,4 @@ class TechnicalDebtDetector {
   }
 }
 
-module.exports = TechnicalDebtDetector;
+module.exports = PerformanceDetector;
