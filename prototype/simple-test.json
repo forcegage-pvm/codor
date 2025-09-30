@@ -1,0 +1,53 @@
+{
+  "testPlanVersion": "1.0.0",
+  "createdDate": "2025-09-29",
+  "description": "Simple Test: Basic Script Execution Validation",
+
+  "globalConfiguration": {
+    "workspaceRoot": "D:\\Dropbox\\Repositories\\Python\\codor\\test-case\\packages\\web",
+    "evidenceBaseDirectory": "evidence",
+    "apiBaseUrl": "http://localhost:3000"
+  },
+
+  "tasks": {
+    "T001": {
+      "taskId": "T001",
+      "title": "Basic server validation test",
+      "description": "Simple test to validate script execution engine"
+    }
+  },
+
+  "executionWorkflow": {
+    "prerequisites": [
+      {
+        "name": "development_server_running",
+        "command": "Invoke-WebRequest -Uri http://localhost:3000 -Method GET",
+        "timeout": 5,
+        "onFailure": "Development server not running on localhost:3000"
+      }
+    ],
+
+    "executionSteps": [
+      {
+        "stepId": "test_basic_command",
+        "taskId": "T001",
+        "action": "TERMINAL_COMMAND",
+        "command": "echo 'Hello from CODOR Script Engine!'",
+        "evidence": "T001/basic-test.log",
+        "successCriteria": "Command executes successfully",
+        "onSuccess": "proceed_to_next",
+        "onFailure": "report_failure"
+      },
+      {
+        "stepId": "test_npm_version",
+        "taskId": "T001",
+        "action": "TERMINAL_COMMAND",
+        "command": "npm --version",
+        "evidence": "T001/npm-version.log",
+        "successCriteria": "NPM version displayed",
+        "onSuccess": "mark_complete",
+        "onFailure": "report_failure"
+      }
+    ]
+  }
+}

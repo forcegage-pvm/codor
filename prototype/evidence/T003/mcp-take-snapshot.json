@@ -1,0 +1,8 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "# take_snapshot response\n## Page content\nuid=1_0 RootWebArea \"Example Domain\"\n  uid=1_1 heading \"Example Domain\" level=\"1\"\n  uid=1_2 StaticText \"This domain is for use in illustrative examples in documents. You may use this domain in literature without prior coordination or asking for permission.\"\n  uid=1_3 link \"More information...\"\n    uid=1_4 StaticText \"More information...\"\n"
+    }
+  ]
+}

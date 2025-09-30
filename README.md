@@ -2,9 +2,9 @@
 
 *Technology-Agnostic Framework for Preventing AI Development Hallucination*
 
-**Version**: 4.0  
-**Status**: Production Ready  
-**Last Updated**: September 29, 2025
+**Version**: 5.0  
+**Status**: Active Development - TES Implementation  
+**Last Updated**: September 30, 2025
 
 ---
 
@@ -65,6 +65,20 @@ CODOR (Constitutional Operations for Development and Operations Reliability) is 
 - **[📋 Constitution v2.0](.core/core-constitution-2.0.md)** - Previous framework version
 - **[📈 Version Evolution](#version-history)** - Complete version changelog
 - **🆕 v4.0**: VS Code slash command integration with professional prompt files
+- **🆕 v5.0**: Technological Enforcement System (TES) with agent-removed testing
+
+### 📚 CODOR v5.0 Specifications
+**NEW**: Complete specification suite for the Technological Enforcement System (TES)
+- **[📖 Specifications Overview](docs/specifications/README.md)** - Complete documentation index with reading order
+- **[🏗️ Core Framework](docs/specifications/core-framework/)** - TES architecture & constitutional integration
+- **[🧪 Testing System](docs/specifications/testing-system/)** - Agent-removed testing framework
+- **[🚀 Implementation Guides](docs/specifications/implementation/)** - Roadmap & setup guides
+- **[🔍 Analysis](docs/specifications/analysis/)** - Problem analysis & lessons learned
+
+**Quick Links**:
+- [Why Agent-Removed Testing?](docs/specifications/analysis/MCP-ENFORCEMENT-FAILURE-ANALYSIS.md)
+- [Start Implementation](docs/specifications/implementation/PHASE1-SETUP.md)
+- [Testing Framework Spec](docs/specifications/testing-system/SCRIPT-BASED-TESTING-FRAMEWORK-SPECIFICATION.md)
 
 ### 📊 Deep Analysis (Optional)
 - **[🔍 Framework Analysis](.core/analysis/)** - Comprehensive optimization research
@@ -161,6 +175,8 @@ CODOR (Constitutional Operations for Development and Operations Reliability) is 
 
 ## Version History
 
+- **Version 5.0** (September 2025): Technological Enforcement System (TES), agent-removed testing framework, script-based validation
+- **Version 4.0** (September 2025): VS Code slash command integration with professional prompt files
 - **Version 3.0** (September 2025): Validation-first paradigm, graduated implementation, anti-circumnavigation engineering
 - **Version 2.0**: Universal technology-agnostic framework with 9 mandates
 - **Version 1.0**: Original Next.js-specific constitutional framework

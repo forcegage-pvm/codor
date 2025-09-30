@@ -1,0 +1,96 @@
+{
+  "testPlanVersion": "2.0.0",
+  "createdDate": "2025-09-29",
+  "description": "Enhanced Test: Terminal Commands + MCP Browser Automation",
+
+  "globalConfiguration": {
+    "workspaceRoot": "D:\\Dropbox\\Repositories\\Python\\codor\\test-case\\packages\\web",
+    "evidenceBaseDirectory": "evidence",
+    "apiBaseUrl": "http://localhost:3001"
+  },
+
+  "tasks": {
+    "T001": {
+      "taskId": "T001",
+      "title": "Terminal command validation",
+      "description": "Test basic terminal command execution"
+    },
+    "T002": {
+      "taskId": "T002",
+      "title": "Jest test execution",
+      "description": "Run actual Jest tests to validate testing framework"
+    },
+    "T003": {
+      "taskId": "T003",
+      "title": "MCP browser automation",
+      "description": "Test MCP server connection and browser automation"
+    }
+  },
+
+  "executionWorkflow": {
+    "prerequisites": [
+      {
+        "name": "development_server_running",
+        "command": "Invoke-WebRequest -Uri http://localhost:3001 -Method GET -TimeoutSec 5",
+        "timeout": 5,
+        "onFailure": "Development server not running on localhost:3001"
+      },
+      {
+        "name": "node_modules_exist",
+        "command": "Test-Path node_modules",
+        "timeout": 5,
+        "onFailure": "Run npm install to install dependencies"
+      }
+    ],
+
+    "executionSteps": [
+      {
+        "stepId": "test_basic_commands",
+        "taskId": "T001",
+        "action": "TERMINAL_COMMAND",
+        "command": "echo 'Testing basic commands'; node --version; npm --version",
+        "evidence": "T001/basic-commands.log",
+        "successCriteria": "All commands execute successfully",
+        "onSuccess": "proceed_to_jest",
+        "onFailure": "report_basic_failure"
+      },
+      {
+        "stepId": "test_jest_framework",
+        "taskId": "T002",
+        "action": "TERMINAL_COMMAND",
+        "command": "npm test -- --version",
+        "evidence": "T002/jest-version.log",
+        "successCriteria": "Jest version displayed",
+        "onSuccess": "proceed_to_mcp",
+        "onFailure": "report_jest_failure"
+      },
+      {
+        "stepId": "test_mcp_browser_automation",
+        "taskId": "T003",
+        "action": "MCP_BROWSER_SEQUENCE",
+        "sequence": [
+          {
+            "action": "tools/list",
+            "parameters": {},
+            "evidence": "T003/mcp-tools-list.json"
+          },
+          {
+            "action": "new_page",
+            "parameters": {
+              "url": "https://example.com"
+            },
+            "evidence": "T003/mcp-new-page.json"
+          },
+          {
+            "action": "take_snapshot",
+            "parameters": {},
+            "evidence": "T003/mcp-take-snapshot.json"
+          }
+        ],
+        "successCriteria": "MCP commands execute successfully",
+        "onSuccess": "mark_complete",
+        "onFailure": "report_mcp_failure"
+      }
+    ]
+  }
+}

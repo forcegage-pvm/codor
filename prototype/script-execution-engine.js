@@ -1,0 +1,692 @@
+#!/usr/bin/env node
+
+/**
+ * CODOR Script Execution Engine v1.0
+ *
+ * Revolutionary approach to AI agent testing:
+ * - Agents write JSON test specifications
+ * - Scripts execute tests and generate unfakeable evidence
+ * - Removes agents from execution loop to prevent fabrication
+ */
+
+const fs = require("fs");
+const path = require("path");
+const { spawn, execSync } = require("child_process");
+
+class ScriptExecutionEngine {
+  constructor() {
+    this.testSpec = null;
+    this.evidenceDir = null;
+    this.mcpConnection = null;
+    this.executionResults = [];
+  }
+
+  /**
+   * Load and validate test specification from JSON file
+   */
+  async loadTestSpec(jsonPath) {
+    try {
+      console.log(`🔍 Loading test specification: ${jsonPath}`);
+      const content = fs.readFileSync(jsonPath, "utf8");
+      this.testSpec = JSON.parse(content);
+
+      // Validate required structure
+      if (!this.testSpec.tasks || !this.testSpec.executionWorkflow) {
+        throw new Error(
+          "Invalid test specification: missing tasks or executionWorkflow"
+        );
+      }
+
+      console.log(
+        `✅ Loaded test spec v${this.testSpec.testPlanVersion}: ${this.testSpec.description}`
+      );
+      console.log(
+        `📋 Tasks found: ${Object.keys(this.testSpec.tasks).join(", ")}`
+      );
+
+      // Set up evidence directory
+      this.evidenceDir = path.resolve(
+        this.testSpec.globalConfiguration.evidenceBaseDirectory
+      );
+      this.ensureEvidenceDirectory();
+
+      return true;
+    } catch (error) {
+      console.error(`❌ Failed to load test specification: ${error.message}`);
+      return false;
+    }
+  }
+
+  /**
+   * Ensure evidence directory structure exists
+   */
+  ensureEvidenceDirectory() {
+    if (!fs.existsSync(this.evidenceDir)) {
+      fs.mkdirSync(this.evidenceDir, { recursive: true });
+      console.log(`📁 Created evidence directory: ${this.evidenceDir}`);
+    }
+
+    // Create task-specific directories
+    Object.keys(this.testSpec.tasks).forEach((taskId) => {
+      const taskDir = path.join(this.evidenceDir, taskId);
+      if (!fs.existsSync(taskDir)) {
+        fs.mkdirSync(taskDir, { recursive: true });
+        console.log(`📁 Created task directory: ${taskDir}`);
+      }
+    });
+  }
+
+  /**
+   * Execute terminal command and capture output
+   */
+  async executeTerminalCommand(command, workingDir, taskId) {
+    return new Promise((resolve, reject) => {
+      console.log(`\n🔧 Executing: ${command}`);
+      console.log(`📂 Working directory: ${workingDir}`);
+
+      const startTime = new Date();
+      const logFile = path.join(
+        this.evidenceDir,
+        taskId,
+        "contract-test-execution.log"
+      );
+
+      // Execute command and capture all output
+      const child = spawn("powershell.exe", ["-Command", command], {
+        cwd: workingDir,
+        stdio: ["pipe", "pipe", "pipe"],
+        shell: true,
+      });
+
+      let stdout = "";
+      let stderr = "";
+
+      child.stdout.on("data", (data) => {
+        const output = data.toString();
+        stdout += output;
+        process.stdout.write(output); // Real-time output
+      });
+
+      child.stderr.on("data", (data) => {
+        const output = data.toString();
+        stderr += output;
+        process.stderr.write(output); // Real-time output
+      });
+
+      child.on("close", (code) => {
+        const endTime = new Date();
+        const duration = endTime - startTime;
+
+        const result = {
+          command,
+          workingDir,
+          exitCode: code,
+          stdout,
+          stderr,
+          startTime: startTime.toISOString(),
+          endTime: endTime.toISOString(),
+          durationMs: duration,
+        };
+
+        // Save execution log (unfakeable evidence)
+        const logContent = this.generateExecutionLog(result);
+        fs.writeFileSync(logFile, logContent);
+        console.log(`📝 Saved execution log: ${logFile}`);
+
+        if (code === 0) {
+          console.log(`✅ Command completed successfully in ${duration}ms`);
+          resolve(result);
+        } else {
+          console.log(`⚠️ Command exited with code ${code} in ${duration}ms`);
+          resolve(result); // Don't reject, let caller handle
+        }
+      });
+
+      child.on("error", (error) => {
+        console.error(`❌ Command execution failed: ${error.message}`);
+        reject(error);
+      });
+    });
+  }
+
+  /**
+   * Generate detailed execution log
+   */
+  generateExecutionLog(result) {
+    return `# CODOR Script Execution Log
+## Command Execution Details
+
+**Command**: \`${result.command}\`
+**Working Directory**: \`${result.workingDir}\`
+**Start Time**: ${result.startTime}
+**End Time**: ${result.endTime}
+**Duration**: ${result.durationMs}ms
+**Exit Code**: ${result.exitCode}
+
+## Standard Output
+\`\`\`
+${result.stdout}
+\`\`\`
+
+## Standard Error
+\`\`\`
+${result.stderr}
+\`\`\`
+
+## Evidence Authenticity
+- **Generated by**: CODOR Script Execution Engine v1.0
+- **Timestamp**: ${new Date().toISOString()}
+- **Process PID**: ${process.pid}
+- **Platform**: ${process.platform}
+- **Node Version**: ${process.version}
+
+This log file contains unfakeable command execution evidence generated by automated script execution.
+No AI agent was involved in the generation of this evidence.
+`;
+  }
+
+  /**
+   * Connect to MCP server directly via stdio
+   */
+  async connectMCPServer() {
+    try {
+      console.log("\n🔗 Connecting to Chrome DevTools MCP server...");
+
+      // Launch Chrome DevTools MCP with proper Chrome executable path
+      const chromePaths = [
+        "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+        "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+        "C:\\Users\\Marius\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe",
+      ];
+
+      let chromePath = null;
+      for (const path of chromePaths) {
+        if (fs.existsSync(path)) {
+          chromePath = path;
+          break;
+        }
+      }
+
+      if (!chromePath) {
+        throw new Error("Chrome executable not found in standard locations");
+      }
+
+      console.log(`🌐 Using Chrome at: ${chromePath}`);
+
+      const mcpProcess = spawn(
+        "npx",
+        ["chrome-devtools-mcp@latest", "--executablePath", `"${chromePath}"`],
+        {
+          stdio: ["pipe", "pipe", "pipe"],
+          shell: true,
+          cwd: this.testSpec.globalConfiguration.workspaceRoot,
+        }
+      );
+
+      this.mcpConnection = mcpProcess;
+
+      // Set up JSON-RPC communication
+      mcpProcess.stdout.on("data", (data) => {
+        const output = data.toString().trim();
+        console.log(`MCP Output: ${output}`);
+
+        // Try to parse as JSON for responses
+        try {
+          const response = JSON.parse(output);
+          this.handleMCPResponse(response);
+        } catch (error) {
+          // Not JSON, could be server startup messages or errors
+          if (output.includes("error") || output.includes("Error")) {
+            console.error(`MCP Error: ${output}`);
+          }
+        }
+      });
+
+      mcpProcess.stderr.on("data", (data) => {
+        console.log(`MCP Stderr: ${data.toString().trim()}`);
+      });
+
+      mcpProcess.on("close", (code) => {
+        console.log(`MCP server exited with code ${code}`);
+        this.mcpConnection = null;
+      });
+
+      mcpProcess.on("error", (error) => {
+        console.error(`MCP Process Error: ${error.message}`);
+        this.mcpConnection = null;
+      });
+
+      // Wait a moment for server to initialize
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      if (this.mcpConnection) {
+        console.log("✅ MCP server connection established");
+        return true;
+      } else {
+        console.log("❌ MCP server connection failed");
+        return false;
+      }
+    } catch (error) {
+      console.error(`❌ Failed to connect to MCP server: ${error.message}`);
+      return false;
+    }
+  }
+
+  /**
+   * Execute MCP command and capture response
+   */
+  async executeMCPCommand(command, parameters, taskId) {
+    if (!this.mcpConnection) {
+      throw new Error("MCP server not connected");
+    }
+
+    return new Promise((resolve, reject) => {
+      const requestId = Date.now();
+      console.log(`\n🌐 MCP Command: ${command}`);
+      console.log(`📝 Parameters:`, parameters);
+
+      // Handle different MCP request types
+      let request;
+      if (command.startsWith("tools/")) {
+        // Direct MCP protocol methods
+        request = {
+          jsonrpc: "2.0",
+          id: requestId,
+          method: command,
+          params: parameters || {},
+        };
+      } else {
+        // Tool calls
+        request = {
+          jsonrpc: "2.0",
+          id: requestId,
+          method: "tools/call",
+          params: {
+            name: command,
+            arguments: parameters || {},
+          },
+        };
+      }
+
+      // Send request to MCP server
+      const requestJson = JSON.stringify(request);
+      console.log(`➡️  MCP JSON Sent: ${requestJson}`);
+      this.mcpConnection.stdin.write(requestJson + "\n");
+
+      // Set up response handler
+      this.pendingMCPRequest = {
+        id: requestId,
+        resolve,
+        reject,
+        command,
+        taskId,
+        timestamp: new Date(),
+      };
+
+      // Timeout after 30 seconds
+      setTimeout(() => {
+        if (this.pendingMCPRequest && this.pendingMCPRequest.id === requestId) {
+          this.pendingMCPRequest.reject(new Error("MCP command timeout"));
+          this.pendingMCPRequest = null;
+        }
+      }, 30000);
+    });
+  }
+
+  /**
+   * Handle MCP server response
+   */
+  handleMCPResponse(response) {
+    if (this.pendingMCPRequest && response.id === this.pendingMCPRequest.id) {
+      const request = this.pendingMCPRequest;
+      this.pendingMCPRequest = null;
+
+      if (response.error) {
+        console.error(`❌ MCP Error: ${response.error.message}`);
+        request.reject(new Error(response.error.message));
+      } else {
+        console.log(`✅ MCP Response received`);
+
+        // Save unfakeable evidence
+        const evidenceFile = path.join(
+          this.evidenceDir,
+          request.taskId,
+          `mcp-${request.command.replace("mcp_chrome-devtoo_", "")}.json`
+        );
+
+        const evidenceData = {
+          command: request.command,
+          timestamp: request.timestamp.toISOString(),
+          response: response.result,
+          metadata: {
+            requestId: response.id,
+            generatedBy: "CODOR Script Execution Engine",
+            mcpServer: "chrome-devtools-mcp",
+            authentic: true,
+          },
+        };
+
+        fs.writeFileSync(evidenceFile, JSON.stringify(evidenceData, null, 2));
+        console.log(`📝 Saved MCP evidence: ${evidenceFile}`);
+
+        request.resolve(evidenceData);
+      }
+    }
+  }
+
+  /**
+   * Execute full test workflow
+   */
+  async executeTestWorkflow() {
+    if (!this.testSpec) {
+      throw new Error("No test specification loaded");
+    }
+
+    console.log("\n🚀 Starting test execution workflow...");
+
+    // Check prerequisites
+    console.log("\n📋 Checking prerequisites...");
+    for (const prereq of this.testSpec.executionWorkflow.prerequisites) {
+      console.log(`🔍 ${prereq.name}...`);
+      try {
+        execSync(prereq.command, { stdio: "pipe" });
+        console.log(`✅ ${prereq.name} - OK`);
+      } catch (error) {
+        console.log(`❌ ${prereq.name} - FAILED`);
+        console.log(`💡 Suggested fix: ${prereq.onFailure}`);
+      }
+    }
+
+    // Execute workflow steps
+    console.log("\n⚡ Executing workflow steps...");
+    for (const step of this.testSpec.executionWorkflow.executionSteps) {
+      await this.executeWorkflowStep(step);
+    }
+
+    console.log("\n🎉 Test execution workflow completed!");
+    return this.executionResults;
+  }
+
+  /**
+   * Execute individual workflow step
+   */
+  async executeWorkflowStep(step) {
+    console.log(`\n📍 Step: ${step.stepId}`);
+
+    try {
+      if (step.action === "TERMINAL_COMMAND") {
+        const result = await this.executeTerminalCommand(
+          step.command,
+          this.testSpec.globalConfiguration.workspaceRoot,
+          step.taskId
+        );
+
+        this.executionResults.push({
+          stepId: step.stepId,
+          taskId: step.taskId,
+          action: step.action,
+          success: result.exitCode === 0,
+          result,
+        });
+      } else if (step.action === "MCP_BROWSER_SEQUENCE") {
+        console.log("\n🌐 Executing MCP Browser Sequence...");
+
+        // Try to connect to MCP server, but continue with mock if it fails
+        let mcpAvailable = false;
+        if (!this.mcpConnection) {
+          mcpAvailable = await this.connectMCPServer();
+        }
+
+        for (const mcpStep of step.sequence) {
+          if (!this.mcpConnection) {
+            throw new Error(
+              "MCP server not connected - cannot execute browser automation"
+            );
+          }
+
+          console.log(`🌐 Executing Chrome DevTools: ${mcpStep.action}`);
+          const result = await this.executeMCPCommand(
+            mcpStep.action,
+            mcpStep.parameters,
+            step.taskId
+          );
+
+          // Add delay after navigation to allow page to load
+          if (mcpStep.action === "Page.navigate") {
+            console.log("⏳ Waiting for page to load...");
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+          }
+
+          // Save evidence file
+          const evidencePath = path.join(
+            this.evidenceDir,
+            mcpStep.evidence ||
+              `${step.taskId}/mcp-${mcpStep.action}-${Date.now()}.json`
+          );
+          fs.writeFileSync(evidencePath, JSON.stringify(result, null, 2));
+          console.log(`📁 Saved MCP evidence: ${evidencePath}`);
+
+          this.executionResults.push({
+            stepId: step.stepId,
+            taskId: step.taskId,
+            action: mcpStep.action,
+            success: !result.error,
+            result: result,
+            evidencePath: evidencePath,
+          });
+        }
+      }
+
+      console.log(`✅ Step ${step.stepId} completed successfully`);
+    } catch (error) {
+      console.error(`❌ Step ${step.stepId} failed: ${error.message}`);
+      this.executionResults.push({
+        stepId: step.stepId,
+        taskId: step.taskId,
+        success: false,
+        error: error.message,
+      });
+    }
+  }
+
+  /**
+   * Generate final execution report
+   */
+  generateExecutionReport() {
+    const reportPath = path.join(this.evidenceDir, "execution-report.json");
+    const report = {
+      testSpecification: this.testSpec.description,
+      version: this.testSpec.testPlanVersion,
+      executionTime: new Date().toISOString(),
+      results: this.executionResults,
+      evidenceDirectory: this.evidenceDir,
+      summary: {
+        totalSteps: this.executionResults.length,
+        successful: this.executionResults.filter((r) => r.success).length,
+        failed: this.executionResults.filter((r) => !r.success).length,
+      },
+      authenticity: {
+        generatedBy: "CODOR Script Execution Engine v1.0",
+        platform: process.platform,
+        nodeVersion: process.version,
+        processId: process.pid,
+      },
+    };
+
+    fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
+    console.log(`\n📊 Execution report saved: ${reportPath}`);
+
+    return report;
+  }
+
+  /**
+   * Clean up MCP connection and resources
+   */
+  async cleanup() {
+    if (this.mcpConnection) {
+      console.log("🧹 Cleaning up MCP connection...");
+
+      // Kill the MCP process
+      this.mcpConnection.kill("SIGTERM");
+
+      // Wait a moment for graceful shutdown
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Force kill if still alive
+      if (!this.mcpConnection.killed) {
+        this.mcpConnection.kill("SIGKILL");
+      }
+
+      this.mcpConnection = null;
+      console.log("✅ MCP connection cleaned up");
+    }
+  }
+
+  /**
+   * Execute MCP command via JSON-RPC
+   */
+  async executeMCPCommand(action, parameters, taskId) {
+    console.log(`🌐 Executing MCP ${action}:`, parameters);
+
+    let request;
+
+    // Handle special MCP protocol methods vs tool calls
+    if (action === "tools/list" || action === "initialize") {
+      // Direct MCP protocol methods
+      request = {
+        jsonrpc: "2.0",
+        id: Date.now(),
+        method: action,
+        params: parameters,
+      };
+    } else {
+      // Tool calls use tools/call method
+      request = {
+        jsonrpc: "2.0",
+        id: Date.now(),
+        method: "tools/call",
+        params: {
+          name: action,
+          arguments: parameters,
+        },
+      };
+    }
+
+    console.log(
+      `📤 Sending JSON-RPC request:`,
+      JSON.stringify(request, null, 2)
+    );
+
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error(`MCP command ${action} timed out`));
+      }, 10000);
+
+      this.mcpConnection.stdin.write(JSON.stringify(request) + "\n");
+
+      const handleResponse = (data) => {
+        try {
+          const response = JSON.parse(data.toString());
+          if (response.id === request.id) {
+            clearTimeout(timeout);
+            if (response.error) {
+              reject(new Error(response.error.message));
+            } else {
+              resolve(response.result);
+            }
+          }
+        } catch (error) {
+          // Ignore parsing errors for partial data
+        }
+      };
+
+      this.mcpConnection.stdout.once("data", handleResponse);
+
+      // Handle stderr - distinguish between warnings and real errors
+      this.mcpConnection.stderr.once("data", (errorData) => {
+        const errorMsg = errorData.toString();
+
+        // Chrome DevTools MCP shows security warnings on stderr - these are not real errors
+        if (
+          errorMsg.includes("chrome-devtools-mcp exposes content") ||
+          errorMsg.includes("Avoid sharing sensitive")
+        ) {
+          console.log(`📢 MCP Security Notice: ${errorMsg.trim()}`);
+          // Don't reject on security warnings - continue waiting for response
+          return;
+        }
+
+        // Real errors should still cause rejection
+        clearTimeout(timeout);
+        reject(new Error(`MCP error: ${errorMsg}`));
+      });
+    });
+  }
+}
+
+// CLI Interface
+async function main() {
+  const args = process.argv.slice(2);
+  if (args.length === 0) {
+    console.log(`
+🎯 CODOR Script Execution Engine v1.0
+
+Usage: node script-execution-engine.js <test-spec.json>
+
+Example: node script-execution-engine.js ../test-case/specs/006-quotes-technical-debt/T004-T005-self-contained-execution-plan.json
+        `);
+    process.exit(1);
+  }
+
+  const testSpecPath = args[0];
+  const engine = new ScriptExecutionEngine();
+
+  try {
+    // Load test specification
+    if (!(await engine.loadTestSpec(testSpecPath))) {
+      process.exit(1);
+    }
+
+    // Execute test workflow
+    await engine.executeTestWorkflow();
+
+    // Generate report
+    const report = engine.generateExecutionReport();
+
+    console.log(`\n🎉 EXECUTION COMPLETE!`);
+    console.log(
+      `📊 Results: ${report.summary.successful}/${report.summary.totalSteps} steps successful`
+    );
+    console.log(`📁 Evidence saved in: ${report.evidenceDirectory}`);
+
+    // Clean up resources before exit
+    await engine.cleanup();
+
+    if (report.summary.failed > 0) {
+      console.log(
+        `⚠️ ${report.summary.failed} steps failed - see execution report for details`
+      );
+      process.exit(1);
+    } else {
+      process.exit(0);
+    }
+  } catch (error) {
+    console.error(`💥 Fatal error: ${error.message}`);
+
+    // Clean up resources even on error
+    try {
+      await engine.cleanup();
+    } catch (cleanupError) {
+      console.error(`⚠️ Cleanup error: ${cleanupError.message}`);
+    }
+
+    process.exit(1);
+  }
+}
+
+// Run if called directly
+if (require.main === module) {
+  main().catch(console.error);
+}
+
+module.exports = ScriptExecutionEngine;
