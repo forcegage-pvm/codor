@@ -1,7 +1,7 @@
 {
   "taskId": "mcp-executor-test",
   "title": "Test MCP Executor Plugin Architecture",
-  "startTime": "2025-09-30T12:39:49.259Z",
+  "startTime": "2025-09-30T12:48:05.886Z",
   "steps": [
     {
       "action": {
@@ -15,20 +15,20 @@
       },
       "phase": "PREREQ",
       "taskId": "mcp-executor-test",
-      "startTime": "2025-09-30T12:39:49.261Z",
+      "startTime": "2025-09-30T12:48:05.886Z",
       "success": true,
       "data": {
         "filePath": "D:\\Dropbox\\Repositories\\Python\\codor\\prototype\\executors\\mcp-browser.js",
         "validationType": "EXISTS",
         "exists": true,
-        "timestamp": "2025-09-30T12:39:49.262Z",
-        "size": 7541,
-        "modified": "2025-09-30T12:39:43.915Z",
+        "timestamp": "2025-09-30T12:48:05.886Z",
+        "size": 7623,
+        "modified": "2025-09-30T12:42:35.390Z",
         "isDirectory": false
       },
       "error": null,
-      "endTime": "2025-09-30T12:39:49.263Z",
-      "durationMs": 2
+      "endTime": "2025-09-30T12:48:05.887Z",
+      "durationMs": 1
     },
     {
       "action": {
@@ -41,7 +41,7 @@
       },
       "phase": "PREREQ",
       "taskId": "mcp-executor-test",
-      "startTime": "2025-09-30T12:39:49.265Z",
+      "startTime": "2025-09-30T12:48:05.889Z",
       "success": true,
       "data": {
         "command": "node -c prototype\\executors\\mcp-browser.js",
@@ -52,11 +52,11 @@
         "expectedExitCodes": [
           0
         ],
-        "timestamp": "2025-09-30T12:39:49.599Z"
+        "timestamp": "2025-09-30T12:48:06.233Z"
       },
       "error": null,
-      "endTime": "2025-09-30T12:39:49.600Z",
-      "durationMs": 335
+      "endTime": "2025-09-30T12:48:06.233Z",
+      "durationMs": 344
     },
     {
       "action": {
@@ -69,7 +69,7 @@
       },
       "phase": "STEP",
       "taskId": "mcp-executor-test",
-      "startTime": "2025-09-30T12:39:49.602Z",
+      "startTime": "2025-09-30T12:48:06.234Z",
       "success": true,
       "data": {
         "command": "Get-ChildItem -Path 'prototype\\executors' -Filter '*.js' | Measure-Object | Select-Object -ExpandProperty Count",
@@ -80,11 +80,11 @@
         "expectedExitCodes": [
           0
         ],
-        "timestamp": "2025-09-30T12:39:50.061Z"
+        "timestamp": "2025-09-30T12:48:06.563Z"
       },
       "error": null,
-      "endTime": "2025-09-30T12:39:50.062Z",
-      "durationMs": 460
+      "endTime": "2025-09-30T12:48:06.564Z",
+      "durationMs": 330
     },
     {
       "action": {
@@ -97,7 +97,7 @@
       },
       "phase": "STEP",
       "taskId": "mcp-executor-test",
-      "startTime": "2025-09-30T12:39:50.063Z",
+      "startTime": "2025-09-30T12:48:06.564Z",
       "success": true,
       "data": {
         "command": "$content = Get-Content 'prototype\\core\\plugin-registry.js' -Raw; if($content -match 'MCP'){Write-Host 'Plugin registry supports MCP'}else{Write-Host 'No MCP support'}",
@@ -108,11 +108,11 @@
         "expectedExitCodes": [
           0
         ],
-        "timestamp": "2025-09-30T12:39:50.583Z"
+        "timestamp": "2025-09-30T12:48:06.889Z"
       },
       "error": null,
-      "endTime": "2025-09-30T12:39:50.583Z",
-      "durationMs": 520
+      "endTime": "2025-09-30T12:48:06.889Z",
+      "durationMs": 325
     },
     {
       "action": {
@@ -125,7 +125,7 @@
       },
       "phase": "STEP",
       "taskId": "mcp-executor-test",
-      "startTime": "2025-09-30T12:39:50.585Z",
+      "startTime": "2025-09-30T12:48:06.889Z",
       "success": true,
       "data": {
         "command": "Write-Host '✅ MCP Browser Executor integrated!' -ForegroundColor Green; Write-Host 'Architecture: Plugin-based with auto-discovery' -ForegroundColor Cyan; Write-Host 'Ready for: Playwright, Puppeteer, Selenium extensions' -ForegroundColor Yellow",
@@ -136,11 +136,11 @@
         "expectedExitCodes": [
           0
         ],
-        "timestamp": "2025-09-30T12:39:50.916Z"
+        "timestamp": "2025-09-30T12:48:07.189Z"
       },
       "error": null,
-      "endTime": "2025-09-30T12:39:50.916Z",
-      "durationMs": 331
+      "endTime": "2025-09-30T12:48:07.189Z",
+      "durationMs": 300
     }
   ],
   "status": "PASSED",
@@ -176,6 +176,6 @@
       }
     ]
   },
-  "endTime": "2025-09-30T12:39:50.919Z",
-  "durationMs": 1660
+  "endTime": "2025-09-30T12:48:07.191Z",
+  "durationMs": 1305
 }

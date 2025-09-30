@@ -200,7 +200,9 @@ class MCPBrowserExecutor extends BaseExecutor {
         if (this.pendingRequests.has(requestId)) {
           this.pendingRequests.delete(requestId);
           reject(
-            new Error(`MCP request timeout: ${request.method} (id: ${requestId})`)
+            new Error(
+              `MCP request timeout: ${request.method} (id: ${requestId})`
+            )
           );
         }
       }, 30000);
@@ -235,7 +237,11 @@ class MCPBrowserExecutor extends BaseExecutor {
 
           if (message.error) {
             pending.reject(
-              new Error(`MCP error: ${message.error.message || JSON.stringify(message.error)}`)
+              new Error(
+                `MCP error: ${
+                  message.error.message || JSON.stringify(message.error)
+                }`
+              )
             );
           } else {
             pending.resolve(message.result);
@@ -268,19 +274,19 @@ class MCPBrowserExecutor extends BaseExecutor {
 
       // Kill process gracefully
       try {
-        this.mcpProcess.kill('SIGTERM');
-        
+        this.mcpProcess.kill("SIGTERM");
+
         // Wait briefly for graceful shutdown
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
         // Force kill if still running
         if (this.mcpProcess.exitCode === null) {
-          this.mcpProcess.kill('SIGKILL');
+          this.mcpProcess.kill("SIGKILL");
         }
       } catch (error) {
         // Process already dead, ignore
       }
-      
+
       this.mcpProcess = null;
       this.mcpInitialized = false;
       this.messageId = 1;
