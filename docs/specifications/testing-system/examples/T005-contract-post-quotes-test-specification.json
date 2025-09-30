@@ -1,0 +1,324 @@
+{
+  "$schema": "../schemas/current-test-task.schema.json",
+  "schemaVersion": "2.0.0",
+  "metadata": {
+    "projectName": "CODOR-Project",
+    "sprintId": "CURRENT_SPRINT",
+    "taskId": "T005",
+    "taskTitle": "Contract Test: POST /api/quotes",
+    "generatedAt": "2025-09-30T10:47:27.035Z",
+    "generatedBy": "CODOR Template Generator",
+    "description": "Auto-generated from contract-test-template.json",
+    "references": []
+  },
+  "globalConfiguration": {
+    "workspaceRoot": "${WORKSPACE_ROOT}",
+    "evidenceDirectory": "evidence",
+    "devServer": {
+      "command": "npm run dev",
+      "workingDirectory": "${WORKSPACE_ROOT}/packages/web",
+      "port": 3000,
+      "healthCheckUrl": "${API_BASE_URL}/api/health",
+      "startupTimeout": 30000
+    },
+    "environment": {
+      "NODE_ENV": "test",
+      "API_BASE_URL": "${API_BASE_URL}"
+    },
+    "timeout": 300000,
+    "validationPolicy": {
+      "linting": {
+        "strategy": "BLOCK_ON_ERRORS_ONLY",
+        "tools": {
+          "eslint": {
+            "enabled": true,
+            "blockOn": "ERRORS_ONLY",
+            "maxWarnings": 10,
+            "ignoredRules": [],
+            "errorOnRules": []
+          }
+        }
+      },
+      "typeChecking": {
+        "strategy": "BLOCK_ON_ERRORS_ALWAYS",
+        "tools": {
+          "typescript": {
+            "enabled": true,
+            "blockOn": "ERRORS_ALWAYS",
+            "strictMode": true,
+            "allowImplicitAny": false
+          }
+        }
+      },
+      "compilation": {
+        "strategy": "BLOCK_ON_ERRORS_ALWAYS"
+      }
+    }
+  },
+  "executionEngine": {
+    "availableActionTypes": [
+      "TERMINAL_COMMAND",
+      "HTTP_REQUEST",
+      "FILE_VALIDATION"
+    ],
+    "executorConfigurations": {
+      "terminalCommand": {
+        "shell": "powershell",
+        "timeout": 60000
+      },
+      "httpRequest": {
+        "timeout": 10000
+      }
+    }
+  },
+  "tasks": {
+    "T005": {
+      "taskId": "T005",
+      "title": "Contract Test: POST /api/quotes",
+      "description": "Test the POST /api/quotes endpoint for creating new quotes with validation",
+      "priority": "CRITICAL",
+      "dependencies": [],
+      "testExecution": {
+        "prerequisites": [
+          {
+            "actionId": "PREREQ.1",
+            "type": "FILE_VALIDATION",
+            "description": "Verify contract test file exists",
+            "parameters": {
+              "filePath": "packages/web/src/api/__tests__/quotes.post.contract.test.ts",
+              "validationType": "EXISTS"
+            },
+            "timeout": 5000,
+            "continueOnFailure": false
+          },
+          {
+            "actionId": "PREREQ.2",
+            "type": "TERMINAL_COMMAND",
+            "description": "Install dependencies",
+            "parameters": {
+              "command": "npm install",
+              "workingDirectory": "${WORKSPACE_ROOT}/packages/web",
+              "environment": {
+                "NODE_ENV": "test"
+              }
+            },
+            "timeout": 120000,
+            "continueOnFailure": false
+          },
+          {
+            "actionId": "PREREQ.3",
+            "type": "TERMINAL_COMMAND",
+            "description": "Start Next.js dev server",
+            "parameters": {
+              "command": "npm run dev",
+              "workingDirectory": "${WORKSPACE_ROOT}/packages/web",
+              "environment": {
+                "NODE_ENV": "development",
+                "PORT": "3000"
+              }
+            },
+            "timeout": 30000,
+            "continueOnFailure": false
+          }
+        ],
+        "steps": [
+          {
+            "actionId": "STEP.1",
+            "type": "FILE_VALIDATION",
+            "description": "Verify TypeScript types are valid",
+            "parameters": {
+              "filePath": "packages/web/src/api/__tests__/quotes.post.contract.test.ts",
+              "validationType": "CONTENT_MATCH"
+            },
+            "timeout": 5000,
+            "continueOnFailure": false
+          },
+          {
+            "actionId": "STEP.2",
+            "type": "TERMINAL_COMMAND",
+            "description": "TypeScript type check",
+            "parameters": {
+              "command": "npx tsc --noEmit --project tsconfig.json",
+              "workingDirectory": "${WORKSPACE_ROOT}/packages/web"
+            },
+            "timeout": 60000,
+            "continueOnFailure": false
+          },
+          {
+            "actionId": "STEP.3",
+            "type": "TERMINAL_COMMAND",
+            "description": "ESLint validation",
+            "parameters": {
+              "command": "npx eslint packages/web/src/api/__tests__/quotes.post.contract.test.ts",
+              "workingDirectory": "${WORKSPACE_ROOT}/packages/web"
+            },
+            "timeout": 30000,
+            "continueOnFailure": false
+          },
+          {
+            "actionId": "STEP.4",
+            "type": "TERMINAL_COMMAND",
+            "description": "Execute contract test suite",
+            "parameters": {
+              "command": "npm test -- packages/web/src/api/__tests__/quotes.post.contract.test.ts --verbose",
+              "workingDirectory": "${WORKSPACE_ROOT}/packages/web",
+              "environment": {
+                "NODE_ENV": "test",
+                "API_URL": "${API_BASE_URL}"
+              }
+            },
+            "timeout": 60000,
+            "continueOnFailure": true
+          },
+          {
+            "actionId": "STEP.5",
+            "type": "HTTP_REQUEST",
+            "description": "Direct API validation: POST /api/quotes",
+            "parameters": {
+              "url": "${API_BASE_URL}/api/quotes",
+              "method": "POST",
+              "headers": {
+                "Accept": "application/json"
+              }
+            },
+            "timeout": 10000,
+            "continueOnFailure": true
+          },
+          {
+            "actionId": "STEP.6",
+            "type": "HTTP_REQUEST",
+            "description": "Test API with pagination parameters",
+            "parameters": {
+              "url": "${API_BASE_URL}/api/quotes?page=1&pageSize=10",
+              "method": "POST",
+              "headers": {
+                "Accept": "application/json"
+              }
+            },
+            "timeout": 10000,
+            "continueOnFailure": true
+          },
+          {
+            "actionId": "STEP.7",
+            "type": "HTTP_REQUEST",
+            "description": "Test API with invalid parameters",
+            "parameters": {
+              "url": "${API_BASE_URL}/api/quotes?page=-1&pageSize=9999",
+              "method": "POST",
+              "headers": {
+                "Accept": "application/json"
+              }
+            },
+            "timeout": 10000,
+            "continueOnFailure": true
+          },
+          {
+            "actionId": "STEP.8",
+            "type": "TERMINAL_COMMAND",
+            "description": "Generate test coverage report",
+            "parameters": {
+              "command": "npm test -- packages/web/src/api/__tests__/quotes.post.contract.test.ts --coverage --coverageReporters=json",
+              "workingDirectory": "${WORKSPACE_ROOT}/packages/web"
+            },
+            "timeout": 60000,
+            "continueOnFailure": true
+          }
+        ],
+        "cleanup": [
+          {
+            "actionId": "CLEANUP.1",
+            "type": "TERMINAL_COMMAND",
+            "description": "Stop dev server",
+            "parameters": {
+              "command": "taskkill /F /FI \"WINDOWTITLE eq npm*\" /T",
+              "workingDirectory": "${WORKSPACE_ROOT}/packages/web"
+            },
+            "timeout": 5000,
+            "continueOnFailure": true
+          },
+          {
+            "actionId": "CLEANUP.2",
+            "type": "TERMINAL_COMMAND",
+            "description": "Clear test cache",
+            "parameters": {
+              "command": "npm run test:clear-cache",
+              "workingDirectory": "${WORKSPACE_ROOT}/packages/web"
+            },
+            "timeout": 10000,
+            "continueOnFailure": true
+          }
+        ]
+      },
+      "validationCriteria": {
+        "successConditions": [
+          {
+            "condition": "STEP.4.exitCode === 0 || STEP.4.exitCode === 1",
+            "description": "Test suite executes successfully (TDD allows test failures)"
+          },
+          {
+            "condition": "STEP.2.exitCode === 0",
+            "description": "No TypeScript compilation errors"
+          },
+          {
+            "condition": "STEP.3.errorCount === 0",
+            "description": "No ESLint errors (per validation policy)"
+          },
+          {
+            "condition": "STEP.5.statusCode >= 200 && STEP.5.statusCode < 500",
+            "description": "API responds with valid HTTP status"
+          }
+        ],
+        "failureConditions": [
+          {
+            "condition": "PREREQ.3.failed === true",
+            "description": "Dev server failed to start (blocks execution)"
+          },
+          {
+            "condition": "STEP.2.exitCode !== 0",
+            "description": "TypeScript errors present (blocks execution per policy)"
+          }
+        ],
+        "expectedOutput": {
+          "stdoutContains": [
+            "Test Suites:",
+            "Tests:",
+            "quotes.post.contract.test.ts"
+          ],
+          "exitCode": 0
+        }
+      },
+      "completionCriteria": {
+        "allStepsMustPass": false,
+        "minimumPassRate": 60,
+        "requiredEvidence": [
+          "terminal-output",
+          "test-execution-log",
+          "api-responses"
+        ],
+        "taskStatusLock": true
+      },
+      "technicalDebtExpectations": {
+        "likelyFailures": [
+          {
+            "scenario": "API endpoint not implemented (404 response)",
+            "expectedDebtCategory": "API_ENDPOINT_MISSING",
+            "expectedSeverity": "CRITICAL",
+            "suggestedFix": "Implement POST /api/quotes endpoint with proper request/response handling"
+          },
+          {
+            "scenario": "Incorrect response structure (contract violation)",
+            "expectedDebtCategory": "INTEGRATION_FAILURE",
+            "expectedSeverity": "HIGH",
+            "suggestedFix": "Update API response to match contract specification"
+          },
+          {
+            "scenario": "Missing input validation",
+            "expectedDebtCategory": "VALIDATION_MISSING",
+            "expectedSeverity": "MEDIUM",
+            "suggestedFix": "Add input validation for request parameters with appropriate error responses"
+          }
+        ]
+      }
+    }
+  }
+}

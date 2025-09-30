@@ -1,0 +1,526 @@
+# Simple Test Task Specification - YAML Schema
+# Version: 1.0.0
+# Purpose: Simple input format for agents to generate test task specifications
+# Generator transforms this into full test-task-specification.schema.json format
+
+$schema: http://json-schema.org/draft-07/schema#
+$id: https://codor.dev/schemas/simple-test-task-spec.yaml.schema
+title: Simple Test Task Specification (YAML Input)
+description: Simplified YAML schema for agents to specify test tasks. Generator transforms to full JSON specification.
+
+type: object
+required:
+  - task_id
+  - title
+  - type
+  - test_file
+  - workspace_root
+
+properties:
+  # Basic Task Information
+  task_id:
+    type: string
+    pattern: "^T[0-9]{3,}$"
+    description: Task identifier (e.g., T004, T042)
+    examples:
+      - T004
+      - T042
+      - T123
+
+  title:
+    type: string
+    minLength: 10
+    maxLength: 200
+    description: Short task title
+    examples:
+      - Contract Test GET /api/quotes
+      - Integration Test Quote Creation Flow
+      - Unit Test QuoteService.calculateTotal
+
+  type:
+    type: string
+    enum:
+      - contract-test
+      - component-test
+      - integration-test
+      - unit-test
+      - e2e-test
+      - database-migration
+    description: Template type determines generated structure
+    examples:
+      - contract-test
+      - component-test
+
+  description:
+    type: string
+    minLength: 20
+    description: Detailed task description (optional, generated if not provided)
+    examples:
+      - Validate GET /api/quotes endpoint against API contract specification
+
+  # Test Execution Context
+  test_file:
+    type: string
+    description: Relative path to test file from workspace root
+    examples:
+      - packages/web/__tests__/contracts/quotes-get.test.ts
+      - src/services/__tests__/quote-service.test.ts
+
+  workspace_root:
+    type: string
+    description: Absolute path to workspace root directory
+    examples:
+      - D:/Dropbox/Repositories/Python/codor/test-case
+      - /home/user/projects/codor/test-case
+
+  # API-Specific Fields (for contract-test, integration-test)
+  api:
+    type: object
+    description: API endpoint details (required for contract-test type)
+    required:
+      - method
+      - endpoint
+    properties:
+      method:
+        type: string
+        enum: [GET, POST, PUT, DELETE, PATCH]
+        description: HTTP method
+        examples:
+          - GET
+          - POST
+
+      endpoint:
+        type: string
+        pattern: "^/"
+        description: API endpoint path (must start with /)
+        examples:
+          - /api/v1/quotes
+          - /api/v1/quotes/{id}
+
+      base_url:
+        type: string
+        format: uri
+        default: http://localhost:3000
+        description: Base URL for API requests
+        examples:
+          - http://localhost:3000
+          - https://staging.codor.dev
+
+      request_body:
+        type: object
+        description: Example request body for POST/PUT/PATCH
+        examples:
+          - customerId: "CUST001"
+            items: [{ productId: "PROD001", quantity: 2 }]
+
+      expected_status:
+        type: integer
+        default: 200
+        description: Expected HTTP status code
+        examples:
+          - 200
+          - 201
+          - 404
+
+  # Database-Specific Fields (for database-migration and integration-test types)
+  database:
+    type: object
+    description: Database configuration (required for database-migration, optional for integration-test)
+    properties:
+      connection_string:
+        type: string
+        description: Database connection string (use env var reference)
+        examples:
+          - "${DATABASE_URL}"
+
+      migration_file:
+        type: string
+        description: Path to migration file
+        examples:
+          - migrations/2025-09-30-add-quotes-table.sql
+
+      rollback_file:
+        type: string
+        description: Path to rollback script
+        examples:
+          - migrations/2025-09-30-add-quotes-table-rollback.sql
+
+      setup_command:
+        type: string
+        description: Command to setup test database (for integration-test)
+        examples:
+          - npm run db:test:setup
+
+      teardown_command:
+        type: string
+        description: Command to teardown test database (for integration-test)
+        examples:
+          - npm run db:test:teardown
+
+      seed_command:
+        type: string
+        description: Command to seed test data (for integration-test)
+        examples:
+          - npm run db:seed:test
+
+  # Component-Specific Fields (for component-test type)
+  component:
+    type: object
+    description: Component details (required for component-test type)
+    properties:
+      name:
+        type: string
+        description: Component name
+        examples:
+          - QuoteTable
+          - QuoteStatusBadge
+
+      path:
+        type: string
+        description: Path to component file
+        examples:
+          - packages/web/src/components/quotes/QuoteTable.tsx
+
+      framework:
+        type: string
+        description: Component framework
+        examples:
+          - React
+          - Vue
+          - Angular
+
+      version:
+        type: string
+        description: Component version
+        examples:
+          - "1.0.0"
+
+  # Test Framework Configuration (for component-test, unit-test)
+  test_framework:
+    type: object
+    description: Test framework configuration
+    properties:
+      name:
+        type: string
+        description: Primary test framework
+        examples:
+          - jest
+          - vitest
+          - mocha
+
+      libraries:
+        type: array
+        items:
+          type: string
+        description: Additional testing libraries
+        examples:
+          - ["@testing-library/react", "@testing-library/user-event"]
+
+  # Test Scenarios (simplified)
+  scenarios:
+    type: array
+    description: Simplified test scenario definitions
+    items:
+      type: object
+      required:
+        - id
+        - name
+        - type
+      properties:
+        id:
+          type: string
+          pattern: "^TS-[0-9]{3,}-[0-9]{3}$"
+          description: Scenario ID
+          examples:
+            - TS-011-001
+
+        name:
+          type: string
+          description: Scenario name
+          examples:
+            - "Renders empty state correctly"
+
+        description:
+          type: string
+          description: Scenario description
+          examples:
+            - "Verify component displays appropriate message"
+
+        type:
+          type: string
+          description: Scenario type
+          examples:
+            - rendering
+            - interaction
+            - props-validation
+            - accessibility
+
+        priority:
+          type: string
+          enum: [CRITICAL, HIGH, MEDIUM, LOW]
+          default: MEDIUM
+          description: Scenario priority
+
+  # Validation Policy Configuration
+  validation_policy:
+    type: object
+    description: Validation policy for linting and type checking
+    properties:
+      eslint:
+        type: string
+        enum:
+          - BLOCK_ON_ERRORS_ALWAYS
+          - BLOCK_ON_ERRORS_ONLY
+          - BLOCK_ON_ERRORS_AND_WARNINGS
+          - WARN_ONLY
+          - NEVER
+        default: BLOCK_ON_ERRORS_ONLY
+        description: ESLint validation strategy
+        examples:
+          - BLOCK_ON_ERRORS_ONLY
+
+      typescript:
+        type: string
+        enum:
+          - BLOCK_ON_ERRORS_ALWAYS
+          - BLOCK_ON_ERRORS_ONLY
+          - WARN_ONLY
+          - NEVER
+        default: BLOCK_ON_ERRORS_ALWAYS
+        description: TypeScript validation strategy
+        examples:
+          - BLOCK_ON_ERRORS_ALWAYS
+
+      max_warnings:
+        type: integer
+        minimum: 0
+        default: 10
+        description: Maximum warnings allowed before blocking (null = unlimited)
+        examples:
+          - 20
+          - 0
+
+      ignored_rules:
+        type: array
+        items:
+          type: string
+        default: []
+        description: ESLint rules to ignore
+        examples:
+          - [no-console]
+          - [no-console, no-debugger]
+
+      error_on_rules:
+        type: array
+        items:
+          type: string
+        default: []
+        description: ESLint rules to treat as errors
+        examples:
+          - [no-unused-vars, "@typescript-eslint/no-unused-vars"]
+
+      strict_mode:
+        type: boolean
+        default: true
+        description: Enable TypeScript strict mode
+        examples:
+          - true
+          - false
+
+  # Environment Configuration
+  environment:
+    type: object
+    description: Environment variables for test execution
+    additionalProperties:
+      type: string
+    examples:
+      - NODE_ENV: test
+        API_BASE_URL: http://localhost:3000
+        LOG_LEVEL: debug
+
+  # Timeout Configuration
+  timeout:
+    type: integer
+    minimum: 1000
+    default: 300000
+    description: Global timeout in milliseconds (default 5 minutes)
+    examples:
+      - 60000
+      - 300000
+
+  # Completion Criteria
+  completion:
+    type: object
+    description: Task completion criteria
+    properties:
+      all_steps_must_pass:
+        type: boolean
+        default: false
+        description: Require all steps to pass (false allows partial success for TDD)
+        examples:
+          - false
+          - true
+
+      minimum_pass_rate:
+        type: integer
+        minimum: 0
+        maximum: 100
+        default: 60
+        description: Minimum percentage of steps that must pass
+        examples:
+          - 60
+          - 80
+          - 100
+
+  # Custom Actions (Optional)
+  custom_steps:
+    type: array
+    description: Additional custom test steps to insert
+    items:
+      type: object
+      required:
+        - action
+        - description
+      properties:
+        action:
+          type: string
+          enum: [TERMINAL_COMMAND, HTTP_REQUEST, FILE_VALIDATION]
+          description: Action type
+          examples:
+            - TERMINAL_COMMAND
+
+        description:
+          type: string
+          description: Step description
+          examples:
+            - Run custom migration script
+
+        command:
+          type: string
+          description: Command to execute (for TERMINAL_COMMAND)
+          examples:
+            - node scripts/migrate-legacy-data.js
+
+        url:
+          type: string
+          format: uri
+          description: URL to request (for HTTP_REQUEST)
+          examples:
+            - http://localhost:3000/api/health
+
+        file_path:
+          type: string
+          description: File path to validate (for FILE_VALIDATION)
+          examples:
+            - dist/bundle.js
+
+        position:
+          type: string
+          enum:
+            - before_prerequisites
+            - after_prerequisites
+            - before_typescript_check
+            - after_typescript_check
+            - before_tests
+            - after_tests
+            - before_cleanup
+          default: after_tests
+          description: Where to insert this step
+          examples:
+            - after_typescript_check
+
+  # Priority and Dependencies
+  priority:
+    type: string
+    enum: [CRITICAL, HIGH, MEDIUM, LOW]
+    default: MEDIUM
+    description: Task priority
+    examples:
+      - HIGH
+
+  dependencies:
+    type: array
+    items:
+      type: string
+      pattern: "^T[0-9]{3,}$"
+    default: []
+    description: Task IDs this task depends on
+    examples:
+      - [T003, T005]
+
+# Conditional Requirements
+allOf:
+  # Contract tests require api field
+  - if:
+      properties:
+        type:
+          const: contract-test
+    then:
+      required:
+        - api
+
+  # Component tests require component field
+  - if:
+      properties:
+        type:
+          const: component-test
+    then:
+      required:
+        - component
+
+  # Database migrations require database field
+  - if:
+      properties:
+        type:
+          const: database-migration
+    then:
+      required:
+        - database
+
+examples:
+  # Example 1: Contract Test
+  - task_id: T004
+    title: Contract Test GET /api/quotes
+    type: contract-test
+    description: Validate GET /api/quotes endpoint against API contract
+    api:
+      method: GET
+      endpoint: /api/v1/quotes
+      base_url: http://localhost:3000
+    test_file: packages/web/__tests__/contracts/quotes-get.test.ts
+    workspace_root: D:/Dropbox/Repositories/Python/codor/test-case
+    validation_policy:
+      eslint: BLOCK_ON_ERRORS_ONLY
+      typescript: BLOCK_ON_ERRORS_ALWAYS
+      max_warnings: 20
+      ignored_rules: [no-console]
+    priority: HIGH
+
+  # Example 2: Unit Test
+  - task_id: T015
+    title: Unit Test QuoteService.calculateTotal
+    type: unit-test
+    description: Test quote total calculation logic with tax and discounts
+    test_file: src/services/__tests__/quote-service.test.ts
+    workspace_root: D:/Dropbox/Repositories/Python/codor/test-case
+    validation_policy:
+      eslint: BLOCK_ON_ERRORS_AND_WARNINGS
+      typescript: BLOCK_ON_ERRORS_ALWAYS
+    completion:
+      all_steps_must_pass: true
+      minimum_pass_rate: 100
+
+  # Example 3: E2E Test
+  - task_id: T025
+    title: E2E Test Quote Creation Flow
+    type: e2e-test
+    description: Complete quote creation flow from login to submission
+    test_file: e2e/__tests__/quote-creation.test.ts
+    workspace_root: D:/Dropbox/Repositories/Python/codor/test-case
+    api:
+      base_url: http://localhost:3000
+    environment:
+      NODE_ENV: test
+      HEADLESS: "true"
+    timeout: 120000
+    priority: CRITICAL

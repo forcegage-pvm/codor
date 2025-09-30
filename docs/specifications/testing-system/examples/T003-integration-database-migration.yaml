@@ -1,0 +1,206 @@
+# T003: Integration Test - Database Migration for Audit Trail
+# Sprint 006 Phase 1: Setup
+
+task_id: "T003"
+title: "Integration Test: Database Migration - Audit Trail System"
+description: "Test database migration for audit trail tables with triggers and constraints"
+type: integration-test
+priority: CRITICAL
+test_file: "packages/web/src/database/__tests__/migrations/audit-trail.migration.test.ts"
+workspace_root: "${WORKSPACE_ROOT}"
+
+database:
+  connection_string: "${DATABASE_URL}"
+  setup_command: "npm run db:test:setup"
+  teardown_command: "npm run db:test:teardown"
+  seed_command: "npm run db:seed:minimal"
+
+services:
+  - name: "MigrationService"
+    file: "packages/web/src/database/MigrationService.ts"
+  - name: "DatabaseInspector"
+    file: "packages/web/src/database/DatabaseInspector.ts"
+
+test_scenarios:
+  - name: "Migration creates audit_logs table"
+    setup:
+      - "Clear all tables"
+      - "Reset migration history"
+    steps:
+      - "Run migration 003_create_audit_trail.sql"
+      - "Inspect database schema"
+    assertions:
+      - "audit_logs table exists"
+      - "audit_logs has columns: id, entity_type, entity_id, action, user_id, changes, created_at"
+      - "audit_logs.id is primary key with auto-increment"
+      - "audit_logs.created_at has default NOW()"
+      - "audit_logs.changes is JSONB type"
+
+  - name: "Migration creates indexes for performance"
+    setup:
+      - "Run migration 003_create_audit_trail.sql"
+    steps:
+      - "Query database indexes"
+    assertions:
+      - "Index exists on audit_logs(entity_type, entity_id)"
+      - "Index exists on audit_logs(created_at DESC)"
+      - "Index exists on audit_logs(user_id)"
+
+  - name: "Migration creates audit trigger for quotes table"
+    setup:
+      - "Run migration 003_create_audit_trail.sql"
+    steps:
+      - "Query database triggers"
+    assertions:
+      - "Trigger 'quotes_audit_trigger' exists"
+      - "Trigger fires AFTER INSERT, UPDATE, DELETE"
+      - "Trigger calls audit_log_function()"
+
+  - name: "Audit trigger captures INSERT operations"
+    setup:
+      - "Run migration 003_create_audit_trail.sql"
+      - "Clear audit_logs table"
+    steps:
+      - "INSERT new quote into quotes table"
+      - "Query audit_logs"
+    assertions:
+      - "1 audit log entry created"
+      - "action = 'INSERT'"
+      - "entity_type = 'quote'"
+      - "entity_id matches inserted quote id"
+      - "changes contains new quote data as JSON"
+
+  - name: "Audit trigger captures UPDATE operations"
+    setup:
+      - "Run migration 003_create_audit_trail.sql"
+      - "Create test quote Q-001"
+      - "Clear audit_logs"
+    steps:
+      - "UPDATE quote Q-001 status to 'APPROVED'"
+      - "Query audit_logs"
+    assertions:
+      - "1 audit log entry created"
+      - "action = 'UPDATE'"
+      - "changes.old contains previous status"
+      - "changes.new contains new status"
+      - "changes only includes modified fields, not full record"
+
+  - name: "Audit trigger captures DELETE operations"
+    setup:
+      - "Run migration 003_create_audit_trail.sql"
+      - "Create test quote Q-002"
+      - "Clear audit_logs"
+    steps:
+      - "DELETE quote Q-002"
+      - "Query audit_logs"
+    assertions:
+      - "1 audit log entry created"
+      - "action = 'DELETE'"
+      - "changes contains deleted quote data"
+
+  - name: "Migration is idempotent (can run multiple times)"
+    setup:
+      - "Run migration 003_create_audit_trail.sql"
+    steps:
+      - "Run same migration again"
+    assertions:
+      - "Migration succeeds without errors"
+      - "Table structure unchanged"
+      - "No duplicate tables or triggers"
+
+  - name: "Migration rollback works correctly"
+    setup:
+      - "Run migration 003_create_audit_trail.sql"
+    steps:
+      - "Run rollback for migration 003"
+      - "Inspect database schema"
+    assertions:
+      - "audit_logs table dropped"
+      - "audit triggers removed from quotes table"
+      - "indexes dropped"
+
+  - name: "Migration preserves existing data"
+    setup:
+      - "Create test quotes without audit trail"
+      - "Run migration 003_create_audit_trail.sql"
+    steps:
+      - "Query existing quotes"
+    assertions:
+      - "All existing quotes still present"
+      - "Quote data unchanged"
+      - "No audit logs for pre-migration data"
+
+  - name: "Concurrent migrations handled safely"
+    setup:
+      - "Clear migration history"
+    steps:
+      - "Start migration 003 in thread 1"
+      - "Start migration 003 in thread 2"
+      - "Wait for both to complete"
+    assertions:
+      - "Only one migration executes"
+      - "Other migration waits or skips"
+      - "Database lock prevents conflicts"
+      - "Final state is consistent"
+
+  - name: "Migration failure rolls back cleanly"
+    setup:
+      - "Clear database"
+    steps:
+      - "Run intentionally broken migration"
+    assertions:
+      - "Transaction rolled back"
+      - "No partial tables created"
+      - "Migration marked as failed"
+      - "Database in clean state"
+
+  - name: "Foreign key constraints work after migration"
+    setup:
+      - "Run migration 003_create_audit_trail.sql"
+    steps:
+      - "Attempt to create audit log with invalid user_id"
+    assertions:
+      - "Foreign key constraint enforced"
+      - "Insert rejected with constraint error"
+
+  - name: "JSONB queries work on changes column"
+    setup:
+      - "Run migration 003_create_audit_trail.sql"
+      - "Create audit logs with various changes"
+    steps:
+      - "Query: SELECT * WHERE changes->'status' = 'APPROVED'"
+    assertions:
+      - "JSONB query returns correct results"
+      - "JSONB indexing works for performance"
+
+  - name: "Migration version tracking correct"
+    setup:
+      - "Clear migration history"
+      - "Run migration 003_create_audit_trail.sql"
+    steps:
+      - "Query migration_history table"
+    assertions:
+      - "Migration 003 recorded in history"
+      - "Timestamp recorded"
+      - "Status = 'completed'"
+
+validation_policy:
+  database_cleanup: true
+  transaction_rollback: true
+  schema_validation: true
+  migration_versioning: true
+  idempotency_testing: true
+
+technical_debt:
+  - scenario: "Audit logs table can grow unbounded - no archival strategy"
+    mitigation: "Implement partition by month and archive old partitions"
+  - scenario: "Audit trigger can fail silently if JSONB serialization fails"
+    mitigation: "Add error handling and fallback to text column"
+  - scenario: "No compression for audit_logs.changes JSONB"
+    mitigation: "Enable PostgreSQL TOAST compression on JSONB column"
+  - scenario: "Audit logs don't capture who initiated action in async jobs"
+    mitigation: "Add context_user_id for background job attribution"
+  - scenario: "Migration downtime for large tables not tested"
+    mitigation: "Test migration performance on production-size datasets"
+  - scenario: "No alert if audit trigger disabled or broken"
+    mitigation: "Add monitoring for audit log gaps"

@@ -1,0 +1,67 @@
+# Feature Test Example: Status Management
+# Task: T015 - Status Management (using component-test-template)
+# This tests if feature/service tests can reuse component-test-template
+
+# Required Fields
+task_id: T015
+title: "Feature Test: Quote Status Management"
+type: component-test
+test_file: "packages/web/__tests__/features/quote-status-management.test.ts"
+workspace_root: "D:/Dropbox/Repositories/Python/codor/test-case"
+
+# Description
+description: "Test suite for quote status management including status transitions, state validation, and business rules"
+
+# Component-Specific Fields (treating service as "component")
+component:
+  name: QuoteStatusService
+  path: "packages/web/src/services/quotes/QuoteStatusService.ts"
+  framework: TypeScript
+  version: "1.0.0"
+
+# Test Configuration
+test_framework:
+  name: "jest"
+  libraries:
+    - "@testing-library/jest-dom"
+    - "jest"
+
+# Priority and Dependencies
+priority: HIGH
+dependencies:
+  - T001
+  - T004
+
+# Test Scenarios (status transition testing)
+scenarios:
+  - id: TS-015-001
+    name: "Valid status transitions"
+    description: "Verify all valid quote status transitions work correctly"
+    type: state-machine
+    priority: CRITICAL
+
+  - id: TS-015-002
+    name: "Invalid status transitions blocked"
+    description: "Verify invalid status transitions are properly blocked"
+    type: validation
+    priority: CRITICAL
+
+  - id: TS-015-003
+    name: "Status history tracking"
+    description: "Verify status changes are logged with timestamps and users"
+    type: audit
+    priority: HIGH
+
+# Validation Policy
+validation_policy:
+  eslint: BLOCK_ON_ERRORS_ONLY
+  typescript: BLOCK_ON_ERRORS_ALWAYS
+  max_warnings: 10
+  coverage_threshold: 85
+
+# Environment Configuration
+environment:
+  NODE_ENV: test
+
+# Timeout
+timeout: 30000

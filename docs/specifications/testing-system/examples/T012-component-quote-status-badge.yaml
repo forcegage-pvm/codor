@@ -1,0 +1,122 @@
+# T012: Component Test - QuoteStatusBadge
+# Sprint 006 Phase 3: UI Components
+
+task_id: "T012"
+title: "Component Test: QuoteStatusBadge"
+description: "Test the QuoteStatusBadge component for status visualization with colors and icons"
+type: component-test
+priority: MEDIUM
+test_file: "packages/web/src/components/quotes/__tests__/QuoteStatusBadge.test.tsx"
+workspace_root: "${WORKSPACE_ROOT}"
+
+component:
+  name: "QuoteStatusBadge"
+  file: "packages/web/src/components/quotes/QuoteStatusBadge.tsx"
+  framework: "React"
+  test_framework: "React Testing Library + Jest"
+
+props:
+  - name: "status"
+    type: "'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED' | 'EXPIRED'"
+    required: true
+    description: "Quote status to display"
+
+  - name: "size"
+    type: "'small' | 'medium' | 'large'"
+    required: false
+    default: "medium"
+
+  - name: "showIcon"
+    type: "boolean"
+    required: false
+    default: true
+
+  - name: "onClick"
+    type: "() => void"
+    required: false
+    description: "Optional click handler for interactive badges"
+
+test_scenarios:
+  - name: "Renders DRAFT status with gray color"
+    props:
+      status: "DRAFT"
+    assertions:
+      - "displays text 'Draft'"
+      - "has gray background color"
+      - "shows draft icon"
+
+  - name: "Renders PENDING_APPROVAL status with yellow color"
+    props:
+      status: "PENDING_APPROVAL"
+    assertions:
+      - "displays text 'Pending Approval'"
+      - "has yellow/warning background color"
+      - "shows clock icon"
+
+  - name: "Renders APPROVED status with green color"
+    props:
+      status: "APPROVED"
+    assertions:
+      - "displays text 'Approved'"
+      - "has green/success background color"
+      - "shows checkmark icon"
+
+  - name: "Renders REJECTED status with red color"
+    props:
+      status: "REJECTED"
+    assertions:
+      - "displays text 'Rejected'"
+      - "has red/error background color"
+      - "shows X icon"
+
+  - name: "Renders EXPIRED status with orange color"
+    props:
+      status: "EXPIRED"
+    assertions:
+      - "displays text 'Expired'"
+      - "has orange background color"
+      - "shows warning icon"
+
+  - name: "Hides icon when showIcon is false"
+    props:
+      status: "APPROVED"
+      showIcon: false
+    assertions:
+      - "no icon rendered"
+      - "only text displayed"
+
+  - name: "Applies size classes correctly"
+    props:
+      status: "DRAFT"
+      size: "small"
+    assertions:
+      - "has small size class"
+      - "text is smaller font"
+
+  - name: "Calls onClick when badge clicked"
+    props:
+      status: "APPROVED"
+      onClick: jest.fn()
+    interactions:
+      - action: "click"
+        target: "badge element"
+    assertions:
+      - "onClick called once"
+
+  - name: "Matches snapshot for all statuses"
+    props:
+      status: ["DRAFT", "PENDING_APPROVAL", "APPROVED", "REJECTED", "EXPIRED"]
+    assertions:
+      - "matches snapshot for each status"
+
+validation_policy:
+  accessibility: true
+  responsive_design: false
+  snapshot_testing: true
+  coverage_threshold: 90
+
+technical_debt:
+  - scenario: "Color contrast ratio insufficient for accessibility"
+    mitigation: "Adjust colors to meet WCAG AA standards"
+  - scenario: "Icon library bundle size too large"
+    mitigation: "Use tree-shaking or switch to lighter icon library"

@@ -1,11 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://codor.dev/schemas/test-task-specification.v2.0.json",
-  "title": "CODOR Test Task Specification Schema",
-  "description": "Authoritative schema for agent-generated test task specifications. This schema enforces compliance with the Script-Based Testing Framework and ensures all test tasks are executable by the script-execution-engine without agent involvement.",
-  "version": "2.0.0",
-  "lastUpdated": "2025-09-30",
-  
+  "title": "CODOR Test Task Specification Schema v2.0.0",
+  "description": "Authoritative schema for agent-generated test task specifications (v2.0.0, updated 2025-09-30). This schema enforces compliance with the Script-Based Testing Framework and ensures all test tasks are executable by the script-execution-engine without agent involvement.",
+
   "type": "object",
   "required": [
     "schemaVersion",
@@ -14,14 +12,14 @@
     "executionEngine",
     "tasks"
   ],
-  
+
   "properties": {
     "schemaVersion": {
       "type": "string",
       "const": "2.0.0",
       "description": "Schema version - must be 2.0.0"
     },
-    
+
     "metadata": {
       "type": "object",
       "required": ["projectName", "sprintId", "generatedAt", "generatedBy"],
@@ -50,7 +48,7 @@
         }
       }
     },
-    
+
     "globalConfiguration": {
       "type": "object",
       "required": ["workspaceRoot", "evidenceDirectory"],
@@ -105,10 +103,93 @@
           "type": "integer",
           "default": 300000,
           "description": "Global timeout for entire test suite execution (milliseconds)"
+        },
+        "validationPolicy": {
+          "type": "object",
+          "description": "Configurable policies for validation tool failures (linting, type checking, etc.)",
+          "properties": {
+            "linting": {
+              "type": "object",
+              "description": "Linting validation policy",
+              "properties": {
+                "strategy": {
+                  "type": "string",
+                  "enum": [
+                    "BLOCK_ON_ERRORS_ALWAYS",
+                    "BLOCK_ON_ERRORS_ONLY",
+                    "BLOCK_ON_ERRORS_AND_WARNINGS",
+                    "WARN_ONLY",
+                    "NEVER"
+                  ],
+                  "default": "BLOCK_ON_ERRORS_ONLY",
+                  "description": "Overall linting blocking strategy"
+                },
+                "tools": {
+                  "type": "object",
+                  "description": "Per-tool linting configuration",
+                  "properties": {
+                    "eslint": {
+                      "$ref": "#/definitions/LintToolPolicy"
+                    },
+                    "prettier": {
+                      "$ref": "#/definitions/LintToolPolicy"
+                    },
+                    "pylint": {
+                      "$ref": "#/definitions/LintToolPolicy"
+                    },
+                    "flake8": {
+                      "$ref": "#/definitions/LintToolPolicy"
+                    }
+                  }
+                }
+              }
+            },
+            "typeChecking": {
+              "type": "object",
+              "description": "Type checking validation policy",
+              "properties": {
+                "strategy": {
+                  "type": "string",
+                  "enum": [
+                    "BLOCK_ON_ERRORS_ALWAYS",
+                    "BLOCK_ON_ERRORS_ONLY",
+                    "WARN_ONLY",
+                    "NEVER"
+                  ],
+                  "default": "BLOCK_ON_ERRORS_ALWAYS",
+                  "description": "Type checking blocking strategy"
+                },
+                "tools": {
+                  "type": "object",
+                  "description": "Per-tool type checking configuration",
+                  "properties": {
+                    "typescript": {
+                      "$ref": "#/definitions/TypeCheckToolPolicy"
+                    },
+                    "mypy": {
+                      "$ref": "#/definitions/TypeCheckToolPolicy"
+                    }
+                  }
+                }
+              }
+            },
+            "compilation": {
+              "type": "object",
+              "description": "Compilation validation policy",
+              "properties": {
+                "strategy": {
+                  "type": "string",
+                  "enum": ["BLOCK_ON_ERRORS_ALWAYS", "NEVER"],
+                  "default": "BLOCK_ON_ERRORS_ALWAYS",
+                  "description": "Compilation errors always block"
+                }
+              }
+            }
+          }
         }
       }
     },
-    
+
     "executionEngine": {
       "type": "object",
       "required": ["availableActionTypes"],
@@ -160,7 +241,7 @@
         }
       }
     },
-    
+
     "tasks": {
       "type": "object",
       "description": "Test tasks indexed by task ID",
@@ -172,7 +253,7 @@
       "minProperties": 1,
       "additionalProperties": false
     },
-    
+
     "technicalDebtConfiguration": {
       "type": "object",
       "description": "Configuration for technical debt generation from test failures",
@@ -218,7 +299,7 @@
       }
     }
   },
-  
+
   "definitions": {
     "TestTask": {
       "type": "object",
@@ -282,7 +363,7 @@
         }
       }
     },
-    
+
     "TestExecution": {
       "type": "object",
       "required": ["steps"],
@@ -311,7 +392,7 @@
         }
       }
     },
-    
+
     "TestAction": {
       "type": "object",
       "required": ["actionId", "type", "description", "parameters"],
@@ -464,7 +545,7 @@
         }
       ]
     },
-    
+
     "TerminalCommandParameters": {
       "type": "object",
       "required": ["command", "workingDirectory"],
@@ -496,7 +577,7 @@
         }
       }
     },
-    
+
     "MCPBrowserParameters": {
       "type": "object",
       "required": ["action"],
@@ -541,7 +622,7 @@
         }
       }
     },
-    
+
     "HTTPRequestParameters": {
       "type": "object",
       "required": ["url", "method"],
@@ -563,10 +644,7 @@
         },
         "body": {
           "description": "Request body (object for JSON, string for others)",
-          "oneOf": [
-            { "type": "object" },
-            { "type": "string" }
-          ]
+          "oneOf": [{ "type": "object" }, { "type": "string" }]
         },
         "expectedStatus": {
           "type": "integer",
@@ -594,7 +672,7 @@
         }
       }
     },
-    
+
     "DockerCommandParameters": {
       "type": "object",
       "required": ["dockerCommand"],
@@ -634,7 +712,7 @@
         }
       }
     },
-    
+
     "DatabaseQueryParameters": {
       "type": "object",
       "required": ["connectionString", "query"],
@@ -674,7 +752,7 @@
         }
       }
     },
-    
+
     "CustomScriptParameters": {
       "type": "object",
       "required": ["scriptPath", "interpreter"],
@@ -685,7 +763,16 @@
         },
         "interpreter": {
           "type": "string",
-          "enum": ["node", "python", "python3", "bash", "sh", "powershell", "ruby", "perl"],
+          "enum": [
+            "node",
+            "python",
+            "python3",
+            "bash",
+            "sh",
+            "powershell",
+            "ruby",
+            "perl"
+          ],
           "description": "Script interpreter to use"
         },
         "arguments": {
@@ -700,7 +787,7 @@
         }
       }
     },
-    
+
     "FileValidationParameters": {
       "type": "object",
       "required": ["filePath", "validationType"],
@@ -711,7 +798,13 @@
         },
         "validationType": {
           "type": "string",
-          "enum": ["EXISTS", "CONTENT_MATCH", "SCHEMA_VALID", "HASH_MATCH", "SIZE_CHECK"],
+          "enum": [
+            "EXISTS",
+            "CONTENT_MATCH",
+            "SCHEMA_VALID",
+            "HASH_MATCH",
+            "SIZE_CHECK"
+          ],
           "description": "Type of validation to perform"
         },
         "expectedContent": {
@@ -740,7 +833,7 @@
         }
       }
     },
-    
+
     "MCPValidation": {
       "type": "object",
       "description": "Browser-based validation steps using MCP",
@@ -759,7 +852,7 @@
         }
       }
     },
-    
+
     "ValidationCriteria": {
       "type": "object",
       "required": ["successConditions"],
@@ -813,7 +906,7 @@
         }
       }
     },
-    
+
     "TechnicalDebtExpectations": {
       "type": "object",
       "description": "Expected technical debt items if tests fail",
@@ -823,7 +916,11 @@
           "description": "Likely failure scenarios and their causes",
           "items": {
             "type": "object",
-            "required": ["scenario", "expectedDebtCategory", "expectedSeverity"],
+            "required": [
+              "scenario",
+              "expectedDebtCategory",
+              "expectedSeverity"
+            ],
             "properties": {
               "scenario": {
                 "type": "string",
@@ -855,7 +952,7 @@
         }
       }
     },
-    
+
     "CompletionCriteria": {
       "type": "object",
       "required": ["allStepsMustPass"],
@@ -892,7 +989,7 @@
         }
       }
     },
-    
+
     "ExecutionWorkflow": {
       "type": "object",
       "description": "Complete execution workflow with dependencies",
@@ -906,7 +1003,12 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": ["DEV_SERVER_RUNNING", "DATABASE_AVAILABLE", "SERVICE_HEALTHY", "FILE_EXISTS"]
+                "enum": [
+                  "DEV_SERVER_RUNNING",
+                  "DATABASE_AVAILABLE",
+                  "SERVICE_HEALTHY",
+                  "FILE_EXISTS"
+                ]
               },
               "description": { "type": "string" },
               "checkCommand": {
@@ -931,7 +1033,7 @@
         }
       }
     },
-    
+
     "TerminalCommandConfig": {
       "type": "object",
       "properties": {
@@ -945,7 +1047,7 @@
         }
       }
     },
-    
+
     "MCPBrowserConfig": {
       "type": "object",
       "properties": {
@@ -964,7 +1066,7 @@
         }
       }
     },
-    
+
     "DockerCommandConfig": {
       "type": "object",
       "properties": {
@@ -978,7 +1080,7 @@
         }
       }
     },
-    
+
     "DatabaseQueryConfig": {
       "type": "object",
       "properties": {
@@ -992,7 +1094,7 @@
         }
       }
     },
-    
+
     "HTTPRequestConfig": {
       "type": "object",
       "properties": {
@@ -1010,7 +1112,7 @@
         }
       }
     },
-    
+
     "CustomScriptConfig": {
       "type": "object",
       "properties": {
@@ -1018,7 +1120,16 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["node", "python", "python3", "bash", "sh", "powershell", "ruby", "perl"]
+            "enum": [
+              "node",
+              "python",
+              "python3",
+              "bash",
+              "sh",
+              "powershell",
+              "ruby",
+              "perl"
+            ]
           }
         },
         "scriptDirectory": {
@@ -1027,7 +1138,7 @@
         }
       }
     },
-    
+
     "FileValidationConfig": {
       "type": "object",
       "properties": {
@@ -1035,6 +1146,79 @@
           "type": "array",
           "description": "Directories where file validation is permitted",
           "items": { "type": "string" }
+        }
+      }
+    },
+
+    "LintToolPolicy": {
+      "type": "object",
+      "description": "Policy configuration for a linting tool",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether this linting tool is enabled"
+        },
+        "blockOn": {
+          "type": "string",
+          "enum": [
+            "ERRORS_ALWAYS",
+            "ERRORS_ONLY",
+            "ERRORS_AND_WARNINGS",
+            "WARN_ONLY",
+            "NEVER"
+          ],
+          "default": "ERRORS_ONLY",
+          "description": "When to block execution based on linting results"
+        },
+        "treatWarningsAsErrors": {
+          "type": "boolean",
+          "default": false,
+          "description": "Treat all warnings as errors (equivalent to ERRORS_AND_WARNINGS)"
+        },
+        "maxWarnings": {
+          "type": ["integer", "null"],
+          "default": null,
+          "minimum": 0,
+          "description": "Maximum number of warnings allowed before blocking (null = unlimited)"
+        },
+        "ignoredRules": {
+          "type": "array",
+          "description": "List of rule IDs to ignore",
+          "items": { "type": "string" }
+        },
+        "errorOnRules": {
+          "type": "array",
+          "description": "List of rule IDs that should always be treated as errors",
+          "items": { "type": "string" }
+        }
+      }
+    },
+
+    "TypeCheckToolPolicy": {
+      "type": "object",
+      "description": "Policy configuration for a type checking tool",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether this type checking tool is enabled"
+        },
+        "blockOn": {
+          "type": "string",
+          "enum": ["ERRORS_ALWAYS", "ERRORS_ONLY", "WARN_ONLY", "NEVER"],
+          "default": "ERRORS_ALWAYS",
+          "description": "When to block execution based on type checking results"
+        },
+        "strictMode": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable strict type checking mode"
+        },
+        "allowImplicitAny": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow implicit any types (TypeScript-specific)"
         }
       }
     }

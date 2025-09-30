@@ -1,0 +1,304 @@
+# T019: Component Test - Virtual Scrolling Performance
+# Sprint 006 Phase 5: Performance & UX
+
+task_id: "T019"
+title: "Component Test: Virtual Scrolling for Large Quote Lists"
+description: "Test virtual scrolling implementation with performance benchmarks for 10,000+ items"
+type: component-test
+priority: HIGH
+test_file: "packages/web/src/components/quotes/__tests__/VirtualQuoteList.test.tsx"
+workspace_root: "${WORKSPACE_ROOT}"
+
+component:
+  name: "VirtualQuoteList"
+  file: "packages/web/src/components/quotes/VirtualQuoteList.tsx"
+  framework: "React"
+  test_framework: "React Testing Library + Jest + Performance API"
+
+props:
+  - name: "quotes"
+    type: "Quote[]"
+    required: true
+    description: "Array of quote objects - can be thousands"
+
+  - name: "itemHeight"
+    type: "number"
+    required: false
+    default: 72
+    description: "Height of each row in pixels"
+
+  - name: "overscan"
+    type: "number"
+    required: false
+    default: 5
+    description: "Number of items to render outside visible area"
+
+  - name: "onItemClick"
+    type: "(quote: Quote) => void"
+    required: false
+
+  - name: "onLoadMore"
+    type: "() => void"
+    required: false
+    description: "Callback when scrolling near bottom (infinite scroll)"
+
+  - name: "estimatedItemSize"
+    type: "number"
+    required: false
+    default: 72
+    description: "Estimated size for dynamic height items"
+
+test_scenarios:
+  - name: "Renders only visible items (windowing)"
+    props:
+      quotes: "generate 1000 quotes"
+      itemHeight: 72
+    assertions:
+      - "DOM contains ~20-30 items (visible viewport + overscan)"
+      - "not all 1000 items in DOM"
+      - "scroll container height matches total content (72000px for 1000 items)"
+
+  - name: "Initial render performance with 10,000 items"
+    props:
+      quotes: "generate 10000 quotes"
+    performance:
+      metric: "time-to-interactive"
+      threshold_ms: 500
+    assertions:
+      - "component mounts within 500ms"
+      - "first paint occurs within 200ms"
+      - "no layout thrashing detected"
+
+  - name: "Scroll performance - 60 FPS maintained"
+    props:
+      quotes: "generate 5000 quotes"
+    interactions:
+      - action: "scroll"
+        target: "scroll container"
+        distance: "5000px"
+        duration: "2000ms"
+    performance:
+      metric: "frame-rate"
+      threshold_fps: 58
+    assertions:
+      - "maintains >= 58 FPS during scroll"
+      - "no dropped frames"
+      - "scroll feels smooth"
+
+  - name: "Memory usage stays bounded"
+    props:
+      quotes: "generate 10000 quotes"
+    interactions:
+      - action: "scroll"
+        target: "scroll container"
+        distance: "full height"
+      - action: "scroll"
+        target: "scroll container"
+        distance: "back to top"
+    performance:
+      metric: "memory-usage"
+      threshold_mb: 50
+    assertions:
+      - "memory usage < 50MB"
+      - "no memory leaks detected"
+      - "garbage collection happens properly"
+
+  - name: "Items rendered as scrolling down"
+    props:
+      quotes: "generate 1000 quotes"
+    interactions:
+      - action: "scroll"
+        target: "scroll container"
+        distance: "1000px"
+    assertions:
+      - "new items appear in DOM"
+      - "top items removed from DOM (recycled)"
+      - "scroll position maintained"
+
+  - name: "Items rendered as scrolling up"
+    props:
+      quotes: "generate 1000 quotes"
+    setup:
+      - "Scroll to middle of list"
+    interactions:
+      - action: "scroll"
+        target: "scroll container"
+        direction: "up"
+        distance: "1000px"
+    assertions:
+      - "previous items reappear in DOM"
+      - "bottom items removed from DOM"
+
+  - name: "Jump to specific item (programmatic scroll)"
+    props:
+      quotes: "generate 1000 quotes"
+    interactions:
+      - action: "call-method"
+        method: "scrollToItem"
+        args: [500]
+    assertions:
+      - "scrolls to item 500"
+      - "item 500 visible in viewport"
+      - "smooth scroll animation"
+
+  - name: "Infinite scroll triggers load more"
+    props:
+      quotes: "generate 100 quotes"
+      onLoadMore: jest.fn()
+    interactions:
+      - action: "scroll"
+        target: "scroll container"
+        distance: "to bottom"
+    assertions:
+      - "onLoadMore called when 80% scrolled"
+      - "loading indicator appears"
+      - "only called once (debounced)"
+
+  - name: "Dynamic height items supported"
+    props:
+      quotes:
+        - id: "Q-001"
+          notes: "Short note"
+        - id: "Q-002"
+          notes: "Very long note that makes this item taller than others because it wraps to multiple lines"
+      estimatedItemSize: 72
+    assertions:
+      - "items have different heights"
+      - "scroll calculations adjust dynamically"
+      - "no content jumping"
+
+  - name: "Overscan items buffer scroll experience"
+    props:
+      quotes: "generate 200 quotes"
+      overscan: 10
+    interactions:
+      - action: "scroll"
+        target: "scroll container"
+        speed: "fast"
+    assertions:
+      - "10 extra items above visible area"
+      - "10 extra items below visible area"
+      - "reduces blank space during fast scroll"
+
+  - name: "Item click handlers work"
+    props:
+      quotes: "generate 100 quotes"
+      onItemClick: jest.fn()
+    interactions:
+      - action: "scroll"
+        distance: "500px"
+      - action: "click"
+        target: "visible item"
+    assertions:
+      - "onItemClick called with correct quote"
+      - "click works on virtualized items"
+
+  - name: "Keyboard navigation in virtual list"
+    props:
+      quotes: "generate 200 quotes"
+    interactions:
+      - action: "focus"
+        target: "first item"
+      - action: "keydown"
+        key: "ArrowDown"
+        repeat: 50
+    assertions:
+      - "focus moves through items"
+      - "list scrolls automatically to keep focus visible"
+      - "no performance degradation"
+
+  - name: "Search/filter maintains scroll position"
+    props:
+      quotes: "generate 500 quotes"
+    interactions:
+      - action: "scroll"
+        distance: "5000px"
+      - action: "filter"
+        field: "status"
+        value: "APPROVED"
+    assertions:
+      - "filtered list shown"
+      - "scroll position resets to top"
+      - "no flashing or jumping"
+
+  - name: "Resize window recalculates visible items"
+    props:
+      quotes: "generate 500 quotes"
+    interactions:
+      - action: "resize-window"
+        height: 400
+      - action: "resize-window"
+        height: 800
+    assertions:
+      - "fewer items rendered at 400px height"
+      - "more items rendered at 800px height"
+      - "scroll position maintained"
+
+  - name: "Empty state renders without errors"
+    props:
+      quotes: []
+    assertions:
+      - "empty message displayed"
+      - "no console errors"
+      - "no infinite loops"
+
+  - name: "Single item renders correctly"
+    props:
+      quotes:
+        - id: "Q-001"
+    assertions:
+      - "renders single item"
+      - "no errors"
+      - "scrollbar not visible"
+
+  - name: "Loading state shows skeleton"
+    props:
+      quotes: []
+      loading: true
+    assertions:
+      - "skeleton items displayed"
+      - "skeleton count matches viewport"
+
+  - name: "Accessibility - screen reader compatible"
+    props:
+      quotes: "generate 100 quotes"
+    assertions:
+      - "virtual list has role='list'"
+      - "items have role='listitem'"
+      - "aria-posinset and aria-setsize attributes correct"
+      - "screen reader announces total count"
+
+  - name: "Accessibility - keyboard scrolling"
+    props:
+      quotes: "generate 200 quotes"
+    interactions:
+      - action: "focus"
+        target: "scroll container"
+      - action: "keydown"
+        key: "PageDown"
+    assertions:
+      - "PageDown scrolls one viewport height"
+      - "PageUp scrolls back"
+      - "Home goes to start"
+      - "End goes to end"
+
+validation_policy:
+  accessibility: true
+  responsive_design: true
+  snapshot_testing: false
+  coverage_threshold: 80
+  performance_testing: true
+
+technical_debt:
+  - scenario: "Performance degrades with items > 50,000"
+    mitigation: "Implement server-side pagination or data windowing"
+  - scenario: "Dynamic height calculation expensive for complex items"
+    mitigation: "Cache measured heights in Map"
+  - scenario: "Horizontal scrolling not supported"
+    mitigation: "Add 2D virtualization for wide tables"
+  - scenario: "Sticky headers don't work with virtualization"
+    mitigation: "Implement separate sticky header layer"
+  - scenario: "Screen reader performance poor with 10,000+ items"
+    mitigation: "Limit aria-setsize to visible items or use aria-rowcount"
+  - scenario: "Touch/mobile scroll not optimized"
+    mitigation: "Add momentum scrolling and touch-specific optimizations"

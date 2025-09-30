@@ -1,0 +1,42 @@
+# T004: Contract Test GET /api/quotes
+# Template: contract-test
+# Purpose: Validate GET /api/quotes endpoint implementation against API contract
+
+task_id: T004
+title: Contract Test GET /api/quotes
+type: contract-test
+description: Execute contract tests for GET /api/quotes endpoint and validate API responses. This task validates the quote list endpoint implementation against the API contract specification, including response structure, pagination, filtering, and error handling. Expected to be in TDD red phase initially.
+
+api:
+  method: GET
+  endpoint: /api/v1/quotes
+  base_url: http://localhost:3000
+  expected_status: 200
+
+test_file: packages/web/__tests__/contracts/quotes-get.test.ts
+workspace_root: D:/Dropbox/Repositories/Python/codor/test-case
+
+validation_policy:
+  eslint: BLOCK_ON_ERRORS_ONLY
+  typescript: BLOCK_ON_ERRORS_ALWAYS
+  max_warnings: 20
+  ignored_rules:
+    - no-console
+  error_on_rules:
+    - no-unused-vars
+    - "@typescript-eslint/no-unused-vars"
+  strict_mode: true
+
+environment:
+  NODE_ENV: test
+  API_BASE_URL: http://localhost:3000
+  LOG_LEVEL: debug
+
+timeout: 300000
+
+completion:
+  all_steps_must_pass: false
+  minimum_pass_rate: 60
+
+priority: HIGH
+dependencies: []

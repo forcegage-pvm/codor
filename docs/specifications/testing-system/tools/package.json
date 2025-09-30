@@ -1,0 +1,32 @@
+{
+  "name": "codor-test-spec-generator",
+  "version": "1.0.0",
+  "description": "CODOR Test Specification Generator - Transforms YAML specs to JSON test specifications",
+  "main": "generate-test-spec.js",
+  "scripts": {
+    "generate": "node generate-test-spec.js",
+    "generate:examples": "node generate-test-spec.js ../examples/*.yaml -o ../generated/",
+    "validate:examples": "node generate-test-spec.js ../examples/*.yaml --validate-only",
+    "test": "node generate-test-spec.js ../examples/T004-contract-get-spec.yaml --validate-only"
+  },
+  "keywords": [
+    "codor",
+    "testing",
+    "specification",
+    "generator",
+    "yaml",
+    "json",
+    "contract-testing"
+  ],
+  "author": "CODOR Team",
+  "license": "MIT",
+  "dependencies": {
+    "ajv": "^8.12.0",
+    "js-yaml": "^4.1.0",
+    "glob": "^10.3.10"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

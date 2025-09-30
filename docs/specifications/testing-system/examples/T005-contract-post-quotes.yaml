@@ -1,0 +1,97 @@
+# T005: Contract Test - POST /api/quotes
+# Sprint 006 Phase 2: TDD - API Contracts
+
+task_id: "T005"
+title: "Contract Test: POST /api/quotes"
+description: "Test the POST /api/quotes endpoint for creating new quotes with validation"
+type: contract-test
+priority: CRITICAL
+test_file: "packages/web/src/api/__tests__/quotes.post.contract.test.ts"
+workspace_root: "${WORKSPACE_ROOT}"
+
+api:
+  endpoint: "/api/quotes"
+  method: POST
+  base_url: "${API_BASE_URL}"
+
+test_scenarios:
+  - name: "Success: Create quote with all required fields"
+    request:
+      body:
+        customerId: "CUST-001"
+        items:
+          - productId: "PROD-123"
+            quantity: 5
+            unitPrice: 99.99
+        expiryDate: "2025-12-31"
+        status: "DRAFT"
+    expected_response:
+      status_code: 201
+      schema: QuoteResponse
+      body_contains:
+        - "id"
+        - "quoteNumber"
+        - "createdAt"
+        - "totalAmount"
+
+  - name: "Success: Create quote with optional metadata"
+    request:
+      body:
+        customerId: "CUST-002"
+        items:
+          - productId: "PROD-456"
+            quantity: 10
+            unitPrice: 149.99
+            discount: 10
+        notes: "Customer requested bulk discount"
+        tags: ["bulk", "priority"]
+        status: "DRAFT"
+    expected_response:
+      status_code: 201
+      body_validation:
+        - "notes field populated"
+        - "tags array present"
+
+  - name: "Error: Missing required fields"
+    request:
+      body:
+        customerId: "CUST-003"
+    expected_response:
+      status_code: 400
+      error_message: "Missing required field: items"
+
+  - name: "Error: Invalid product ID"
+    request:
+      body:
+        customerId: "CUST-001"
+        items:
+          - productId: "INVALID"
+            quantity: 1
+            unitPrice: 50.00
+    expected_response:
+      status_code: 404
+      error_message: "Product not found"
+
+  - name: "Error: Negative quantity"
+    request:
+      body:
+        customerId: "CUST-001"
+        items:
+          - productId: "PROD-123"
+            quantity: -5
+            unitPrice: 99.99
+    expected_response:
+      status_code: 400
+      error_message: "Quantity must be positive"
+
+validation_policy:
+  schema_validation: true
+  response_time_max_ms: 1000
+  require_authentication: true
+  audit_logging: true
+
+technical_debt:
+  - scenario: "Concurrent creation race conditions"
+    mitigation: "Implement optimistic locking"
+  - scenario: "Quote number generation collisions"
+    mitigation: "Use distributed ID generation"

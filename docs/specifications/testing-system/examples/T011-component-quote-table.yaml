@@ -1,0 +1,73 @@
+# Component Test Example: QuoteTable Component
+# This YAML generates a complete component test specification using the component-test-template.json
+
+# Required Fields (matching current-yaml-input.schema.yaml)
+task_id: T011
+title: "Component Test: QuoteTable"
+type: component-test
+test_file: "packages/web/src/components/quotes/__tests__/QuoteTable.test.tsx"
+workspace_root: "D:/Dropbox/Repositories/Python/codor/test-case"
+
+# Optional Description
+description: "Test suite for QuoteTable React component covering rendering, props, interactions, and accessibility"
+
+# Component-Specific Fields
+component:
+  name: QuoteTable
+  path: "packages/web/src/components/quotes/QuoteTable.tsx"
+  framework: React
+  version: "1.0.0"
+
+# Test Configuration
+test_framework:
+  name: "jest"
+  libraries:
+    - "@testing-library/react"
+    - "@testing-library/user-event"
+    - "jest-axe"
+
+# Priority and Dependencies
+priority: HIGH
+dependencies:
+  - T004
+  - T012
+
+# Test Scenarios (simplified input)
+scenarios:
+  - id: TS-011-001
+    name: "Renders empty state correctly"
+    description: "Verify QuoteTable displays appropriate message when no quotes provided"
+    type: rendering
+    priority: CRITICAL
+
+  - id: TS-011-002
+    name: "Handles quote selection interaction"
+    description: "Verify quote selection callback is triggered when user clicks a quote row"
+    type: interaction
+    priority: CRITICAL
+
+  - id: TS-011-003
+    name: "Validates required props"
+    description: "Verify component handles missing or invalid props appropriately"
+    type: props-validation
+    priority: HIGH
+
+  - id: TS-011-004
+    name: "Meets accessibility standards"
+    description: "Verify component is accessible per WCAG 2.1 Level AA"
+    type: accessibility
+    priority: HIGH
+
+# Validation Policy
+validation_policy:
+  eslint: BLOCK_ON_ERRORS_ONLY
+  typescript: BLOCK_ON_ERRORS_ALWAYS
+  max_warnings: 10
+  coverage_threshold: 80
+
+# Environment Configuration
+environment:
+  NODE_ENV: test
+
+# Timeout
+timeout: 5000

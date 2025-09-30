@@ -1,0 +1,38 @@
+# Integration Test Example: Schema Validation Framework
+# Task: T001 - Schema Validation Framework
+# This YAML generates a complete integration test specification using the integration-test-template.json
+
+# Required Fields
+task_id: T001
+title: "Integration Test: Schema Validation Framework"
+type: integration-test
+test_file: "packages/web/__tests__/integration/schema-validation.test.ts"
+workspace_root: "D:/Dropbox/Repositories/Python/codor/test-case"
+
+# Description
+description: "Integration test for schema validation framework covering database schema validation, service layer integration, and data integrity checks across multiple services"
+
+# Database Configuration
+database:
+  connection_string: "${DATABASE_URL}"
+  setup_command: "npm run db:test:setup"
+  teardown_command: "npm run db:test:teardown"
+  seed_command: "npm run db:seed:test"
+
+# Priority and Dependencies
+priority: CRITICAL
+dependencies: []
+
+# Validation Policy
+validation_policy:
+  eslint: BLOCK_ON_ERRORS_ONLY
+  typescript: BLOCK_ON_ERRORS_ALWAYS
+  max_warnings: 10
+
+# Environment Configuration
+environment:
+  NODE_ENV: test
+  DATABASE_URL: "postgresql://test:test@localhost:5432/codor_test"
+
+# Timeout (in ms)
+timeout: 120000

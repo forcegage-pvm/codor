@@ -169,6 +169,42 @@ Task status updated (locked by script)
 
 ---
 
+#### [Execution Output & Error Handling Specification](testing-system/EXECUTION-OUTPUT-ERROR-HANDLING-SPEC.md)
+**Purpose**: Comprehensive output structures and error classification for script-execution-engine  
+**Created**: September 30, 2025  
+**Key Features**:
+- **7 Execution Result Types**: SUCCESS, TEST_FAILURE, EXECUTION_ERROR, VALIDATION_FAILURE, TIMEOUT, PREREQUISITE_FAILURE, SPECIFICATION_ERROR
+- **Master Execution Report**: Single source of truth (execution-report.json) with complete traceability
+- **Error Classification Matrix**: Clear categorization of all failure scenarios (TDD red phase, compilation errors, tool failures, etc.)
+- **Evidence Collection Standards**: Structured evidence files for every action type
+- **Technical Debt Generation Rules**: Automated debt creation based on failure classification
+- **Agent Integration Protocol**: What agents receive and how they respond
+
+**Critical Sections**:
+- Result Type Taxonomy (Lines 1-100): Defines all 7 possible execution outcomes
+- Output Structures (Lines 101-400): Master execution report format with complete metadata
+- Error Classification (Lines 401-700): Detailed structures for each error type
+- Evidence Collection (Lines 701-900): Standards for evidence file generation
+- Technical Debt Generation (Lines 901-1000): Rules for when/how debt is created
+- Agent Integration (Lines 1001-1100): Agent consumption protocol and restrictions
+
+**Addresses Key Questions**:
+1. ✅ How to distinguish TDD red phase vs actual test failure
+2. ✅ How to handle tool/command failures vs code issues
+3. ✅ How to classify successful execution with validation errors (ESLint, TypeScript)
+4. ✅ What structured output format enables debt generation
+5. ✅ What evidence is collected for each scenario
+6. ✅ How agents consume execution results without raw logs
+
+**Dependencies**: 
+- Script-Based Testing Framework Specification
+- Test Task Specification Schema
+- Script-Based Testing Framework Amendments (technical debt structure)
+
+**Status**: ✅ Specification complete - Defines all output/error scenarios
+
+---
+
 #### [Script-Based Testing Framework Amendments](testing-system/SCRIPT-BASED-TESTING-FRAMEWORK-AMENDMENTS.md)
 **Purpose**: Critical amendments addressing three design decisions  
 **Created**: September 30, 2025  

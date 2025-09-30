@@ -1,0 +1,105 @@
+# T002: Integration Test - Quote Service Layer Pattern
+# Sprint 006 Phase 1: Setup
+
+task_id: "T002"
+title: "Integration Test: Quote Service Layer Pattern"
+description: "Test the service layer pattern for quote business logic with repository integration"
+type: integration-test
+priority: CRITICAL
+test_file: "packages/web/src/services/__tests__/QuoteService.integration.test.ts"
+workspace_root: "${WORKSPACE_ROOT}"
+
+database:
+  connection_string: "${DATABASE_URL}"
+  setup_command: "npm run db:test:setup"
+  teardown_command: "npm run db:test:teardown"
+  seed_command: "npm run db:seed:quotes"
+
+services:
+  - name: "QuoteService"
+    file: "packages/web/src/services/QuoteService.ts"
+  - name: "QuoteRepository"
+    file: "packages/web/src/repositories/QuoteRepository.ts"
+  - name: "AuditService"
+    file: "packages/web/src/services/AuditService.ts"
+
+test_scenarios:
+  - name: "Create quote through service layer"
+    setup:
+      - "Clear quotes table"
+      - "Seed test customer CUST-001"
+      - "Seed test products PROD-123, PROD-456"
+    steps:
+      - "Call QuoteService.createQuote()"
+      - "Verify quote saved to database"
+      - "Verify audit log created"
+      - "Verify quote number generated correctly"
+    assertions:
+      - "Quote exists in database with correct data"
+      - "Audit trail entry created for creation"
+      - "Quote number follows format QT-YYYY-NNNN"
+      - "Total amount calculated correctly"
+
+  - name: "Update quote with version control"
+    setup:
+      - "Create test quote Q-001 with version 1"
+    steps:
+      - "Call QuoteService.updateQuote(Q-001, data, version: 1)"
+      - "Verify quote updated in database"
+      - "Verify version incremented to 2"
+      - "Verify audit log created for update"
+    assertions:
+      - "Quote version is 2"
+      - "Updated fields changed"
+      - "Unchanged fields preserved"
+      - "Audit trail shows update operation"
+
+  - name: "Version conflict handling"
+    setup:
+      - "Create test quote Q-002 with version 3"
+    steps:
+      - "Call QuoteService.updateQuote(Q-002, data, version: 1)"
+    assertions:
+      - "Throws VersionConflictError"
+      - "Quote not modified in database"
+      - "No audit trail entry created"
+
+  - name: "Quote status transition validation"
+    setup:
+      - "Create test quote Q-003 with status DRAFT"
+    steps:
+      - "Call QuoteService.updateStatus(Q-003, PENDING_APPROVAL)"
+      - "Verify status changed to PENDING_APPROVAL"
+      - "Call QuoteService.updateStatus(Q-003, APPROVED)"
+      - "Verify status changed to APPROVED"
+      - "Attempt invalid transition APPROVED -> DRAFT"
+    assertions:
+      - "Valid transitions succeed"
+      - "Invalid transition throws InvalidStatusTransitionError"
+      - "Status history array updated for valid transitions"
+      - "Audit trail shows all transition attempts"
+
+  - name: "Service layer transaction handling"
+    setup:
+      - "Clear quotes and audit_logs tables"
+    steps:
+      - "Call QuoteService.createQuote() with invalid data"
+    assertions:
+      - "Quote not created in database (rollback)"
+      - "Audit log not created (rollback)"
+      - "Error thrown to caller"
+      - "Database state consistent"
+
+validation_policy:
+  database_cleanup: true
+  transaction_rollback: true
+  audit_logging: true
+  isolation_level: "READ_COMMITTED"
+
+technical_debt:
+  - scenario: "Service layer coupling too tight with repository"
+    mitigation: "Introduce dependency injection for better testability"
+  - scenario: "Transaction boundaries unclear in complex workflows"
+    mitigation: "Use explicit transaction managers"
+  - scenario: "Audit logging can fail silently"
+    mitigation: "Make audit logging part of transaction or use separate reliable queue"

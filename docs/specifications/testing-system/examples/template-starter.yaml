@@ -1,0 +1,192 @@
+# YAML Template Starter
+# Use this as a starting point for creating test task specifications
+# Copy this file and fill in the fields marked with ???
+
+# ====================
+# REQUIRED FIELDS (must be filled)
+# ====================
+
+task_id: "T???"  # Format: T + 3+ digits (e.g., T004, T042, T123)
+
+title: "???"  # Short descriptive title (10-200 characters)
+              # Examples:
+              # - "Contract Test: GET /api/quotes"
+              # - "Component Test: QuoteTable"
+              # - "Integration Test: Customer Management"
+
+type: ???  # Choose ONE:
+           # - contract-test        (API endpoint testing)
+           # - component-test       (React/Vue/Angular components)
+           # - integration-test     (Multi-service, database)
+           # - unit-test           (Single function/class)
+           # - e2e-test            (Browser automation)
+           # - database-migration  (Schema changes)
+
+test_file: "???"  # Path to test file from workspace root
+                  # Examples:
+                  # - "packages/web/src/api/__tests__/quotes.get.test.ts"
+                  # - "packages/web/src/components/__tests__/QuoteTable.test.tsx"
+                  # - "packages/web/src/services/__tests__/QuoteService.integration.test.ts"
+
+workspace_root: "${WORKSPACE_ROOT}"  # Usually this exact value
+
+# ====================
+# OPTIONAL BUT RECOMMENDED
+# ====================
+
+description: "???"  # Detailed description of what this test does
+                    # 1-3 sentences explaining the test purpose
+
+priority: ???  # Choose ONE: CRITICAL | HIGH | MEDIUM | LOW
+               # Use CRITICAL for blocking issues
+               # Use HIGH for important features
+               # Use MEDIUM for standard features
+               # Use LOW for nice-to-have features
+
+# ====================
+# TYPE-SPECIFIC SECTIONS
+# Add the section that matches your 'type' above
+# ====================
+
+# --------------------
+# FOR contract-test (API endpoint testing)
+# --------------------
+api:
+  endpoint: "???"       # API path (e.g., "/api/quotes" or "/api/quotes/{id}")
+  method: ???           # HTTP method: GET | POST | PUT | DELETE | PATCH
+  base_url: "${API_BASE_URL}"  # Usually this exact value
+
+test_scenarios:
+  - name: "Success: ???"  # Describe the success scenario
+    request:
+      params:              # Query parameters (for GET)
+        key: "value"
+      body:                # Request body (for POST/PUT/PATCH)
+        field: "value"
+      path_params:         # Path parameters (for /api/resource/{id})
+        id: "${EXISTING_ID}"
+    expected_response:
+      status_code: 200
+      schema: ???          # Response schema name
+      body_contains:
+        - "field_name"
+      body_validation:
+        - "description of validation"
+  
+  - name: "Error: ???"  # Describe the error scenario
+    request:
+      # ... same structure as above
+    expected_response:
+      status_code: 400
+      error_message: "Error description"
+
+validation_policy:
+  schema_validation: true
+  response_time_max_ms: 500
+  require_authentication: true
+
+technical_debt:
+  - scenario: "Describe potential issue"
+    mitigation: "How to fix it"
+
+# --------------------
+# FOR component-test (React/Vue/Angular components)
+# --------------------
+component:
+  name: "???"        # Component name (e.g., "QuoteTable")
+  file: "???"        # Path to component file
+  framework: "React" # React | Vue | Angular
+  test_framework: "React Testing Library + Jest"
+
+props:
+  - name: "???"         # Prop name
+    type: "???"         # TypeScript type (e.g., "string", "Quote[]", "() => void")
+    required: true      # true | false
+    default: "value"    # Optional: default value if not required
+    description: "???"  # What this prop does
+
+test_scenarios:
+  - name: "Renders ???"  # Describe what should render
+    props:
+      propName: value
+    assertions:
+      - "description of expected behavior"
+  
+  - name: "Handles ??? interaction"  # Describe user interaction
+    props:
+      onClick: jest.fn()
+    interactions:
+      - action: "click"  # click | type | hover | focus | blur
+        target: "element selector"
+    assertions:
+      - "onClick called with correct arguments"
+
+validation_policy:
+  accessibility: true
+  responsive_design: true
+  snapshot_testing: true
+  coverage_threshold: 80
+
+technical_debt:
+  - scenario: "Describe potential issue"
+    mitigation: "How to fix it"
+
+# --------------------
+# FOR integration-test (Multi-service, database)
+# --------------------
+database:
+  connection_string: "${DATABASE_URL}"
+  setup_command: "npm run db:test:setup"
+  teardown_command: "npm run db:test:teardown"
+  seed_command: "npm run db:seed:test"
+
+services:
+  - name: "???"         # Service name (e.g., "QuoteService")
+    file: "???"         # Path to service file
+
+test_scenarios:
+  - name: "???"         # Describe the integration scenario
+    setup:
+      - "Clear test data"
+      - "Seed required data"
+    steps:
+      - "Call Service.method()"
+      - "Verify database state"
+    assertions:
+      - "Data persisted correctly"
+      - "Audit trail created"
+
+validation_policy:
+  database_cleanup: true
+  transaction_rollback: true
+  audit_logging: true
+  isolation_level: "READ_COMMITTED"
+
+technical_debt:
+  - scenario: "Describe potential issue"
+    mitigation: "How to fix it"
+
+# --------------------
+# COMMON OPTIONAL FIELDS (all test types)
+# --------------------
+
+tags:  # Optional: categorize your test
+  - "quotes"
+  - "api"
+  - "critical"
+
+estimated_time_minutes: 30  # Optional: how long test should take
+
+dependencies:  # Optional: other tasks that must complete first
+  - "T001"
+  - "T002"
+
+# ====================
+# INSTRUCTIONS
+# ====================
+# 1. Copy this file to examples/TXXX-your-test-name.yaml
+# 2. Replace all "???" with actual values
+# 3. Keep only the type-specific section you need (delete others)
+# 4. Remove any optional fields you don't need
+# 5. Run: node tools/generate-test-spec.js examples/TXXX-your-test-name.yaml
+# 6. Check the generated JSON in examples/TXXX-your-test-name-test-specification.json

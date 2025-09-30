@@ -1,0 +1,41 @@
+# T005: Contract Test POST /api/quotes
+# Template: contract-test
+# Purpose: Validate POST /api/quotes endpoint for quote creation
+
+task_id: T005
+title: Contract Test POST /api/quotes
+type: contract-test
+description: Execute contract tests for POST /api/quotes endpoint to validate quote creation functionality, request body validation, and response structure.
+
+api:
+  method: POST
+  endpoint: /api/v1/quotes
+  base_url: http://localhost:3000
+  expected_status: 201
+  request_body:
+    customerId: CUST001
+    items:
+      - productId: PROD001
+        quantity: 2
+        unitPrice: 99.99
+    notes: Test quote creation
+
+test_file: packages/web/__tests__/contracts/quotes-post.test.ts
+workspace_root: D:/Dropbox/Repositories/Python/codor/test-case
+
+validation_policy:
+  eslint: BLOCK_ON_ERRORS_ONLY
+  typescript: BLOCK_ON_ERRORS_ALWAYS
+  max_warnings: 20
+  ignored_rules:
+    - no-console
+
+timeout: 300000
+
+completion:
+  all_steps_must_pass: false
+  minimum_pass_rate: 60
+
+priority: HIGH
+dependencies:
+  - T004

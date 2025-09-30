@@ -1,0 +1,92 @@
+# T006: Contract Test - PUT /api/quotes/{id}
+# Sprint 006 Phase 2: TDD - API Contracts
+
+task_id: "T006"
+title: "Contract Test: PUT /api/quotes/{id}"
+description: "Test the PUT /api/quotes/{id} endpoint for updating quotes with versioning"
+type: contract-test
+priority: CRITICAL
+test_file: "packages/web/src/api/__tests__/quotes.put.contract.test.ts"
+workspace_root: "${WORKSPACE_ROOT}"
+
+api:
+  endpoint: "/api/quotes/{id}"
+  method: PUT
+  base_url: "${API_BASE_URL}"
+
+test_scenarios:
+  - name: "Success: Update quote items"
+    request:
+      path_params:
+        id: "${EXISTING_QUOTE_ID}"
+      body:
+        items:
+          - productId: "PROD-789"
+            quantity: 3
+            unitPrice: 199.99
+        version: 1
+    expected_response:
+      status_code: 200
+      schema: QuoteResponse
+      body_validation:
+        - "version incremented to 2"
+        - "updatedAt timestamp changed"
+
+  - name: "Success: Update quote status"
+    request:
+      path_params:
+        id: "${EXISTING_QUOTE_ID}"
+      body:
+        status: "PENDING_APPROVAL"
+        version: 1
+    expected_response:
+      status_code: 200
+      body_validation:
+        - "status changed to PENDING_APPROVAL"
+        - "statusHistory array updated"
+
+  - name: "Error: Quote not found"
+    request:
+      path_params:
+        id: "NON_EXISTENT"
+      body:
+        status: "APPROVED"
+        version: 1
+    expected_response:
+      status_code: 404
+      error_message: "Quote not found"
+
+  - name: "Error: Version conflict (optimistic locking)"
+    request:
+      path_params:
+        id: "${EXISTING_QUOTE_ID}"
+      body:
+        status: "APPROVED"
+        version: 1
+    expected_response:
+      status_code: 409
+      error_message: "Version conflict - quote has been modified"
+
+  - name: "Error: Invalid status transition"
+    request:
+      path_params:
+        id: "${APPROVED_QUOTE_ID}"
+      body:
+        status: "DRAFT"
+        version: 2
+    expected_response:
+      status_code: 400
+      error_message: "Invalid status transition: APPROVED -> DRAFT"
+
+validation_policy:
+  schema_validation: true
+  response_time_max_ms: 800
+  require_authentication: true
+  audit_logging: true
+  version_control: true
+
+technical_debt:
+  - scenario: "Lost updates in distributed systems"
+    mitigation: "Implement distributed locking"
+  - scenario: "Audit trail gaps during concurrent updates"
+    mitigation: "Use event sourcing pattern"

@@ -1,0 +1,108 @@
+# T023: Integration Test - Customer Management Integration
+# Sprint 006 Phase 6: Integration & Polish
+
+task_id: "T023"
+title: "Integration Test: Customer Management Integration"
+description: "Test integration between quotes and customer management module"
+type: integration-test
+priority: HIGH
+test_file: "packages/web/src/services/__tests__/QuoteCustomerIntegration.test.ts"
+workspace_root: "${WORKSPACE_ROOT}"
+
+database:
+  connection_string: "${DATABASE_URL}"
+  setup_command: "npm run db:test:setup"
+  teardown_command: "npm run db:test:teardown"
+  seed_command: "npm run db:seed:customers && npm run db:seed:quotes"
+
+services:
+  - name: "QuoteService"
+    file: "packages/web/src/services/QuoteService.ts"
+  - name: "CustomerService"
+    file: "packages/web/src/services/CustomerService.ts"
+  - name: "NotificationService"
+    file: "packages/web/src/services/NotificationService.ts"
+
+test_scenarios:
+  - name: "Create quote for existing customer"
+    setup:
+      - "Seed customer CUST-001"
+      - "Clear quotes table"
+    steps:
+      - "Call QuoteService.createQuote(customerId: CUST-001)"
+      - "Verify customer linked to quote"
+      - "Verify customer data populated in quote"
+    assertions:
+      - "Quote has customer reference"
+      - "Customer name and details cached in quote"
+      - "Customer quote count incremented"
+
+  - name: "Reject quote creation for non-existent customer"
+    setup:
+      - "Ensure customer INVALID does not exist"
+    steps:
+      - "Call QuoteService.createQuote(customerId: INVALID)"
+    assertions:
+      - "Throws CustomerNotFoundError"
+      - "Quote not created"
+      - "No database changes committed"
+
+  - name: "Customer credit limit validation"
+    setup:
+      - "Seed customer CUST-002 with credit limit $10,000"
+      - "Create existing quotes totaling $8,000 for CUST-002"
+    steps:
+      - "Attempt to create quote worth $3,000 for CUST-002"
+    assertions:
+      - "Quote creation allowed (doesn't exceed approval limit)"
+      - "Warning flag set for credit review"
+
+  - name: "Customer notification on quote status change"
+    setup:
+      - "Seed customer CUST-003 with email"
+      - "Create quote Q-003 for CUST-003"
+    steps:
+      - "Call QuoteService.updateStatus(Q-003, APPROVED)"
+      - "Verify NotificationService.sendEmail called"
+    assertions:
+      - "Email notification queued"
+      - "Notification contains quote details"
+      - "Customer email address used"
+
+  - name: "Customer data synchronization"
+    setup:
+      - "Seed customer CUST-004"
+      - "Create quote Q-004 for CUST-004"
+      - "Update customer address in CustomerService"
+    steps:
+      - "Retrieve quote Q-004"
+    assertions:
+      - "Quote still has original customer address (snapshot)"
+      - "Customer current address available via join"
+      - "Both historical and current data accessible"
+
+  - name: "Cross-module transaction integrity"
+    setup:
+      - "Seed customer CUST-005"
+    steps:
+      - "Begin transaction"
+      - "Create quote Q-005 for CUST-005"
+      - "Force CustomerService update to fail"
+    assertions:
+      - "Quote creation rolled back"
+      - "Customer quote count not incremented"
+      - "Database in consistent state"
+
+validation_policy:
+  database_cleanup: true
+  transaction_rollback: true
+  cross_module_testing: true
+  notification_mocking: true
+
+technical_debt:
+  - scenario: "Customer data denormalization in quotes creates sync issues"
+    mitigation: "Use event sourcing for customer changes or materialized views"
+  - scenario: "Notification failures can block quote operations"
+    mitigation: "Decouple notifications using async job queue"
+  - scenario: "Credit limit checks not atomic across distributed system"
+    mitigation: "Implement distributed locking or saga pattern"

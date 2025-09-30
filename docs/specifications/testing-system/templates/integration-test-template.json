@@ -1,0 +1,355 @@
+{
+  "$schema": "../schemas/current-test-task.schema.json",
+  "schemaVersion": "2.0.0",
+  "metadata": {
+    "projectName": "{{PROJECT_NAME}}",
+    "sprintId": "{{SPRINT_ID}}",
+    "taskId": "{{TASK_ID}}",
+    "taskTitle": "{{TASK_TITLE}}",
+    "generatedAt": "{{GENERATED_AT}}",
+    "generatedBy": "CODOR Template Generator",
+    "description": "Auto-generated from integration-test-template.json",
+    "references": []
+  },
+  "globalConfiguration": {
+    "workspaceRoot": "{{WORKSPACE_ROOT}}",
+    "evidenceDirectory": "evidence",
+    "devServer": {
+      "command": "npm run dev",
+      "workingDirectory": "{{WORKSPACE_ROOT}}/packages/web",
+      "port": 3000,
+      "healthCheckUrl": "http://localhost:3000",
+      "startupTimeout": 30000
+    },
+    "environment": {
+      "NODE_ENV": "test",
+      "DATABASE_URL": "{{DATABASE_URL}}"
+    },
+    "timeout": "{{GLOBAL_TIMEOUT}}",
+    "validationPolicy": {
+      "linting": {
+        "strategy": "{{ESLINT_STRATEGY}}",
+        "tools": {
+          "eslint": {
+            "enabled": true,
+            "blockOn": "{{ESLINT_BLOCK_ON}}",
+            "maxWarnings": "{{MAX_WARNINGS}}",
+            "ignoredRules": "{{IGNORED_RULES}}",
+            "errorOnRules": "{{ERROR_ON_RULES}}"
+          }
+        }
+      },
+      "typeChecking": {
+        "strategy": "{{TYPESCRIPT_STRATEGY}}",
+        "tools": {
+          "typescript": {
+            "enabled": true,
+            "blockOn": "{{TYPESCRIPT_BLOCK_ON}}",
+            "strictMode": "{{STRICT_MODE}}",
+            "allowImplicitAny": false
+          }
+        }
+      },
+      "compilation": {
+        "strategy": "BLOCK_ON_ERRORS_ALWAYS"
+      }
+    }
+  },
+  "executionEngine": {
+    "availableActionTypes": [
+      "TERMINAL_COMMAND",
+      "FILE_VALIDATION",
+      "HTTP_REQUEST"
+    ],
+    "executorConfigurations": {
+      "terminalCommand": {
+        "shell": "powershell",
+        "timeout": 120000
+      },
+      "httpRequest": {
+        "timeout": 30000
+      }
+    }
+  },
+  "tasks": {
+    "{{TASK_ID}}": {
+      "taskId": "{{TASK_ID}}",
+      "title": "{{TASK_TITLE}}",
+      "description": "{{TASK_DESCRIPTION}}",
+      "priority": "{{PRIORITY}}",
+      "dependencies": "{{DEPENDENCIES}}",
+
+      "testExecution": {
+        "prerequisites": [
+          {
+            "actionId": "PREREQ.1",
+            "type": "FILE_VALIDATION",
+            "description": "Verify integration test file exists",
+            "parameters": {
+              "filePath": "{{TEST_FILE_PATH}}",
+              "validationType": "EXISTS"
+            },
+            "timeout": 5000,
+            "continueOnFailure": false
+          },
+          {
+            "actionId": "PREREQ.2",
+            "type": "TERMINAL_COMMAND",
+            "description": "Install dependencies",
+            "parameters": {
+              "command": "npm install",
+              "workingDirectory": "{{WORKSPACE_ROOT}}/packages/web",
+              "environment": {
+                "NODE_ENV": "test"
+              }
+            },
+            "timeout": 120000,
+            "continueOnFailure": false
+          },
+          {
+            "actionId": "PREREQ.3",
+            "type": "TERMINAL_COMMAND",
+            "description": "Setup test database",
+            "parameters": {
+              "command": "npm run db:test:setup",
+              "workingDirectory": "{{WORKSPACE_ROOT}}",
+              "environment": {
+                "NODE_ENV": "test",
+                "DATABASE_URL": "{{DATABASE_URL}}"
+              }
+            },
+            "timeout": 60000,
+            "continueOnFailure": false
+          },
+          {
+            "actionId": "PREREQ.4",
+            "type": "TERMINAL_COMMAND",
+            "description": "Run database migrations",
+            "parameters": {
+              "command": "npm run db:migrate",
+              "workingDirectory": "{{WORKSPACE_ROOT}}",
+              "environment": {
+                "NODE_ENV": "test",
+                "DATABASE_URL": "{{DATABASE_URL}}"
+              }
+            },
+            "timeout": 60000,
+            "continueOnFailure": false
+          },
+          {
+            "actionId": "PREREQ.5",
+            "type": "TERMINAL_COMMAND",
+            "description": "Seed test data",
+            "parameters": {
+              "command": "npm run db:seed:test",
+              "workingDirectory": "{{WORKSPACE_ROOT}}",
+              "environment": {
+                "NODE_ENV": "test",
+                "DATABASE_URL": "{{DATABASE_URL}}"
+              }
+            },
+            "timeout": 30000,
+            "continueOnFailure": true
+          }
+        ],
+
+        "steps": [
+          {
+            "actionId": "STEP.1",
+            "type": "TERMINAL_COMMAND",
+            "description": "TypeScript type check",
+            "parameters": {
+              "command": "npx tsc --noEmit --project tsconfig.json",
+              "workingDirectory": "{{WORKSPACE_ROOT}}/packages/web"
+            },
+            "timeout": 60000,
+            "continueOnFailure": false
+          },
+          {
+            "actionId": "STEP.2",
+            "type": "TERMINAL_COMMAND",
+            "description": "ESLint validation",
+            "parameters": {
+              "command": "npx eslint {{TEST_FILE_PATH}}",
+              "workingDirectory": "{{WORKSPACE_ROOT}}/packages/web"
+            },
+            "timeout": 30000,
+            "continueOnFailure": false
+          },
+          {
+            "actionId": "STEP.3",
+            "type": "TERMINAL_COMMAND",
+            "description": "Execute integration test suite",
+            "parameters": {
+              "command": "npm test -- {{TEST_FILE_PATH}} --verbose --runInBand",
+              "workingDirectory": "{{WORKSPACE_ROOT}}/packages/web",
+              "environment": {
+                "NODE_ENV": "test",
+                "DATABASE_URL": "{{DATABASE_URL}}"
+              }
+            },
+            "timeout": 120000,
+            "continueOnFailure": true
+          },
+          {
+            "actionId": "STEP.4",
+            "type": "TERMINAL_COMMAND",
+            "description": "Verify database state after tests",
+            "parameters": {
+              "command": "npm run db:verify",
+              "workingDirectory": "{{WORKSPACE_ROOT}}",
+              "environment": {
+                "NODE_ENV": "test",
+                "DATABASE_URL": "{{DATABASE_URL}}"
+              }
+            },
+            "timeout": 30000,
+            "continueOnFailure": true
+          },
+          {
+            "actionId": "STEP.5",
+            "type": "TERMINAL_COMMAND",
+            "description": "Run integration tests with coverage",
+            "parameters": {
+              "command": "npm test -- {{TEST_FILE_PATH}} --coverage --coverageReporters=json --runInBand",
+              "workingDirectory": "{{WORKSPACE_ROOT}}/packages/web",
+              "environment": {
+                "NODE_ENV": "test",
+                "DATABASE_URL": "{{DATABASE_URL}}"
+              }
+            },
+            "timeout": 120000,
+            "continueOnFailure": true
+          }
+        ],
+
+        "cleanup": [
+          {
+            "actionId": "CLEANUP.1",
+            "type": "TERMINAL_COMMAND",
+            "description": "Clear test database",
+            "parameters": {
+              "command": "npm run db:test:teardown",
+              "workingDirectory": "{{WORKSPACE_ROOT}}",
+              "environment": {
+                "NODE_ENV": "test",
+                "DATABASE_URL": "{{DATABASE_URL}}"
+              }
+            },
+            "timeout": 30000,
+            "continueOnFailure": true
+          },
+          {
+            "actionId": "CLEANUP.2",
+            "type": "TERMINAL_COMMAND",
+            "description": "Stop any running services",
+            "parameters": {
+              "command": "taskkill /F /FI \"WINDOWTITLE eq npm*\" /T",
+              "workingDirectory": "{{WORKSPACE_ROOT}}"
+            },
+            "timeout": 10000,
+            "continueOnFailure": true
+          },
+          {
+            "actionId": "CLEANUP.3",
+            "type": "TERMINAL_COMMAND",
+            "description": "Clear test cache",
+            "parameters": {
+              "command": "npm run test:clear-cache",
+              "workingDirectory": "{{WORKSPACE_ROOT}}/packages/web"
+            },
+            "timeout": 10000,
+            "continueOnFailure": true
+          }
+        ]
+      },
+
+      "validationCriteria": {
+        "successConditions": [
+          {
+            "condition": "STEP.3.exitCode === 0 || STEP.3.exitCode === 1",
+            "description": "Test suite executes successfully (TDD allows test failures)"
+          },
+          {
+            "condition": "STEP.1.exitCode === 0",
+            "description": "No TypeScript compilation errors"
+          },
+          {
+            "condition": "STEP.2.errorCount === 0",
+            "description": "No ESLint errors (per validation policy)"
+          },
+          {
+            "condition": "PREREQ.4.exitCode === 0",
+            "description": "Database migrations completed successfully"
+          }
+        ],
+        "failureConditions": [
+          {
+            "condition": "PREREQ.1.failed === true",
+            "description": "Test file not found (blocks execution)"
+          },
+          {
+            "condition": "PREREQ.3.failed === true",
+            "description": "Database setup failed (blocks execution)"
+          },
+          {
+            "condition": "STEP.1.exitCode !== 0",
+            "description": "TypeScript errors present (blocks execution per policy)"
+          }
+        ],
+        "expectedOutput": {
+          "stdoutContains": ["Test Suites:", "Tests:", "integration"],
+          "exitCode": 0
+        }
+      },
+
+      "completionCriteria": {
+        "allStepsMustPass": "{{ALL_STEPS_MUST_PASS}}",
+        "minimumPassRate": "{{MINIMUM_PASS_RATE}}",
+        "requiredEvidence": ["terminal-output", "test-execution-log"],
+        "taskStatusLock": true
+      },
+
+      "technicalDebtExpectations": {
+        "likelyFailures": [
+          {
+            "scenario": "Database connection failure",
+            "expectedDebtCategory": "DATABASE_SCHEMA_ISSUE",
+            "expectedSeverity": "CRITICAL",
+            "suggestedFix": "Verify DATABASE_URL is correct, check database server is running, verify connection pooling configuration"
+          },
+          {
+            "scenario": "Migration failures",
+            "expectedDebtCategory": "DATABASE_SCHEMA_ISSUE",
+            "expectedSeverity": "HIGH",
+            "suggestedFix": "Check migration scripts for syntax errors, verify migration order, check for conflicting migrations"
+          },
+          {
+            "scenario": "Service coordination failures",
+            "expectedDebtCategory": "INTEGRATION_FAILURE",
+            "expectedSeverity": "HIGH",
+            "suggestedFix": "Verify service dependencies, check initialization order, add proper error handling between services"
+          },
+          {
+            "scenario": "Transaction rollback issues",
+            "expectedDebtCategory": "DATABASE_SCHEMA_ISSUE",
+            "expectedSeverity": "MEDIUM",
+            "suggestedFix": "Implement proper transaction boundaries, add rollback handlers, verify isolation levels"
+          },
+          {
+            "scenario": "Data seeding failures",
+            "expectedDebtCategory": "DATABASE_SCHEMA_ISSUE",
+            "expectedSeverity": "MEDIUM",
+            "suggestedFix": "Check seed data format, verify foreign key constraints, check for duplicate keys"
+          },
+          {
+            "scenario": "External API mocking issues",
+            "expectedDebtCategory": "INTEGRATION_FAILURE",
+            "expectedSeverity": "MEDIUM",
+            "suggestedFix": "Implement proper mocking strategy, verify mock responses match real API, add network error simulation"
+          }
+        ]
+      }
+    }
+  }
+}

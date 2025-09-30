@@ -1,0 +1,80 @@
+# T004: Contract Test - GET /api/quotes
+# Sprint 006 Phase 2: TDD - API Contracts
+
+task_id: "T004"
+title: "Contract Test: GET /api/quotes"
+description: "Test the GET /api/quotes endpoint for listing quotes with pagination, filtering, and sorting"
+type: contract-test
+priority: CRITICAL
+test_file: "packages/web/src/api/__tests__/quotes.get.contract.test.ts"
+workspace_root: "${WORKSPACE_ROOT}"
+
+api:
+  endpoint: "/api/quotes"
+  method: GET
+  base_url: "${API_BASE_URL}"
+
+test_scenarios:
+  - name: "Success: Get all quotes with default pagination"
+    request:
+      params:
+        page: 1
+        limit: 20
+    expected_response:
+      status_code: 200
+      schema: QuoteListResponse
+      body_contains:
+        - "quotes"
+        - "pagination"
+        - "total"
+
+  - name: "Success: Filter quotes by status"
+    request:
+      params:
+        status: "APPROVED"
+        page: 1
+        limit: 10
+    expected_response:
+      status_code: 200
+      body_validation:
+        - "all quotes have status APPROVED"
+
+  - name: "Success: Sort quotes by creation date"
+    request:
+      params:
+        sort: "createdAt"
+        order: "desc"
+        page: 1
+        limit: 5
+    expected_response:
+      status_code: 200
+      body_validation:
+        - "quotes sorted by createdAt descending"
+
+  - name: "Error: Invalid pagination parameters"
+    request:
+      params:
+        page: -1
+        limit: 1000
+    expected_response:
+      status_code: 400
+      error_message: "Invalid pagination parameters"
+
+  - name: "Error: Unauthorized access"
+    request:
+      headers:
+        Authorization: ""
+    expected_response:
+      status_code: 401
+      error_message: "Authentication required"
+
+validation_policy:
+  schema_validation: true
+  response_time_max_ms: 500
+  require_authentication: true
+
+technical_debt:
+  - scenario: "Performance degradation with large datasets"
+    mitigation: "Add query optimization and indexing"
+  - scenario: "Missing rate limiting on public endpoints"
+    mitigation: "Implement rate limiting middleware"
