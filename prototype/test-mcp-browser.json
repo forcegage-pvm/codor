@@ -6,7 +6,7 @@
     "description": "Validate MCP browser executor plugin integration (mock mode)"
   },
   "tasks": {
-    "mcp-executor-test": {
+    "T005": {
       "title": "Test MCP Executor Plugin Architecture",
       "testExecution": {
         "prerequisites": [

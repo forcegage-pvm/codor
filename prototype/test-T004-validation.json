@@ -6,7 +6,7 @@
     "description": "Validate T004 test specification structure and prerequisites"
   },
   "tasks": {
-    "T004-validation": {
+    "T004": {
       "title": "Validate T004 Test Infrastructure",
       "testExecution": {
         "prerequisites": [

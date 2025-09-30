@@ -28,10 +28,10 @@ class EvidenceCollector {
     // Organize by phase and action type
     const phase = result.phase || "STEP";
     const actionType = result.action.type || "UNKNOWN";
-    
+
     const phaseDir = path.join(taskDir, `${phase.toLowerCase()}`);
     this.ensureDirectory(phaseDir);
-    
+
     const typeDir = path.join(phaseDir, actionType.toLowerCase());
     this.ensureDirectory(typeDir);
 
@@ -74,32 +74,52 @@ class EvidenceCollector {
     // Save summary at task level
     const summaryFile = path.join(taskDir, "task-summary.json");
     fs.writeFileSync(summaryFile, JSON.stringify(taskResult, null, 2));
-    
+
     // Save validations separately
     if (taskResult.validationResult) {
       const validationsDir = path.join(taskDir, "validations");
       this.ensureDirectory(validationsDir);
-      
+
       const evaluations = taskResult.validationResult.evaluations || [];
-      
-      const validationsFile = path.join(validationsDir, "validation-results.json");
+
+      const validationsFile = path.join(
+        validationsDir,
+        "validation-results.json"
+      );
       const validationsSummary = {
         taskId,
         timestamp: taskResult.endTime,
         overallPassed: taskResult.validationResult.passed,
         total: evaluations.length,
-        passed: evaluations.filter(v => v.passed).length,
-        failed: evaluations.filter(v => !v.passed).length,
-        results: evaluations
+        passed: evaluations.filter((v) => v.passed).length,
+        failed: evaluations.filter((v) => !v.passed).length,
+        results: evaluations,
       };
-      fs.writeFileSync(validationsFile, JSON.stringify(validationsSummary, null, 2));
+      fs.writeFileSync(
+        validationsFile,
+        JSON.stringify(validationsSummary, null, 2)
+      );
     }
-    
+
     console.log(`📊 Saved task summary: ${summaryFile}`);
   }
 
   async generateFinalReport(results) {
-    const reportFile = path.join(this.evidenceBaseDir, "execution-report.json");
+    // Generate timestamped report to preserve history
+    const timestamp = new Date()
+      .toISOString()
+      .replace(/:/g, "-")
+      .replace(/\..+/, "");
+    const reportFile = path.join(
+      this.evidenceBaseDir,
+      `execution-report-${timestamp}.json`
+    );
+
+    // Also create/update latest report
+    const latestReport = path.join(
+      this.evidenceBaseDir,
+      "execution-report-latest.json"
+    );
 
     const report = {
       ...results,
@@ -111,8 +131,14 @@ class EvidenceCollector {
       },
     };
 
+    // Save timestamped version (never overwritten)
     fs.writeFileSync(reportFile, JSON.stringify(report, null, 2));
+
+    // Save latest version (always current)
+    fs.writeFileSync(latestReport, JSON.stringify(report, null, 2));
+
     console.log(`\n📊 Final report: ${reportFile}`);
+    console.log(`📊 Latest report: ${latestReport}`);
     console.log(
       `✅ Passed: ${results.summary.passed}/${results.summary.total}`
     );
