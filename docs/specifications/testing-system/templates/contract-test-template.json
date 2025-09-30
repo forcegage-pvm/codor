@@ -12,11 +12,11 @@
     "references": []
   },
   "globalConfiguration": {
-    "workspaceRoot": "{{WORKSPACE_ROOT}}",
+    "workspaceRoot": "${WORKSPACE_ROOT}",
     "evidenceDirectory": "evidence",
     "devServer": {
       "command": "npm run dev",
-      "workingDirectory": "{{WORKSPACE_ROOT}}/packages/web",
+      "workingDirectory": "${WORKSPACE_ROOT}/packages/web",
       "port": 3000,
       "healthCheckUrl": "{{BASE_URL}}/api/health",
       "startupTimeout": 30000

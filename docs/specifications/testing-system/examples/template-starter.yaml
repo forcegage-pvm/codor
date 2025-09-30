@@ -28,7 +28,7 @@ test_file: "???"  # Path to test file from workspace root
                   # - "packages/web/src/components/__tests__/QuoteTable.test.tsx"
                   # - "packages/web/src/services/__tests__/QuoteService.integration.test.ts"
 
-workspace_root: "${WORKSPACE_ROOT}"  # Usually this exact value
+# NOTE: workspace_root is auto-detected by the engine (no need to specify)
 
 # ====================
 # OPTIONAL BUT RECOMMENDED

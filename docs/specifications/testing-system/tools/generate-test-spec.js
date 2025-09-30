@@ -178,7 +178,7 @@ class TestSpecGenerator {
       "{{TASK_DESCRIPTION}}":
         spec.description || `Execute ${spec.type} for ${spec.title}`,
       "{{GENERATED_AT}}": now,
-      "{{WORKSPACE_ROOT}}": spec.workspace_root,
+      "{{WORKSPACE_ROOT}}": spec.workspace_root || "${WORKSPACE_ROOT}",
       "{{TEST_FILE_PATH}}": spec.test_file,
       "{{TEST_FILE_NAME}}": testFileName,
       "{{HTTP_METHOD}}": httpMethod,
