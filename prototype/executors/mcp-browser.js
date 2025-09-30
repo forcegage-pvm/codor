@@ -75,9 +75,14 @@ class MCPBrowserExecutor extends BaseExecutor {
     return new Promise((resolve, reject) => {
       console.log("🌐 Starting Chrome DevTools MCP server...");
 
+      // Get Chrome path from environment or use default
+      const chromePath =
+        process.env.CHROME_EXECUTABLE_PATH ||
+        "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+
       this.mcpProcess = spawn(
         "npx",
-        ["-y", "@modelcontextprotocol/server-chrome-devtools"],
+        ["-y", "chrome-devtools-mcp@latest", "--executablePath", chromePath],
         {
           stdio: ["pipe", "pipe", "pipe"],
           shell: true,

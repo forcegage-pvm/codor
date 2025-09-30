@@ -1,10 +1,10 @@
 {
-  "startTime": "2025-09-30T13:03:24.795Z",
+  "startTime": "2025-09-30T13:03:05.189Z",
   "tasks": {
     "T006": {
       "taskId": "T006",
       "title": "Real MCP Browser Automation",
-      "startTime": "2025-09-30T13:03:24.796Z",
+      "startTime": "2025-09-30T13:03:05.190Z",
       "steps": [
         {
           "action": {
@@ -18,20 +18,20 @@
           },
           "phase": "PREREQ",
           "taskId": "T006",
-          "startTime": "2025-09-30T13:03:24.796Z",
+          "startTime": "2025-09-30T13:03:05.191Z",
           "success": true,
           "data": {
             "filePath": "D:\\Dropbox\\Repositories\\Python\\codor\\prototype\\executors\\mcp-browser.js",
             "validationType": "EXISTS",
             "exists": true,
-            "timestamp": "2025-09-30T13:03:24.797Z",
+            "timestamp": "2025-09-30T13:03:05.191Z",
             "size": 7841,
             "modified": "2025-09-30T13:01:16.161Z",
             "isDirectory": false
           },
           "error": null,
-          "endTime": "2025-09-30T13:03:24.802Z",
-          "durationMs": 6
+          "endTime": "2025-09-30T13:03:05.193Z",
+          "durationMs": 2
         },
         {
           "action": {
@@ -44,7 +44,7 @@
           },
           "phase": "PREREQ",
           "taskId": "T006",
-          "startTime": "2025-09-30T13:03:24.810Z",
+          "startTime": "2025-09-30T13:03:05.195Z",
           "success": true,
           "data": {
             "command": "node --version",
@@ -55,11 +55,11 @@
             "expectedExitCodes": [
               0
             ],
-            "timestamp": "2025-09-30T13:03:25.138Z"
+            "timestamp": "2025-09-30T13:03:05.487Z"
           },
           "error": null,
-          "endTime": "2025-09-30T13:03:25.139Z",
-          "durationMs": 329
+          "endTime": "2025-09-30T13:03:05.487Z",
+          "durationMs": 292
         },
         {
           "action": {
@@ -72,7 +72,7 @@
           },
           "phase": "STEP",
           "taskId": "T006",
-          "startTime": "2025-09-30T13:03:25.140Z",
+          "startTime": "2025-09-30T13:03:05.488Z",
           "success": true,
           "data": {
             "action": "initialize",
@@ -91,11 +91,11 @@
                 "version": "0.5.1"
               }
             },
-            "timestamp": "2025-09-30T13:03:28.281Z"
+            "timestamp": "2025-09-30T13:03:08.703Z"
           },
           "error": null,
-          "endTime": "2025-09-30T13:03:28.286Z",
-          "durationMs": 3146
+          "endTime": "2025-09-30T13:03:08.703Z",
+          "durationMs": 3215
         },
         {
           "action": {
@@ -108,7 +108,7 @@
           },
           "phase": "STEP",
           "taskId": "T006",
-          "startTime": "2025-09-30T13:03:28.291Z",
+          "startTime": "2025-09-30T13:03:08.705Z",
           "success": true,
           "data": {
             "action": "list_tools",
@@ -787,11 +787,11 @@
               }
             ],
             "count": 26,
-            "timestamp": "2025-09-30T13:03:28.295Z"
+            "timestamp": "2025-09-30T13:03:08.709Z"
           },
           "error": null,
-          "endTime": "2025-09-30T13:03:28.295Z",
-          "durationMs": 4
+          "endTime": "2025-09-30T13:03:08.710Z",
+          "durationMs": 5
         },
         {
           "action": {
@@ -805,7 +805,7 @@
           },
           "phase": "STEP",
           "taskId": "T006",
-          "startTime": "2025-09-30T13:03:28.296Z",
+          "startTime": "2025-09-30T13:03:08.714Z",
           "success": true,
           "data": {
             "action": "new_page",
@@ -821,11 +821,11 @@
               ],
               "isError": true
             },
-            "timestamp": "2025-09-30T13:03:28.299Z"
+            "timestamp": "2025-09-30T13:03:08.720Z"
           },
           "error": null,
-          "endTime": "2025-09-30T13:03:28.301Z",
-          "durationMs": 5
+          "endTime": "2025-09-30T13:03:08.720Z",
+          "durationMs": 6
         },
         {
           "action": {
@@ -838,7 +838,7 @@
           },
           "phase": "STEP",
           "taskId": "T006",
-          "startTime": "2025-09-30T13:03:28.304Z",
+          "startTime": "2025-09-30T13:03:08.721Z",
           "success": true,
           "data": {
             "action": "take_snapshot",
@@ -852,16 +852,16 @@
               ],
               "isError": true
             },
-            "timestamp": "2025-09-30T13:03:28.306Z"
+            "timestamp": "2025-09-30T13:03:08.723Z"
           },
           "error": null,
-          "endTime": "2025-09-30T13:03:28.307Z",
-          "durationMs": 3
+          "endTime": "2025-09-30T13:03:08.723Z",
+          "durationMs": 2
         }
       ],
-      "status": "PASSED",
+      "status": "FAILED",
       "validationResult": {
-        "passed": true,
+        "passed": false,
         "successConditions": [],
         "failureConditions": [],
         "evaluations": [
@@ -887,26 +887,31 @@
           },
           {
             "condition": "STEP['4'].success === true",
-            "description": "Snapshot captured successfully",
+            "description": "Snapshot captured",
             "passed": true
+          },
+          {
+            "condition": "STEP['5'].success === true",
+            "description": "Browser closed cleanly",
+            "passed": false
           }
         ]
       },
-      "endTime": "2025-09-30T13:03:28.309Z",
-      "durationMs": 3513
+      "endTime": "2025-09-30T13:03:08.726Z",
+      "durationMs": 3536
     }
   },
   "summary": {
     "total": 1,
-    "passed": 1,
-    "failed": 0,
+    "passed": 0,
+    "failed": 1,
     "skipped": 0
   },
-  "endTime": "2025-09-30T13:03:28.311Z",
-  "durationMs": 3516,
+  "endTime": "2025-09-30T13:03:08.728Z",
+  "durationMs": 3539,
   "metadata": {
     "generatedBy": "CODOR Test Execution Engine v2.0",
-    "generatedAt": "2025-09-30T13:03:28.311Z",
+    "generatedAt": "2025-09-30T13:03:08.728Z",
     "platform": "win32",
     "nodeVersion": "v22.19.0"
   }

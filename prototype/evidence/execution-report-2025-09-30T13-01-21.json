@@ -1,10 +1,10 @@
 {
-  "startTime": "2025-09-30T13:03:24.795Z",
+  "startTime": "2025-09-30T13:01:17.309Z",
   "tasks": {
     "T006": {
       "taskId": "T006",
       "title": "Real MCP Browser Automation",
-      "startTime": "2025-09-30T13:03:24.796Z",
+      "startTime": "2025-09-30T13:01:17.310Z",
       "steps": [
         {
           "action": {
@@ -18,20 +18,20 @@
           },
           "phase": "PREREQ",
           "taskId": "T006",
-          "startTime": "2025-09-30T13:03:24.796Z",
+          "startTime": "2025-09-30T13:01:17.310Z",
           "success": true,
           "data": {
             "filePath": "D:\\Dropbox\\Repositories\\Python\\codor\\prototype\\executors\\mcp-browser.js",
             "validationType": "EXISTS",
             "exists": true,
-            "timestamp": "2025-09-30T13:03:24.797Z",
+            "timestamp": "2025-09-30T13:01:17.310Z",
             "size": 7841,
             "modified": "2025-09-30T13:01:16.161Z",
             "isDirectory": false
           },
           "error": null,
-          "endTime": "2025-09-30T13:03:24.802Z",
-          "durationMs": 6
+          "endTime": "2025-09-30T13:01:17.312Z",
+          "durationMs": 2
         },
         {
           "action": {
@@ -44,7 +44,7 @@
           },
           "phase": "PREREQ",
           "taskId": "T006",
-          "startTime": "2025-09-30T13:03:24.810Z",
+          "startTime": "2025-09-30T13:01:17.312Z",
           "success": true,
           "data": {
             "command": "node --version",
@@ -55,11 +55,11 @@
             "expectedExitCodes": [
               0
             ],
-            "timestamp": "2025-09-30T13:03:25.138Z"
+            "timestamp": "2025-09-30T13:01:17.592Z"
           },
           "error": null,
-          "endTime": "2025-09-30T13:03:25.139Z",
-          "durationMs": 329
+          "endTime": "2025-09-30T13:01:17.593Z",
+          "durationMs": 281
         },
         {
           "action": {
@@ -72,7 +72,7 @@
           },
           "phase": "STEP",
           "taskId": "T006",
-          "startTime": "2025-09-30T13:03:25.140Z",
+          "startTime": "2025-09-30T13:01:17.594Z",
           "success": true,
           "data": {
             "action": "initialize",
@@ -91,11 +91,11 @@
                 "version": "0.5.1"
               }
             },
-            "timestamp": "2025-09-30T13:03:28.281Z"
+            "timestamp": "2025-09-30T13:01:21.012Z"
           },
           "error": null,
-          "endTime": "2025-09-30T13:03:28.286Z",
-          "durationMs": 3146
+          "endTime": "2025-09-30T13:01:21.012Z",
+          "durationMs": 3418
         },
         {
           "action": {
@@ -108,7 +108,7 @@
           },
           "phase": "STEP",
           "taskId": "T006",
-          "startTime": "2025-09-30T13:03:28.291Z",
+          "startTime": "2025-09-30T13:01:21.013Z",
           "success": true,
           "data": {
             "action": "list_tools",
@@ -787,81 +787,34 @@
               }
             ],
             "count": 26,
-            "timestamp": "2025-09-30T13:03:28.295Z"
+            "timestamp": "2025-09-30T13:01:21.023Z"
           },
           "error": null,
-          "endTime": "2025-09-30T13:03:28.295Z",
-          "durationMs": 4
+          "endTime": "2025-09-30T13:01:21.024Z",
+          "durationMs": 11
         },
         {
           "action": {
             "actionId": "STEP.3",
-            "description": "Create new page and navigate to example.com",
+            "description": "Create new browser page",
             "type": "MCP_BROWSER_COMMAND",
             "parameters": {
-              "action": "new_page",
-              "url": "https://example.com"
+              "action": "chrome_new_page"
             }
           },
           "phase": "STEP",
           "taskId": "T006",
-          "startTime": "2025-09-30T13:03:28.296Z",
-          "success": true,
-          "data": {
-            "action": "new_page",
-            "parameters": {
-              "url": "https://example.com"
-            },
-            "result": {
-              "content": [
-                {
-                  "type": "text",
-                  "text": "Browser was not found at the configured executablePath (C:\\Program)"
-                }
-              ],
-              "isError": true
-            },
-            "timestamp": "2025-09-30T13:03:28.299Z"
-          },
-          "error": null,
-          "endTime": "2025-09-30T13:03:28.301Z",
-          "durationMs": 5
-        },
-        {
-          "action": {
-            "actionId": "STEP.4",
-            "description": "Take page snapshot",
-            "type": "MCP_BROWSER_COMMAND",
-            "parameters": {
-              "action": "take_snapshot"
-            }
-          },
-          "phase": "STEP",
-          "taskId": "T006",
-          "startTime": "2025-09-30T13:03:28.304Z",
-          "success": true,
-          "data": {
-            "action": "take_snapshot",
-            "parameters": {},
-            "result": {
-              "content": [
-                {
-                  "type": "text",
-                  "text": "Browser was not found at the configured executablePath (C:\\Program)"
-                }
-              ],
-              "isError": true
-            },
-            "timestamp": "2025-09-30T13:03:28.306Z"
-          },
-          "error": null,
-          "endTime": "2025-09-30T13:03:28.307Z",
-          "durationMs": 3
+          "startTime": "2025-09-30T13:01:21.025Z",
+          "success": false,
+          "data": null,
+          "error": "MCP error: MCP error -32602: Tool chrome_new_page not found",
+          "endTime": "2025-09-30T13:01:21.027Z",
+          "durationMs": 2
         }
       ],
-      "status": "PASSED",
+      "status": "FAILED",
       "validationResult": {
-        "passed": true,
+        "passed": false,
         "successConditions": [],
         "failureConditions": [],
         "evaluations": [
@@ -882,31 +835,41 @@
           },
           {
             "condition": "STEP['3'].success === true",
-            "description": "Browser page created and navigated",
-            "passed": true
+            "description": "Browser page created",
+            "passed": false
           },
           {
             "condition": "STEP['4'].success === true",
-            "description": "Snapshot captured successfully",
-            "passed": true
+            "description": "Navigation successful",
+            "passed": false
+          },
+          {
+            "condition": "STEP['5'].success === true",
+            "description": "Snapshot captured",
+            "passed": false
+          },
+          {
+            "condition": "STEP['6'].success === true",
+            "description": "Browser closed cleanly",
+            "passed": false
           }
         ]
       },
-      "endTime": "2025-09-30T13:03:28.309Z",
-      "durationMs": 3513
+      "endTime": "2025-09-30T13:01:21.031Z",
+      "durationMs": 3721
     }
   },
   "summary": {
     "total": 1,
-    "passed": 1,
-    "failed": 0,
+    "passed": 0,
+    "failed": 1,
     "skipped": 0
   },
-  "endTime": "2025-09-30T13:03:28.311Z",
-  "durationMs": 3516,
+  "endTime": "2025-09-30T13:01:21.033Z",
+  "durationMs": 3724,
   "metadata": {
     "generatedBy": "CODOR Test Execution Engine v2.0",
-    "generatedAt": "2025-09-30T13:03:28.311Z",
+    "generatedAt": "2025-09-30T13:01:21.033Z",
     "platform": "win32",
     "nodeVersion": "v22.19.0"
   }

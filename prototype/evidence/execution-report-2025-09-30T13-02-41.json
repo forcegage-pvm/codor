@@ -1,10 +1,10 @@
 {
-  "startTime": "2025-09-30T13:03:24.795Z",
+  "startTime": "2025-09-30T13:02:37.684Z",
   "tasks": {
     "T006": {
       "taskId": "T006",
       "title": "Real MCP Browser Automation",
-      "startTime": "2025-09-30T13:03:24.796Z",
+      "startTime": "2025-09-30T13:02:37.687Z",
       "steps": [
         {
           "action": {
@@ -18,20 +18,20 @@
           },
           "phase": "PREREQ",
           "taskId": "T006",
-          "startTime": "2025-09-30T13:03:24.796Z",
+          "startTime": "2025-09-30T13:02:37.689Z",
           "success": true,
           "data": {
             "filePath": "D:\\Dropbox\\Repositories\\Python\\codor\\prototype\\executors\\mcp-browser.js",
             "validationType": "EXISTS",
             "exists": true,
-            "timestamp": "2025-09-30T13:03:24.797Z",
+            "timestamp": "2025-09-30T13:02:37.690Z",
             "size": 7841,
             "modified": "2025-09-30T13:01:16.161Z",
             "isDirectory": false
           },
           "error": null,
-          "endTime": "2025-09-30T13:03:24.802Z",
-          "durationMs": 6
+          "endTime": "2025-09-30T13:02:37.692Z",
+          "durationMs": 3
         },
         {
           "action": {
@@ -44,7 +44,7 @@
           },
           "phase": "PREREQ",
           "taskId": "T006",
-          "startTime": "2025-09-30T13:03:24.810Z",
+          "startTime": "2025-09-30T13:02:37.694Z",
           "success": true,
           "data": {
             "command": "node --version",
@@ -55,11 +55,11 @@
             "expectedExitCodes": [
               0
             ],
-            "timestamp": "2025-09-30T13:03:25.138Z"
+            "timestamp": "2025-09-30T13:02:37.950Z"
           },
           "error": null,
-          "endTime": "2025-09-30T13:03:25.139Z",
-          "durationMs": 329
+          "endTime": "2025-09-30T13:02:37.951Z",
+          "durationMs": 257
         },
         {
           "action": {
@@ -72,7 +72,7 @@
           },
           "phase": "STEP",
           "taskId": "T006",
-          "startTime": "2025-09-30T13:03:25.140Z",
+          "startTime": "2025-09-30T13:02:37.953Z",
           "success": true,
           "data": {
             "action": "initialize",
@@ -91,11 +91,11 @@
                 "version": "0.5.1"
               }
             },
-            "timestamp": "2025-09-30T13:03:28.281Z"
+            "timestamp": "2025-09-30T13:02:41.139Z"
           },
           "error": null,
-          "endTime": "2025-09-30T13:03:28.286Z",
-          "durationMs": 3146
+          "endTime": "2025-09-30T13:02:41.139Z",
+          "durationMs": 3186
         },
         {
           "action": {
@@ -108,7 +108,7 @@
           },
           "phase": "STEP",
           "taskId": "T006",
-          "startTime": "2025-09-30T13:03:28.291Z",
+          "startTime": "2025-09-30T13:02:41.141Z",
           "success": true,
           "data": {
             "action": "list_tools",
@@ -787,10 +787,10 @@
               }
             ],
             "count": 26,
-            "timestamp": "2025-09-30T13:03:28.295Z"
+            "timestamp": "2025-09-30T13:02:41.144Z"
           },
           "error": null,
-          "endTime": "2025-09-30T13:03:28.295Z",
+          "endTime": "2025-09-30T13:02:41.145Z",
           "durationMs": 4
         },
         {
@@ -805,7 +805,7 @@
           },
           "phase": "STEP",
           "taskId": "T006",
-          "startTime": "2025-09-30T13:03:28.296Z",
+          "startTime": "2025-09-30T13:02:41.146Z",
           "success": true,
           "data": {
             "action": "new_page",
@@ -821,11 +821,11 @@
               ],
               "isError": true
             },
-            "timestamp": "2025-09-30T13:03:28.299Z"
+            "timestamp": "2025-09-30T13:02:41.151Z"
           },
           "error": null,
-          "endTime": "2025-09-30T13:03:28.301Z",
-          "durationMs": 5
+          "endTime": "2025-09-30T13:02:41.152Z",
+          "durationMs": 6
         },
         {
           "action": {
@@ -838,7 +838,7 @@
           },
           "phase": "STEP",
           "taskId": "T006",
-          "startTime": "2025-09-30T13:03:28.304Z",
+          "startTime": "2025-09-30T13:02:41.154Z",
           "success": true,
           "data": {
             "action": "take_snapshot",
@@ -852,16 +852,34 @@
               ],
               "isError": true
             },
-            "timestamp": "2025-09-30T13:03:28.306Z"
+            "timestamp": "2025-09-30T13:02:41.156Z"
           },
           "error": null,
-          "endTime": "2025-09-30T13:03:28.307Z",
-          "durationMs": 3
+          "endTime": "2025-09-30T13:02:41.156Z",
+          "durationMs": 2
+        },
+        {
+          "action": {
+            "actionId": "STEP.5",
+            "description": "Close browser page",
+            "type": "MCP_BROWSER_COMMAND",
+            "parameters": {
+              "action": "close_page"
+            }
+          },
+          "phase": "STEP",
+          "taskId": "T006",
+          "startTime": "2025-09-30T13:02:41.157Z",
+          "success": false,
+          "data": null,
+          "error": "MCP error: MCP error -32602: Invalid arguments for tool close_page: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"number\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"pageIdx\"\n    ],\n    \"message\": \"Required\"\n  }\n]",
+          "endTime": "2025-09-30T13:02:41.158Z",
+          "durationMs": 1
         }
       ],
-      "status": "PASSED",
+      "status": "FAILED",
       "validationResult": {
-        "passed": true,
+        "passed": false,
         "successConditions": [],
         "failureConditions": [],
         "evaluations": [
@@ -887,26 +905,31 @@
           },
           {
             "condition": "STEP['4'].success === true",
-            "description": "Snapshot captured successfully",
+            "description": "Snapshot captured",
             "passed": true
+          },
+          {
+            "condition": "STEP['5'].success === true",
+            "description": "Browser closed cleanly",
+            "passed": false
           }
         ]
       },
-      "endTime": "2025-09-30T13:03:28.309Z",
-      "durationMs": 3513
+      "endTime": "2025-09-30T13:02:41.162Z",
+      "durationMs": 3475
     }
   },
   "summary": {
     "total": 1,
-    "passed": 1,
-    "failed": 0,
+    "passed": 0,
+    "failed": 1,
     "skipped": 0
   },
-  "endTime": "2025-09-30T13:03:28.311Z",
-  "durationMs": 3516,
+  "endTime": "2025-09-30T13:02:41.164Z",
+  "durationMs": 3480,
   "metadata": {
     "generatedBy": "CODOR Test Execution Engine v2.0",
-    "generatedAt": "2025-09-30T13:03:28.311Z",
+    "generatedAt": "2025-09-30T13:02:41.164Z",
     "platform": "win32",
     "nodeVersion": "v22.19.0"
   }
