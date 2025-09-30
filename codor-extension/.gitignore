@@ -6,16 +6,15 @@ dist/
 # Node modules
 node_modules/
 
-# VS Code
-.vscode/
-!.vscode/launch.json
-!.vscode/tasks.json
+# VS Code testing
+.vscode-test/
 
 # TypeScript
 *.tsbuildinfo
 
 # Logs
 *.log
+npm-debug.log*
 
 # OS
 .DS_Store
@@ -31,3 +30,7 @@ coverage/
 # Database (development only - production committed to git)
 *.db-shm
 *.db-wal
+
+# Temporary files
+temp/
+tmp/

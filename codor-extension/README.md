@@ -6,118 +6,102 @@
 
 CODOR Extension is a VS Code extension that acts as an authoritative task manager and quality gate for AI coding agents (GitHub Copilot Workspace, Cursor, etc.) implementing tasks from GitHub Spec Kit.
 
+**Key Innovation:** Instead of letting AI agents freely access `tasks.md` files (leading to drift and fabrication), CODOR intercepts task generation at the source, stores tasks in a SQLite database, and exposes only one task at a time through a controlled UI.
+
 ## Core Features
 
-- ✅ **Task Management**: Import and manage tasks from Spec Kit `tasks.md`
+- ✅ **Spec Kit Augmentation**: Minimal patches to Spec Kit scripts to emit tasks directly to CODOR
+- ✅ **Database-Driven Task Management**: Tasks stored in SQLite, never exposed as `tasks.md`
+- ✅ **UI Task Queue**: Tree view showing features, specs, plans, and current task only
 - ✅ **Verification Gates**: Automatically verify task completion against requirements
 - ✅ **AI Agent Control**: Force AI agents to follow task order and meet acceptance criteria
 - ✅ **Evidence Collection**: Track test results, failures, and technical debt
-- ✅ **Real-time Monitoring**: Watch file changes and auto-verify on completion
+- ✅ **Git-Friendly**: Spec/plan files remain as markdown for version control
 
 ## Architecture
 
 ```
-CODOR Extension
-├── Task Database (SQLite)           # Authoritative task storage
-├── Spec Kit Parser                  # Import from tasks.md
-├── Task Manager                     # Get next task, verify completion
-├── Verification Engine              # Run CODOR tests, check requirements
-├── File Watcher                     # Monitor code changes
-└── UI Components                    # Tree view, status bar, webview
+CODOR Extension (Hybrid Approach)
+├── Spec Kit (Minimal Patches)
+│   ├── Generates spec.md/plan.md (as files)
+│   └── Emits tasks to CODOR database (not tasks.md)
+├── Task Database (SQLite)
+│   ├── Features, specs, plans, tasks
+│   └── Committed to git for team sync
+├── UI Components
+│   ├── Features Tree View
+│   ├── Task Queue (current task only)
+│   ├── Task Details Webview
+│   └── Evidence Viewer
+└── Verification Engine
+    ├── Run CODOR tests
+    ├── Check acceptance criteria
+    └── Collect evidence
 ```
 
 ## Project Status
 
-**Status:** 🚧 In Development (Design Complete)  
-**Version:** 0.1.0-alpha  
+**Status:** 🚧 In Development (Scaffold Complete)  
+**Version:** 0.0.1  
 **Last Updated:** September 30, 2025
 
 ## Design Documents
 
-See the root repository for comprehensive design documents:
-- `CODOR-TECHNICAL-OVERVIEW.md` - System architecture and philosophy
-- `ENGINE-CURRENT-STATE.md` - Core engine status
-- `ARCHITECTURE-CORE-VS-EXTENSION.md` - Separation of concerns
-- `CODOR-SPEC-KIT-INTEGRATION.md` - Spec Kit integration design
-- `CODOR-TASK-MANAGEMENT-DESIGN.md` - Task management architecture ⭐
+See `docs/` for comprehensive design documents:
+- `SPEC-KIT-AUGMENTATION-STRATEGY.md` - How CODOR patches Spec Kit
+- `CODOR-AS-SPEC-KIT-FRONTEND.md` - UI wrapper approach
+- `SPEC-KIT-WORKFLOW-INTERCEPTION.md` - Task interception design
+- `UI-STRATEGY-DECISION.md` - User interface design
+- `API-INTEGRATION-DECISION.md` - Database and API design
+- `WORKFLOW-INTERCEPTION-RISKS.md` - Risk analysis
+- `SPEC-KIT-STRUCTURE-ANALYSIS.md` - Spec Kit internals
 
-## Development Setup
+## Development
 
 ### Prerequisites
+- Node.js 20.x or higher
+- VS Code 1.104.0 or higher
+- TypeScript 5.9.2 or higher
 
-- Node.js 18+
-- VS Code 1.85+
-- TypeScript 5.0+
-
-### Installation
-
+### Setup
 ```bash
 cd codor-extension
 npm install
-npm run compile
 ```
 
-### Running in Development
+### Development Workflow
+```bash
+# Compile TypeScript
+npm run compile
 
-Press `F5` in VS Code to launch Extension Development Host.
+# Watch mode (auto-compile on save)
+npm run watch
 
-## Roadmap
+# Run linter
+npm run lint
 
-**Phase 1: Core Task Manager (Week 1)**
-- [x] Design & Documentation
-- [ ] Extension scaffold
-- [ ] SQLite task database
-- [ ] Spec Kit parser
-- [ ] Basic tree view
+# Run tests
+npm test
+```
 
-**Phase 2: Verification Engine (Week 2)**
-- [ ] CODOR engine integration
-- [ ] File watching
-- [ ] Auto-verification
-- [ ] Evidence collection
-
-**Phase 3: AI Integration (Week 3)**
-- [ ] API endpoints (REST)
-- [ ] Copilot integration
-- [ ] Prompt injection
-- [ ] Attribution tracking
-
-**Phase 4: Polish (Week 4)**
-- [ ] Configuration system
-- [ ] Manual override
-- [ ] Reporting & export
-- [ ] Documentation
+### Debugging
+1. Open `codor-extension` folder in VS Code
+2. Press `F5` to launch Extension Development Host
+3. Set breakpoints in `src/` files
+4. Test commands from Command Palette (`Ctrl+Shift+P`)
 
 ## Configuration
 
-```json
-{
-  "codor.taskManager": {
-    "strictMode": true,
-    "autoVerify": true,
-    "blockOnFailure": true,
-    "allowManualOverride": true
-  },
-  "codor.database": {
-    "path": ".codor/tasks.db",
-    "commitToGit": true
-  },
-  "codor.verification": {
-    "requirementsCoverage": true,
-    "acceptanceCriteria": true,
-    "technicalDebtThreshold": "medium"
-  }
-}
-```
+See `package.json` for available settings:
+- `codor.taskManagement.*` - Task management behavior
+- `codor.specKit.*` - Spec Kit integration settings
+- `codor.database.path` - Database location
+- `codor.evidence.path` - Evidence directory
 
 ## License
 
-Same as parent project (to be determined)
+See parent repository LICENSE
 
 ## Contributing
 
-This extension will likely be moved to its own repository in the future.
-
----
-
-**This is the way.** 🎯
+This extension is part of the CODOR project. See parent repository for contribution guidelines.

@@ -1,0 +1,36 @@
+﻿{
+  "name": "codor",
+  "displayName": "CODOR Task Manager",
+  "description": "Specification-driven development with task management, verification gates, and AI agent control",
+  "version": "0.0.1",
+  "publisher": "forcegage",
+  "engines": {
+    "vscode": "^1.104.0"
+  },
+  "categories": ["Testing", "Other"],
+  "keywords": ["testing", "task management", "spec kit", "verification", "ai agent"],
+  "activationEvents": ["onStartupFinished", "workspaceContains:.specify/**"],
+  "main": "./out/extension.js",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.104.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@typescript-eslint/eslint-plugin": "^8.42.0",
+    "@typescript-eslint/parser": "^8.42.0",
+    "eslint": "^9.34.0",
+    "typescript": "^5.9.2",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.4.1"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.8.1"
+  }
+}
