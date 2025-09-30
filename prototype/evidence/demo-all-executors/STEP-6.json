@@ -1,0 +1,31 @@
+{
+  "actionId": "STEP.6",
+  "taskId": "demo-all-executors",
+  "timestamp": "2025-09-30T12:13:02.676Z",
+  "action": {
+    "type": "TERMINAL_COMMAND",
+    "description": "Show git branch"
+  },
+  "result": {
+    "success": true,
+    "durationMs": 271,
+    "data": {
+      "command": "git branch --show-current",
+      "workingDirectory": "D:/Dropbox/Repositories/Python/codor",
+      "exitCode": 0,
+      "stdout": "feat/yaml-testing-system-production-ready\n",
+      "stderr": "",
+      "expectedExitCodes": [
+        0
+      ],
+      "timestamp": "2025-09-30T12:13:02.947Z"
+    },
+    "error": null
+  },
+  "metadata": {
+    "generatedBy": "CODOR Test Execution Engine v2.0",
+    "platform": "win32",
+    "nodeVersion": "v22.19.0",
+    "pid": 36812
+  }
+}

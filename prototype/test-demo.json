@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "2.0.0",
+  "metadata": {
+    "taskTitle": "Engine Demo - All Executors",
+    "author": "CODOR Team",
+    "description": "Demonstrate all executor types with real actions"
+  },
+  "tasks": {
+    "demo-all-executors": {
+      "title": "Demo All Executor Types",
+      "testExecution": {
+        "steps": [
+          {
+            "actionId": "STEP.1",
+            "type": "TERMINAL_COMMAND",
+            "description": "Check Node version",
+            "parameters": {
+              "command": "node --version"
+            }
+          },
+          {
+            "actionId": "STEP.2",
+            "type": "FILE_VALIDATION",
+            "description": "Verify engine README exists",
+            "parameters": {
+              "filePath": "prototype/README.md",
+              "validationType": "EXISTS"
+            }
+          },
+          {
+            "actionId": "STEP.3",
+            "type": "FILE_VALIDATION",
+            "description": "Verify package.json is valid JSON",
+            "parameters": {
+              "filePath": "prototype/package.json",
+              "validationType": "JSON_VALID"
+            }
+          },
+          {
+            "actionId": "STEP.4",
+            "type": "TERMINAL_COMMAND",
+            "description": "List all executors",
+            "parameters": {
+              "command": "Get-ChildItem -Path 'prototype\\executors' -Filter '*.js' | Select-Object Name"
+            }
+          },
+          {
+            "actionId": "STEP.5",
+            "type": "FILE_VALIDATION",
+            "description": "Check CONTRIBUTING.md size",
+            "parameters": {
+              "filePath": "prototype/CONTRIBUTING.md",
+              "validationType": "EXISTS",
+              "minSize": 1000
+            }
+          },
+          {
+            "actionId": "STEP.6",
+            "type": "TERMINAL_COMMAND",
+            "description": "Show git branch",
+            "parameters": {
+              "command": "git branch --show-current"
+            }
+          }
+        ]
+      },
+      "validationCriteria": {
+        "successConditions": [
+          {
+            "condition": "STEP['1'].success === true && STEP['1'].exitCode === 0",
+            "description": "Node version command succeeded"
+          },
+          {
+            "condition": "STEP['1'].stdout.includes('v')",
+            "description": "Node version contains 'v'"
+          },
+          {
+            "condition": "STEP['2'].success === true && STEP['2'].exists === true",
+            "description": "Engine README exists"
+          },
+          {
+            "condition": "STEP['3'].success === true && STEP['3'].isValidJSON === true",
+            "description": "package.json is valid JSON"
+          },
+          {
+            "condition": "STEP['4'].success === true",
+            "description": "Can list executor files"
+          },
+          {
+            "condition": "STEP['5'].success === true && STEP['5'].size > 1000",
+            "description": "CONTRIBUTING.md is substantial (>1KB)"
+          },
+          {
+            "condition": "STEP['6'].success === true && STEP['6'].exitCode === 0",
+            "description": "Git branch command succeeded"
+          }
+        ]
+      }
+    }
+  },
+  "globalConfiguration": {
+    "workspaceRoot": "D:/Dropbox/Repositories/Python/codor",
+    "evidenceDirectory": "prototype/evidence",
+    "timeout": 60000
+  }
+}

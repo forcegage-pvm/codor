@@ -1,0 +1,92 @@
+{
+  "taskId": "test-001",
+  "title": "Test Basic Executors",
+  "startTime": "2025-09-30T12:00:01.062Z",
+  "steps": [
+    {
+      "action": {
+        "actionId": "STEP.1",
+        "type": "TERMINAL_COMMAND",
+        "description": "Test terminal command executor",
+        "parameters": {
+          "command": "echo 'Hello from Terminal Executor'"
+        }
+      },
+      "phase": "STEP",
+      "taskId": "test-001",
+      "startTime": "2025-09-30T12:00:01.062Z",
+      "success": true,
+      "data": {
+        "command": "echo 'Hello from Terminal Executor'",
+        "workingDirectory": "D:/Dropbox/Repositories/Python/codor",
+        "exitCode": 0,
+        "stdout": "Hello from Terminal Executor\r\n",
+        "stderr": "",
+        "expectedExitCodes": [
+          0
+        ],
+        "timestamp": "2025-09-30T12:00:01.365Z"
+      },
+      "error": null,
+      "endTime": "2025-09-30T12:00:01.367Z",
+      "durationMs": 305
+    },
+    {
+      "action": {
+        "actionId": "STEP.2",
+        "type": "FILE_VALIDATION",
+        "description": "Test file validation executor",
+        "parameters": {
+          "filePath": "D:/Dropbox/Repositories/Python/codor/prototype/README.md",
+          "validationType": "EXISTS"
+        }
+      },
+      "phase": "STEP",
+      "taskId": "test-001",
+      "startTime": "2025-09-30T12:00:01.371Z",
+      "success": true,
+      "data": {
+        "filePath": "D:/Dropbox/Repositories/Python/codor/prototype/README.md",
+        "validationType": "EXISTS",
+        "exists": true,
+        "timestamp": "2025-09-30T12:00:01.371Z",
+        "size": 9272,
+        "modified": "2025-09-30T11:58:15.141Z",
+        "isDirectory": false
+      },
+      "error": null,
+      "endTime": "2025-09-30T12:00:01.372Z",
+      "durationMs": 1
+    }
+  ],
+  "status": "PASSED",
+  "validationResult": {
+    "passed": true,
+    "successConditions": [],
+    "failureConditions": [],
+    "evaluations": [
+      {
+        "condition": "STEP['1'].success === true",
+        "description": "Terminal command succeeded",
+        "passed": true
+      },
+      {
+        "condition": "STEP['1'].exitCode === 0",
+        "description": "Exit code is 0",
+        "passed": true
+      },
+      {
+        "condition": "STEP['2'].success === true",
+        "description": "File validation succeeded",
+        "passed": true
+      },
+      {
+        "condition": "STEP['2'].exists === true",
+        "description": "File exists",
+        "passed": true
+      }
+    ]
+  },
+  "endTime": "2025-09-30T12:00:01.374Z",
+  "durationMs": 312
+}

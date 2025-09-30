@@ -1,0 +1,129 @@
+{
+  "schemaVersion": "2.0.0",
+  "metadata": {
+    "taskTitle": "Real-World Test - Validate CODOR Codebase",
+    "author": "CODOR Team",
+    "description": "Validate the CODOR repository structure and run real tests"
+  },
+  "tasks": {
+    "validate-structure": {
+      "title": "Validate Repository Structure",
+      "testExecution": {
+        "prerequisites": [
+          {
+            "actionId": "PREREQ.1",
+            "type": "FILE_VALIDATION",
+            "description": "Verify README exists",
+            "parameters": {
+              "filePath": "README.md",
+              "validationType": "EXISTS"
+            }
+          },
+          {
+            "actionId": "PREREQ.2",
+            "type": "FILE_VALIDATION",
+            "description": "Verify test-case package.json exists",
+            "parameters": {
+              "filePath": "test-case/package.json",
+              "validationType": "JSON_VALID"
+            }
+          }
+        ],
+        "steps": [
+          {
+            "actionId": "STEP.1",
+            "type": "TERMINAL_COMMAND",
+            "description": "List test specifications",
+            "parameters": {
+              "command": "Get-ChildItem -Path 'docs\\specifications\\testing-system\\examples' -Filter '*.json' | Select-Object -First 5 Name"
+            }
+          },
+          {
+            "actionId": "STEP.2",
+            "type": "FILE_VALIDATION",
+            "description": "Verify engine.js exists",
+            "parameters": {
+              "filePath": "prototype/core/engine.js",
+              "validationType": "EXISTS"
+            }
+          },
+          {
+            "actionId": "STEP.3",
+            "type": "FILE_VALIDATION",
+            "description": "Verify plugin-registry.js exists",
+            "parameters": {
+              "filePath": "prototype/core/plugin-registry.js",
+              "validationType": "EXISTS"
+            }
+          },
+          {
+            "actionId": "STEP.4",
+            "type": "TERMINAL_COMMAND",
+            "description": "Count executor plugins",
+            "parameters": {
+              "command": "Get-ChildItem -Path 'prototype\\executors' -Filter '*.js' | Measure-Object | Select-Object -ExpandProperty Count"
+            }
+          },
+          {
+            "actionId": "STEP.5",
+            "type": "FILE_VALIDATION",
+            "description": "Verify CONTRIBUTING.md exists",
+            "parameters": {
+              "filePath": "prototype/CONTRIBUTING.md",
+              "validationType": "CONTENT_PATTERN",
+              "contentPattern": "Plugin-based architecture"
+            }
+          }
+        ],
+        "cleanup": [
+          {
+            "actionId": "CLEANUP.1",
+            "type": "TERMINAL_COMMAND",
+            "description": "Display summary",
+            "parameters": {
+              "command": "Write-Host '✅ Repository validation complete!'"
+            },
+            "continueOnFailure": true
+          }
+        ]
+      },
+      "validationCriteria": {
+        "successConditions": [
+          {
+            "condition": "PREREQ['1'].success === true",
+            "description": "README exists"
+          },
+          {
+            "condition": "PREREQ['2'].success === true && PREREQ['2'].isValidJSON === true",
+            "description": "package.json is valid JSON"
+          },
+          {
+            "condition": "STEP['1'].success === true && STEP['1'].exitCode === 0",
+            "description": "Can list test specifications"
+          },
+          {
+            "condition": "STEP['2'].success === true && STEP['2'].exists === true",
+            "description": "Engine core file exists"
+          },
+          {
+            "condition": "STEP['3'].success === true",
+            "description": "Plugin registry exists"
+          },
+          {
+            "condition": "STEP['4'].success === true && STEP['4'].exitCode === 0",
+            "description": "Can count executor plugins"
+          },
+          {
+            "condition": "STEP['5'].success === true && STEP['5'].patternMatches === true",
+            "description": "CONTRIBUTING.md has plugin architecture content"
+          }
+        ]
+      }
+    }
+  },
+  "globalConfiguration": {
+    "workspaceRoot": "D:/Dropbox/Repositories/Python/codor",
+    "evidenceDirectory": "prototype/evidence",
+    "timeout": 60000
+  }
+}

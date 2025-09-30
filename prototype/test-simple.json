@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "2.0.0",
+  "metadata": {
+    "taskTitle": "Engine Test - Basic Functionality",
+    "author": "CODOR Team",
+    "description": "Simple test to verify plugin architecture works"
+  },
+  "tasks": {
+    "test-001": {
+      "title": "Test Basic Executors",
+      "testExecution": {
+        "steps": [
+          {
+            "actionId": "STEP.1",
+            "type": "TERMINAL_COMMAND",
+            "description": "Test terminal command executor",
+            "parameters": {
+              "command": "echo 'Hello from Terminal Executor'"
+            }
+          },
+          {
+            "actionId": "STEP.2",
+            "type": "FILE_VALIDATION",
+            "description": "Test file validation executor",
+            "parameters": {
+              "filePath": "D:/Dropbox/Repositories/Python/codor/prototype/README.md",
+              "validationType": "EXISTS"
+            }
+          }
+        ]
+      },
+      "validationCriteria": {
+        "successConditions": [
+          {
+            "condition": "STEP['1'].success === true",
+            "description": "Terminal command succeeded"
+          },
+          {
+            "condition": "STEP['1'].exitCode === 0",
+            "description": "Exit code is 0"
+          },
+          {
+            "condition": "STEP['2'].success === true",
+            "description": "File validation succeeded"
+          },
+          {
+            "condition": "STEP['2'].exists === true",
+            "description": "File exists"
+          }
+        ]
+      }
+    }
+  },
+  "globalConfiguration": {
+    "workspaceRoot": "D:/Dropbox/Repositories/Python/codor",
+    "evidenceDirectory": "prototype/evidence",
+    "timeout": 60000
+  }
+}

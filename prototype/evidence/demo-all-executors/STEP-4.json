@@ -1,0 +1,31 @@
+{
+  "actionId": "STEP.4",
+  "taskId": "demo-all-executors",
+  "timestamp": "2025-09-30T12:13:02.342Z",
+  "action": {
+    "type": "TERMINAL_COMMAND",
+    "description": "List all executors"
+  },
+  "result": {
+    "success": true,
+    "durationMs": 330,
+    "data": {
+      "command": "Get-ChildItem -Path 'prototype\\executors' -Filter '*.js' | Select-Object Name",
+      "workingDirectory": "D:/Dropbox/Repositories/Python/codor",
+      "exitCode": 0,
+      "stdout": "\r\nName               \r\n----               \r\nfile-validation.js \r\nhttp-request.js    \r\nmcp-browser.js     \r\nterminal-command.js\r\n\r\n\r\n",
+      "stderr": "",
+      "expectedExitCodes": [
+        0
+      ],
+      "timestamp": "2025-09-30T12:13:02.672Z"
+    },
+    "error": null
+  },
+  "metadata": {
+    "generatedBy": "CODOR Test Execution Engine v2.0",
+    "platform": "win32",
+    "nodeVersion": "v22.19.0",
+    "pid": 36812
+  }
+}

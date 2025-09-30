@@ -1,0 +1,31 @@
+{
+  "actionId": "STEP.4",
+  "taskId": "validate-structure",
+  "timestamp": "2025-09-30T12:12:04.828Z",
+  "action": {
+    "type": "TERMINAL_COMMAND",
+    "description": "Count executor plugins"
+  },
+  "result": {
+    "success": true,
+    "durationMs": 333,
+    "data": {
+      "command": "Get-ChildItem -Path 'prototype\\executors' -Filter '*.js' | Measure-Object | Select-Object -ExpandProperty Count",
+      "workingDirectory": "D:/Dropbox/Repositories/Python/codor",
+      "exitCode": 0,
+      "stdout": "4\r\n",
+      "stderr": "",
+      "expectedExitCodes": [
+        0
+      ],
+      "timestamp": "2025-09-30T12:12:05.161Z"
+    },
+    "error": null
+  },
+  "metadata": {
+    "generatedBy": "CODOR Test Execution Engine v2.0",
+    "platform": "win32",
+    "nodeVersion": "v22.19.0",
+    "pid": 14176
+  }
+}

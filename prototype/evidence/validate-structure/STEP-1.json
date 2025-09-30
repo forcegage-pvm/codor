@@ -1,0 +1,31 @@
+{
+  "actionId": "STEP.1",
+  "taskId": "validate-structure",
+  "timestamp": "2025-09-30T12:12:04.429Z",
+  "action": {
+    "type": "TERMINAL_COMMAND",
+    "description": "List test specifications"
+  },
+  "result": {
+    "success": true,
+    "durationMs": 396,
+    "data": {
+      "command": "Get-ChildItem -Path 'docs\\specifications\\testing-system\\examples' -Filter '*.json' | Select-Object -First 5 Name",
+      "workingDirectory": "D:/Dropbox/Repositories/Python/codor",
+      "exitCode": 0,
+      "stdout": "\r\nName                                                       \r\n----                                                       \r\nT001-integration-schema-validation.json                    \r\nT002-integration-service-layer-test-specification.json     \r\nT003-integration-database-migration-test-specification.json\r\nT004-contract-get-quotes.json                              \r\nT004-contract-get-spec-test-specification.json             \r\n\r\n\r\n",
+      "stderr": "",
+      "expectedExitCodes": [
+        0
+      ],
+      "timestamp": "2025-09-30T12:12:04.825Z"
+    },
+    "error": null
+  },
+  "metadata": {
+    "generatedBy": "CODOR Test Execution Engine v2.0",
+    "platform": "win32",
+    "nodeVersion": "v22.19.0",
+    "pid": 14176
+  }
+}

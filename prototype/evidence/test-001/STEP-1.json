@@ -1,0 +1,31 @@
+{
+  "actionId": "STEP.1",
+  "taskId": "test-001",
+  "timestamp": "2025-09-30T12:00:01.062Z",
+  "action": {
+    "type": "TERMINAL_COMMAND",
+    "description": "Test terminal command executor"
+  },
+  "result": {
+    "success": true,
+    "durationMs": 305,
+    "data": {
+      "command": "echo 'Hello from Terminal Executor'",
+      "workingDirectory": "D:/Dropbox/Repositories/Python/codor",
+      "exitCode": 0,
+      "stdout": "Hello from Terminal Executor\r\n",
+      "stderr": "",
+      "expectedExitCodes": [
+        0
+      ],
+      "timestamp": "2025-09-30T12:00:01.365Z"
+    },
+    "error": null
+  },
+  "metadata": {
+    "generatedBy": "CODOR Test Execution Engine v2.0",
+    "platform": "win32",
+    "nodeVersion": "v22.19.0",
+    "pid": 38576
+  }
+}

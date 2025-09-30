@@ -1,0 +1,36 @@
+{
+  "name": "@codor/test-engine",
+  "version": "2.0.0",
+  "description": "Plugin-based test execution engine designed for open-source collaboration",
+  "main": "core/engine.js",
+  "bin": {
+    "codor-engine": "./run.js"
+  },
+  "scripts": {
+    "start": "node run.js",
+    "list-plugins": "node run.js --list-plugins",
+    "test": "echo \"Create test specs and run them\" && exit 0"
+  },
+  "keywords": [
+    "testing",
+    "test-engine",
+    "automation",
+    "plugin-based",
+    "extensible",
+    "multi-language"
+  ],
+  "author": "CODOR Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/forcegage-pvm/codor.git",
+    "directory": "prototype"
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "2.0.0",
+  "metadata": {
+    "taskTitle": "HTTP Request Executor Demo",
+    "author": "CODOR Team",
+    "description": "Test HTTP_REQUEST executor with public API"
+  },
+  "tasks": {
+    "http-test": {
+      "title": "Test HTTP Request Executor",
+      "testExecution": {
+        "steps": [
+          {
+            "actionId": "STEP.1",
+            "type": "HTTP_REQUEST",
+            "description": "GET request to JSONPlaceholder API",
+            "parameters": {
+              "url": "https://jsonplaceholder.typicode.com/posts/1",
+              "method": "GET",
+              "expectedStatus": [200]
+            }
+          },
+          {
+            "actionId": "STEP.2",
+            "type": "HTTP_REQUEST",
+            "description": "GET request to list posts",
+            "parameters": {
+              "url": "https://jsonplaceholder.typicode.com/posts",
+              "method": "GET",
+              "expectedStatus": [200]
+            }
+          },
+          {
+            "actionId": "STEP.3",
+            "type": "TERMINAL_COMMAND",
+            "description": "Echo success message",
+            "parameters": {
+              "command": "Write-Host '✅ HTTP executor working!' -ForegroundColor Green"
+            }
+          }
+        ]
+      },
+      "validationCriteria": {
+        "successConditions": [
+          {
+            "condition": "STEP['1'].success === true",
+            "description": "First HTTP request succeeded"
+          },
+          {
+            "condition": "STEP['1'].status === 200",
+            "description": "Status code is 200"
+          },
+          {
+            "condition": "STEP['1'].body && STEP['1'].body.id === 1",
+            "description": "Response has post with id=1"
+          },
+          {
+            "condition": "STEP['2'].success === true",
+            "description": "Second HTTP request succeeded"
+          },
+          {
+            "condition": "STEP['2'].status === 200",
+            "description": "Second status is 200"
+          },
+          {
+            "condition": "Array.isArray(STEP['2'].body)",
+            "description": "Response is an array"
+          },
+          {
+            "condition": "STEP['2'].body.length > 0",
+            "description": "Array has items"
+          },
+          {
+            "condition": "STEP['3'].success === true && STEP['3'].exitCode === 0",
+            "description": "Success message displayed"
+          }
+        ]
+      }
+    }
+  },
+  "globalConfiguration": {
+    "workspaceRoot": "D:/Dropbox/Repositories/Python/codor",
+    "evidenceDirectory": "prototype/evidence",
+    "timeout": 60000
+  }
+}

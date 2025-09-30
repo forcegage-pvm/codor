@@ -1,0 +1,29 @@
+{
+  "actionId": "STEP.5",
+  "taskId": "demo-all-executors",
+  "timestamp": "2025-09-30T12:13:02.673Z",
+  "action": {
+    "type": "FILE_VALIDATION",
+    "description": "Check CONTRIBUTING.md size"
+  },
+  "result": {
+    "success": true,
+    "durationMs": 1,
+    "data": {
+      "filePath": "D:\\Dropbox\\Repositories\\Python\\codor\\prototype\\CONTRIBUTING.md",
+      "validationType": "EXISTS",
+      "exists": true,
+      "timestamp": "2025-09-30T12:13:02.673Z",
+      "size": 9815,
+      "modified": "2025-09-30T12:10:46.500Z",
+      "isDirectory": false
+    },
+    "error": null
+  },
+  "metadata": {
+    "generatedBy": "CODOR Test Execution Engine v2.0",
+    "platform": "win32",
+    "nodeVersion": "v22.19.0",
+    "pid": 36812
+  }
+}
