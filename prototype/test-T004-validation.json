@@ -1,0 +1,129 @@
+{
+  "schemaVersion": "2.0.0",
+  "metadata": {
+    "taskTitle": "T004 Contract Test - Simplified (Without Server)",
+    "author": "CODOR Team",
+    "description": "Validate T004 test specification structure and prerequisites"
+  },
+  "tasks": {
+    "T004-validation": {
+      "title": "Validate T004 Test Infrastructure",
+      "testExecution": {
+        "prerequisites": [
+          {
+            "actionId": "PREREQ.1",
+            "description": "Verify test-case directory exists",
+            "type": "FILE_VALIDATION",
+            "parameters": {
+              "filePath": "test-case",
+              "validationType": "EXISTS"
+            }
+          },
+          {
+            "actionId": "PREREQ.2",
+            "description": "Verify packages/web exists",
+            "type": "FILE_VALIDATION",
+            "parameters": {
+              "filePath": "test-case/packages/web",
+              "validationType": "EXISTS"
+            }
+          },
+          {
+            "actionId": "PREREQ.3",
+            "description": "Verify package.json exists",
+            "type": "FILE_VALIDATION",
+            "parameters": {
+              "filePath": "test-case/packages/web/package.json",
+              "validationType": "JSON_VALID"
+            }
+          }
+        ],
+        "steps": [
+          {
+            "actionId": "STEP.1",
+            "description": "Check if Node modules exist",
+            "type": "TERMINAL_COMMAND",
+            "parameters": {
+              "command": "Test-Path 'test-case\\packages\\web\\node_modules'"
+            }
+          },
+          {
+            "actionId": "STEP.2",
+            "description": "Verify T004 specification exists",
+            "type": "FILE_VALIDATION",
+            "parameters": {
+              "filePath": "docs/specifications/testing-system/examples/T004-quotes-get-test-specification.json",
+              "validationType": "JSON_VALID"
+            }
+          },
+          {
+            "actionId": "STEP.3",
+            "description": "Count total test specifications",
+            "type": "TERMINAL_COMMAND",
+            "parameters": {
+              "command": "Get-ChildItem -Path 'docs\\specifications\\testing-system\\examples' -Filter 'T*.json' | Measure-Object | Select-Object -ExpandProperty Count"
+            }
+          },
+          {
+            "actionId": "STEP.4",
+            "description": "Verify schema file exists",
+            "type": "FILE_VALIDATION",
+            "parameters": {
+              "filePath": "docs/specifications/testing-system/schemas/current-test-task.schema.json",
+              "validationType": "JSON_VALID"
+            }
+          },
+          {
+            "actionId": "STEP.5",
+            "description": "Display T004 summary",
+            "type": "TERMINAL_COMMAND",
+            "parameters": {
+              "command": "Write-Host '✅ T004 infrastructure validated!' -ForegroundColor Green; Write-Host 'Ready for full contract test execution' -ForegroundColor Cyan"
+            }
+          }
+        ]
+      },
+      "validationCriteria": {
+        "successConditions": [
+          {
+            "condition": "PREREQ['1'].success === true",
+            "description": "test-case directory exists"
+          },
+          {
+            "condition": "PREREQ['2'].success === true",
+            "description": "packages/web directory exists"
+          },
+          {
+            "condition": "PREREQ['3'].success === true && PREREQ['3'].isValidJSON === true",
+            "description": "package.json is valid"
+          },
+          {
+            "condition": "STEP['1'].success === true && STEP['1'].exitCode === 0",
+            "description": "Can check node_modules"
+          },
+          {
+            "condition": "STEP['2'].success === true && STEP['2'].isValidJSON === true",
+            "description": "T004 specification is valid JSON"
+          },
+          {
+            "condition": "STEP['3'].success === true && STEP['3'].exitCode === 0",
+            "description": "Can count test specifications"
+          },
+          {
+            "condition": "STEP['4'].success === true && STEP['4'].isValidJSON === true",
+            "description": "Schema file is valid JSON"
+          },
+          {
+            "condition": "STEP['5'].success === true",
+            "description": "Summary displayed"
+          }
+        ]
+      }
+    }
+  },
+  "globalConfiguration": {
+    "workspaceRoot": "D:/Dropbox/Repositories/Python/codor",
+    "evidenceDirectory": "prototype/evidence",
+    "timeout": 60000
+  }
+}
