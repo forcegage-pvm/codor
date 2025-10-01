@@ -1,0 +1,3 @@
+[submodule "codor-extension"]
+	path = codor-extension
+	url = https://github.com/forcegage-pvm/codor-extension.git
