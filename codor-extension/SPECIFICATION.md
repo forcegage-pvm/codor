@@ -1,9 +1,18 @@
 # CODOR VS Code Extension - Specification
 
-**Version:** 1.0.0-draft  
-**Date:** September 30, 2025  
-**Status:** Draft for Review  
+**Version:** 1.1.0-draft  
+**Date:** October 1, 2025  
+**Status:** Draft - AI Sprint Automation Integrated  
 **Project:** CODOR (Contract-Driven Outcome Reliability)
+
+**Latest Updates:**
+- ✅ AI Sprint Automation design integrated (Section 5.5)
+- ✅ Database schema expanded (test_plans, test_executions, sprint_executions, flaky_test_flags)
+- ✅ Implementation phases updated (6 phases, 12 weeks)
+- ✅ Hybrid Smart Adaptive context management strategy
+- ✅ Test-driven enforcement workflow
+- ✅ Bounded retry and error recovery
+- ✅ Auto-commit and traceability
 
 ---
 
@@ -447,11 +456,248 @@ Developer Workflow:
   - `codor.specKit.autoReapplyPatches` (boolean, default: true)
   - `codor.database.path` (string, default: ".codor/tasks.db")
   - `codor.evidence.path` (string, default: ".codor/evidence")
+  - `codor.automation.maxRetries` (number, default: 5, range: 1-20)
+  - `codor.automation.idleTimeout` (number, default: 10, unit: minutes)
+  - `codor.automation.evidenceRetention` (enum, default: "compress-7days", options: "forever", "compress-7days", "delete-30days")
+  - `codor.automation.contextStrategy` (enum, default: "hybrid-smart", options: "persistent", "fresh-per-task", "rolling-window", "hybrid-smart")
 - **Output:** User-configurable behavior
+
+### 5.5 AI Sprint Automation ⭐ NEW
+
+#### Overview
+
+CODOR's defining feature is **test-driven sprint automation** where the AI agent implements tasks while CODOR enforces quality through automated testing. This section describes the automated sprint execution workflow introduced in design finalization.
+
+#### FR-011: Start Automated Sprint
+
+**Actor:** Developer  
+**Trigger:** Command "CODOR: Start Sprint" (on feature with tasks)
+
+**Workflow:**
+```
+1. Developer clicks "Start Sprint" button
+2. CODOR validates prerequisites (tasks exist, tests defined)
+3. CODOR loads first task (T001)
+4. Loop until all tasks complete:
+   a. CODOR prompts AI agent with task context
+   b. AI implements task
+   c. AI signals completion ("@codor done")
+   d. CODOR runs test suite (YAML-driven)
+   e. If tests pass → Mark complete, auto-commit, next task
+   f. If tests fail → Send errors to AI, bounded retry (max 5)
+5. Sprint complete → Generate compliance report
+```
+
+**Process Details:**
+
+1. **Task Context Injection:**
+   - CODOR builds prompt from spec.md, plan.md, task details
+   - Includes acceptance criteria, file paths, requirements
+   - Injects recent task context (hybrid smart adaptive strategy)
+
+2. **AI Integration:**
+   - Uses VS Code Language Model API (`vscode.lm.selectChatModels`)
+   - Sends structured prompt to AI agent
+   - Monitors for completion signal ("@codor done")
+   - Idle timer (10 min) catches forgotten signals
+
+3. **Test Plan Execution:**
+   - CODOR loads YAML test plan for current task
+   - Runs linting (ESLint) - BLOCKS if fail
+   - Runs build - BLOCKS if fail
+   - Runs unit tests - reports failures
+   - Runs integration tests - reports failures
+   - Runs contract tests (if defined) - reports failures
+
+4. **Completion Detection:**
+   - **Primary:** Chat message marker ("@codor done")
+   - **Fallback:** File save event detection
+   - **Safety:** Idle timer (10 min configurable timeout)
+
+5. **Error Recovery (Bounded):**
+   - Max 5 retries per task (configurable 1-20)
+   - Structured error feedback to AI:
+     ```
+     ❌ Task T003 failed verification (attempt 2/5)
+     
+     **Linting Errors:**
+     - src/auth.ts:42 - Missing semicolon
+     
+     **Test Failures:**
+     - AuthService.login should validate email: Expected true, got false
+     
+     **Files to Fix:**
+     - src/auth.ts
+     - tests/auth.test.ts
+     ```
+   - If max retries exceeded → Escalate to developer
+
+6. **Evidence Generation:**
+   - Test results (JSON format)
+   - Linting report
+   - Coverage report (if available)
+   - Files modified (git diff)
+   - Duration and attempt count
+   - Compliance certificate
+
+7. **Auto-Commit:**
+   - Commits after each successful task
+   - Structured message: `[CODOR] T003: Implement user authentication`
+   - Tags: `task/T003`
+   - Enables rollback if needed
+
+**Output:** 
+- All tasks completed with evidence
+- Auto-committed git history
+- Compliance report generated
+- Sprint summary displayed
+
+---
+
+#### FR-012: Generate Test Plan
+
+**Actor:** AI Agent (automated) or Developer (manual)  
+**Trigger:** Task started, no test plan exists
+
+**Process:**
+1. CODOR detects missing test plan for task
+2. CODOR prompts AI with test plan template:
+   ```yaml
+   task_id: T001
+   description: Add user authentication
+   test_suite:
+     pre_conditions:
+       - name: Linting
+         command: npm run lint
+         blocking: true
+       - name: Build
+         command: npm run build
+         blocking: true
+     
+     unit_tests:
+       - name: User login validation
+         command: npm test -- auth.test.ts
+         expected_outcome: All tests pass
+     
+     integration_tests:
+       - name: API authentication flow
+         command: npm test -- integration/auth.test.ts
+         expected_outcome: All tests pass
+     
+     acceptance_criteria:
+       - description: User can login with valid credentials
+         verification: Manual check in UI
+   ```
+3. AI generates YAML test plan
+4. CODOR validates YAML structure
+5. Store in `test_plans` table
+6. Link to task
+
+**Output:** Test plan stored, ready for execution
+
+---
+
+#### FR-013: Manage Chat Context (Hybrid Smart Adaptive)
+
+**Actor:** CODOR (automated)  
+**Trigger:** Task execution during sprint
+
+**Strategy:**
+- **Tasks 1-3:** Full persistent chat context
+- **Task 4+:** Smart summarization with on-demand injection
+
+**Process:**
+1. Load completed tasks for current sprint
+2. If ≤ 3 tasks completed:
+   - Send full context (all tasks)
+3. If > 3 tasks completed:
+   - Summarize old tasks (T001-Tn-2): `✅ T001: Setup project - 15min`
+   - Full context for recent 2 tasks
+   - Detect old task references in AI messages
+   - On-demand: Re-inject full context for referenced old task
+
+**Old Task Reference Detection:**
+```typescript
+// Patterns: "in T001", "like T002", "T003's approach"
+const patterns = [
+  /\b(T\d{3})\b/i,
+  /task\s+(T?\d{3})/i,
+  /like\s+(?:in\s+)?(T\d{3})/i
+];
+```
+
+**Token Budget:**
+- T001-T003: ~35k tokens
+- T004-T010: ~40k tokens (stable)
+- On-demand injection: ~50k tokens (peak)
+- Limit: 128k tokens (GPT-4o)
+
+**Benefits:**
+- ✅ Foundation building (early tasks full context)
+- ✅ Efficient operation (later tasks summarized)
+- ✅ On-demand retrieval (AI can reference any old task)
+- ✅ No overflow risk (stable 30-50k tokens)
+- ✅ Cost-effective (~$0.12/sprint)
+
+**Output:** Optimal context per task, no token overflow
+
+---
+
+#### FR-014: Handle Flaky Tests
+
+**Actor:** CODOR (automated)  
+**Trigger:** Test fails multiple times then passes
+
+**Detection Logic:**
+```typescript
+if (task.attempts >= 2 && currentAttempt.status === 'passed') {
+  // Same test failed 2+ times, now passes
+  const flakyTests = detectFlakyTests(task);
+  if (flakyTests.length > 0) {
+    await flagFlakyTests(task.id, flakyTests);
+  }
+}
+```
+
+**Process:**
+1. Track test execution history per task
+2. If test fails 2+ attempts, then passes:
+   - Flag as "flaky test"
+   - Store in `flaky_test_flags` table
+   - Show warning notification
+   - Set review status to "pending"
+3. Task still completes (non-blocking)
+4. Developer reviews flaky tests later
+
+**Output:** Task completes, flaky tests flagged for review
+
+---
+
+#### FR-015: Manage Evidence Retention
+
+**Actor:** CODOR (automated)  
+**Trigger:** Daily/weekly background job
+
+**Policy:** Compress evidence after 7 days (configurable)
+
+**Process:**
+1. Scan `evidence/` directory
+2. Find directories older than retention threshold
+3. For each old directory:
+   - Create `.zip` archive
+   - Delete original files
+   - Update evidence record with archive path
+4. Configurable options:
+   - "forever" - No compression
+   - "compress-7days" - Compress after 7 days (default)
+   - "delete-30days" - Delete after 30 days
+
+**Output:** Evidence storage optimized, old evidence preserved
 
 ---
 
 ## 6. Non-Functional Requirements
+
 
 ### 6.1 Performance
 
@@ -632,6 +878,64 @@ CREATE TABLE evidence (
 );
 ```
 
+**test_plans** ⭐ NEW
+```sql
+CREATE TABLE test_plans (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  task_id TEXT NOT NULL,
+  yaml_content TEXT NOT NULL,         -- YAML test plan definition
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  FOREIGN KEY (task_id) REFERENCES tasks(id)
+);
+```
+
+**test_executions** ⭐ NEW
+```sql
+CREATE TABLE test_executions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  test_plan_id INTEGER NOT NULL,
+  task_id TEXT NOT NULL,
+  attempt_number INTEGER NOT NULL,
+  status TEXT NOT NULL,               -- "running" | "passed" | "failed"
+  results_json TEXT,                  -- Full test output
+  duration_minutes INTEGER,
+  started_at TEXT NOT NULL,
+  completed_at TEXT,
+  FOREIGN KEY (test_plan_id) REFERENCES test_plans(id),
+  FOREIGN KEY (task_id) REFERENCES tasks(id)
+);
+```
+
+**sprint_executions** ⭐ NEW
+```sql
+CREATE TABLE sprint_executions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  feature_id TEXT NOT NULL,
+  status TEXT NOT NULL,               -- "running" | "completed" | "paused" | "failed"
+  total_tasks INTEGER NOT NULL,
+  completed_tasks INTEGER NOT NULL,
+  failed_tasks INTEGER NOT NULL,
+  started_at TEXT NOT NULL,
+  completed_at TEXT,
+  FOREIGN KEY (feature_id) REFERENCES features(id)
+);
+```
+
+**flaky_test_flags** ⭐ NEW
+```sql
+CREATE TABLE flaky_test_flags (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  task_id TEXT NOT NULL,
+  test_name TEXT NOT NULL,            -- Name of flaky test
+  failure_count INTEGER NOT NULL,     -- Number of times it failed
+  detected_at TEXT NOT NULL,
+  review_status TEXT NOT NULL,        -- "pending" | "reviewed" | "ignored"
+  notes TEXT,
+  FOREIGN KEY (task_id) REFERENCES tasks(id)
+);
+```
+
 ### 7.2 Indexes
 
 ```sql
@@ -639,6 +943,13 @@ CREATE INDEX idx_tasks_feature_id ON tasks(feature_id);
 CREATE INDEX idx_tasks_status ON tasks(status);
 CREATE INDEX idx_tasks_order ON tasks(order_index);
 CREATE INDEX idx_evidence_task_id ON evidence(task_id);
+CREATE INDEX idx_test_plans_task_id ON test_plans(task_id);
+CREATE INDEX idx_test_executions_task_id ON test_executions(task_id);
+CREATE INDEX idx_test_executions_status ON test_executions(status);
+CREATE INDEX idx_sprint_executions_feature_id ON sprint_executions(feature_id);
+CREATE INDEX idx_sprint_executions_status ON sprint_executions(status);
+CREATE INDEX idx_flaky_test_flags_task_id ON flaky_test_flags(task_id);
+CREATE INDEX idx_flaky_test_flags_review_status ON flaky_test_flags(review_status);
 ```
 
 ---
@@ -701,44 +1012,65 @@ CREATE INDEX idx_evidence_task_id ON evidence(task_id);
 
 ## 9. Implementation Phases
 
-### Phase 1: Foundation (Week 1-2)
+### Phase 1: Test Plan Engine (Week 1-2) ⭐ UPDATED
 - ✅ Extension scaffold complete
-- [ ] Database schema implementation
+- [ ] Database schema implementation (including new tables: test_plans, test_executions, sprint_executions, flaky_test_flags)
 - [ ] Basic CRUD operations for features, specs, plans, tasks
 - [ ] Database migrations system
+- [ ] Test plan YAML template definition
+- [ ] AI prompt for test plan generation (using VS Code Language Model API)
+- [ ] YAML validation and parsing
+- [ ] Test plan storage and versioning
 - [ ] Unit tests for database layer
 
-### Phase 2: UI Components (Week 3-4)
+### Phase 2: Sprint Automation Core (Week 3-4) ⭐ NEW
+- [ ] Sprint controller implementation
+- [ ] Task executor with AI integration (vscode.lm.selectChatModels)
+- [ ] Completion detection (chat marker + idle timer)
+- [ ] Test suite runner (YAML-driven execution)
+- [ ] Bounded error recovery (max 5 retries)
+- [ ] Auto-commit implementation with git tagging
+- [ ] Evidence generation and storage
+- [ ] Integration tests for sprint workflow
+
+### Phase 3: Context Management (Week 5-6) ⭐ NEW
+- [ ] ContextManager class implementation
+- [ ] Hybrid Smart Adaptive strategy
+- [ ] Old task reference detection (regex patterns)
+- [ ] On-demand context injection
+- [ ] Token budget monitoring
+- [ ] Chat history persistence
+- [ ] Context optimization tests
+
+### Phase 4: UI Components (Week 7-8) ⭐ UPDATED
 - [ ] Features tree view implementation
-- [ ] Task queue tree view implementation
+- [ ] Task queue tree view with status icons
+- [ ] Sprint progress tree view (visual task status)
+- [ ] Status bar updates (current task, elapsed time)
 - [ ] Task details webview
 - [ ] Feature creation webview
-- [ ] Command handlers (stub implementations)
+- [ ] Sprint control panel (Start/Pause/Resume/Stop)
+- [ ] Command handlers implementation
 - [ ] UI state management
 
-### Phase 3: Spec Kit Integration (Week 5-6)
-- [ ] Script detection and analysis
-- [ ] Patch generation system
-- [ ] Patch application and validation
-- [ ] Environment variable integration
-- [ ] Script execution and output capture
-- [ ] File watching and auto-reapply
-
-### Phase 4: Verification Engine (Week 7-8)
-- [ ] Test execution framework
-- [ ] Output parsing (TAP, Jest, Mocha, etc.)
-- [ ] Acceptance criteria validation
-- [ ] Evidence collection and storage
+### Phase 5: Quality & Management (Week 9-10) ⭐ NEW
+- [ ] Flaky test detection and flagging
+- [ ] Evidence retention policy (compression)
+- [ ] Sprint execution reporting
+- [ ] Compliance certificate generation
 - [ ] Manual override workflow
-- [ ] Verification reporting
-
-### Phase 5: Polish and Testing (Week 9-10)
+- [ ] Configuration UI (settings)
+- [ ] Performance optimization
 - [ ] End-to-end testing
+
+### Phase 6: Polish and Release (Week 11-12) ⭐ NEW
+- [ ] Spec Kit integration refinement
 - [ ] Error handling and edge cases
 - [ ] Documentation and help system
-- [ ] Performance optimization
-- [ ] User acceptance testing
-- [ ] Beta release preparation
+- [ ] User onboarding flow
+- [ ] Beta testing
+- [ ] Marketplace preparation
+- [ ] Release v1.0.0
 
 ---
 
@@ -761,6 +1093,10 @@ CREATE INDEX idx_evidence_task_id ON evidence(task_id);
 - ✅ < 100ms database query response time
 - ✅ < 5 seconds for Spec Kit script execution
 - ✅ 100% of tasks have verifiable evidence
+- ✅ AI sprint automation completes 10-task sprint with <5 manual interventions ⭐ NEW
+- ✅ Test plan generation success rate > 95% ⭐ NEW
+- ✅ Context overflow rate < 1% (hybrid smart adaptive) ⭐ NEW
+- ✅ Evidence compression reduces storage by > 60% after 30 days ⭐ NEW
 
 ### 10.3 User Satisfaction
 
@@ -769,6 +1105,8 @@ CREATE INDEX idx_evidence_task_id ON evidence(task_id);
 - ✅ No manual `tasks.md` management needed
 - ✅ Clear visibility into task progress
 - ✅ Reliable AI agent task compliance
+- ✅ Automated sprint reduces developer effort by > 70% ⭐ NEW
+- ✅ Flaky test detection prevents false positives ⭐ NEW
 
 ---
 
@@ -783,6 +1121,10 @@ CREATE INDEX idx_evidence_task_id ON evidence(task_id);
 | AI agent bypasses CODOR | High | Medium | Remove tasks.md entirely, file watching |
 | Cross-platform script issues | Medium | Medium | PowerShell Core, platform detection |
 | Performance with large projects | Medium | Low | Database indexing, lazy loading, pagination |
+| **AI context overflow (>128k tokens)** ⭐ NEW | **High** | **Low** | **Hybrid smart adaptive context, token monitoring** |
+| **Test plan generation failures** ⭐ NEW | **Medium** | **Medium** | **Template validation, fallback to manual, retry logic** |
+| **Idle timer false positives** ⭐ NEW | **Low** | **Medium** | **Configurable timeout, manual override, log analysis** |
+| **Flaky tests block progress** ⭐ NEW | **Medium** | **Low** | **Detection and flagging, non-blocking completion** |
 
 ### 11.2 Process Risks
 
@@ -791,6 +1133,8 @@ CREATE INDEX idx_evidence_task_id ON evidence(task_id);
 | Spec Kit team rejects patches | Medium | Low | Contribute upstream, maintain fork |
 | User adoption resistance | Medium | Medium | Clear documentation, video tutorials |
 | Maintenance burden | Medium | High | Automated testing, CI/CD, community contributions |
+| **AI cost escalation (large sprints)** ⭐ NEW | **Low** | **Medium** | **Context management, cost monitoring, budget alerts** |
+| **Developer over-reliance on automation** ⭐ NEW | **Medium** | **High** | **Evidence review workflow, manual checkpoints** |
 
 ---
 
@@ -806,6 +1150,10 @@ CREATE INDEX idx_evidence_task_id ON evidence(task_id);
 - Visual task dependency graph editor
 - Automated technical debt tracking
 - Integration with JIRA, GitHub Issues
+- **Large spec handling (Spec Kit integration for >5k line specs)** ⭐ NEW
+- **Multi-AI agent support (parallel task execution)** ⭐ NEW
+- **Advanced flaky test analytics** ⭐ NEW
+- **Sprint templates and presets** ⭐ NEW
 
 ### 12.2 Version 3.0 Vision
 
@@ -815,6 +1163,8 @@ CREATE INDEX idx_evidence_task_id ON evidence(task_id);
 - Machine learning for task estimation
 - Predictive failure detection
 - Automated refactoring suggestions
+- **AI cost optimization engine** ⭐ NEW
+- **Cross-project context sharing** ⭐ NEW
 
 ---
 
@@ -828,6 +1178,8 @@ CREATE INDEX idx_evidence_task_id ON evidence(task_id);
 4. `docs/UI-STRATEGY-DECISION.md` - UI architecture
 5. `docs/API-INTEGRATION-DECISION.md` - Communication approach
 6. `docs/WORKFLOW-INTERCEPTION-RISKS.md` - Risk analysis
+7. **`docs/AI-AGENT-AUTOMATION-DESIGN.md`** - Test-driven sprint automation ⭐ NEW
+8. **`docs/DESIGN-DECISIONS-SUMMARY.md`** - Executive summary of design decisions ⭐ NEW
 7. `docs/SPEC-KIT-STRUCTURE-ANALYSIS.md` - Spec Kit internals
 8. `docs/INTEGRATION-COMPLETE.md` - Scaffold integration summary
 9. `docs/PACKAGE-JSON-CONFIG.md` - Extension configuration reference
@@ -855,6 +1207,13 @@ CREATE INDEX idx_evidence_task_id ON evidence(task_id);
 | **Acceptance Criteria** | Specific conditions that must be met for task to be considered complete |
 | **Override** | Manual approval to proceed despite verification failure |
 | **Patch** | Minimal modification to Spec Kit scripts for CODOR integration |
+| **Test Plan** ⭐ NEW | YAML-based definition of tests to run for a task |
+| **Sprint Execution** ⭐ NEW | Automated process of AI implementing all tasks in sequence |
+| **Hybrid Smart Adaptive** ⭐ NEW | Context management strategy balancing quality, cost, and overflow risk |
+| **Flaky Test** ⭐ NEW | Test that fails inconsistently, then passes without code changes |
+| **Bounded Retry** ⭐ NEW | Error recovery with maximum attempt limit (default 5) |
+| **Context Injection** ⭐ NEW | Adding old task details when AI references them |
+| **Auto-Commit** ⭐ NEW | Automatic git commit after each successful task completion |
 
 ---
 
@@ -871,6 +1230,15 @@ This specification requires review and approval from:
 **Approval Date:** _________________
 
 **Version Approved:** _________________
+
+---
+
+**Document History:**
+
+| Version | Date | Author | Changes |
+|---------|------|--------|---------|
+| 1.0.0-draft | Sept 30, 2025 | System | Initial specification |
+| 1.1.0-draft | Oct 1, 2025 | System | AI Sprint Automation integrated (FR-011 to FR-015, DB schema updates, implementation phases revised) |
 
 ---
 
